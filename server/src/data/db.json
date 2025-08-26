@@ -1,0 +1,78 @@
+{
+  "menu": [
+    {
+      "id": "ITM-1",
+      "name": "Rice Meal A",
+      "category": "Meals",
+      "price": 75,
+      "stock": 20,
+      "img": "/rice-meal.jpg",
+      "isActive": true
+    },
+    {
+      "id": "ITM-2",
+      "name": "Choco Drink",
+      "category": "Beverages",
+      "price": 45,
+      "stock": 0,
+      "img": "/choco-drink.jpg",
+      "isActive": true
+    },
+    {
+      "id": "ITM-3",
+      "name": "Oishi Pillows",
+      "category": "Snacks",
+      "price": 12,
+      "stock": 15,
+      "img": "/pillows.jpg",
+      "isActive": true
+    },
+    {
+  "id": "ITM-4",
+      "name": "Fried Chicken",
+      "category": "Meals",
+      "price": 120,
+      "stock": 400,
+      "img": ""
+    },
+    {
+  "id": "ITM-5",
+      "name": "Automated Test Item",
+      "category": "Meals",
+      "price": 99,
+      "stock": 5,
+      "img": ""
+    },
+    {
+  "id": "ITM-6",
+      "name": "Automated Test Item",
+      "category": "Meals",
+      "price": 77,
+      "stock": 3,
+      "img": ""
+    }
+  ],
+  "reservations": [],
+  "topups": [],
+  "users": [
+    {
+      "id": "u_admin",
+      "name": "Canteen Admin",
+      "email": "admin@school.test",
+      "passwordHash": "$2a$10$gLcnB2skKVIzJU90Jr60cuPXRWkXKUwTCWPqW5pEB8WfcNzz2OPtW",
+      "role": "admin",
+      "balance": 0
+    },
+    {
+      "id": "usr_meshwbp7",
+      "name": "Sean Henry E. Silva",
+      "email": "seansilva_35kd@gmail.com",
+      "passwordHash": "$2a$10$d5t7gALyl9MkD0P6lSu5ruzAimWlUiJLrBr4ywSPbLheqOtYFwOom",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0
+    }
+  ],
+  "transactions": []
+}
