@@ -1,4 +1,5 @@
 // src/pages/Cart.jsx
+import { api } from "../lib/api";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Navbar from "../components/avbar";
@@ -18,12 +19,10 @@ const peso = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
 });
 
-/** TEMP MENU: replace with API GET /api/menu (keep ids consistent with Shop.jsx) */
-const MENU = [
-  { id: 1, name: "Rice Meal A", category: "Meals", price: 75, stock: 20, img: "/rice-meal.jpg" },
-  { id: 2, name: "Choco Drink", category: "Beverages", price: 45, stock: 40, img: "/choco-drink.jpg" },
-  { id: 3, name: "Oishi Pillows", category: "Snacks", price: 12, stock: 15, img: "/pillows.jpg" },
-];
+// menu will be fetched from backend (/api/menu)
+// menu will be fetched from backend (/api/menu)
+
+const MENU = null; // placeholder to keep references
 
 const SLOTS = [
   { id: "recess", label: "Recess • 9:45–10:00 AM" },
@@ -55,6 +54,19 @@ export default function Cart() {
     }
   }, []);
 
+  const [products, setProducts] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(true);
+
+  useEffect(() => {
+    let m = true;
+    setMenuLoading(true);
+    api.get('/menu')
+      .then(d => { if (!m) return; setProducts(d || []); })
+      .catch(() => { if (!m) return; setProducts([]); })
+      .finally(() => { if (!m) return; setMenuLoading(false); });
+    return () => (m = false);
+  }, []);
+
   // support navigation from Shop with { state: { itemId } }
   useEffect(() => {
     const id = state?.itemId;
@@ -76,9 +88,9 @@ export default function Cart() {
     () =>
       Object.entries(cart)
         .map(([id, qty]) => {
-          const p = MENU.find((x) => x.id === Number(id));
+          const p = products.find((x) => String(x.id) === String(id));
           return p ? { ...p, qty } : null;
-        })
+            })
         .filter(Boolean),
     [cart]
   );
@@ -89,12 +101,13 @@ export default function Cart() {
   );
 
   const inc = (id) => {
-    const prod = MENU.find((x) => x.id === id);
+    const prod = products.find((x) => String(x.id) === String(id));
     if (!prod) return;
+    const key = String(id);
     setCart((c) => {
-      const nextQty = (c[id] || 0) + 1;
+      const nextQty = (c[key] || 0) + 1;
       if (prod.stock > 0 && nextQty > prod.stock) return c; // clamp to stock
-      const next = { ...c, [id]: nextQty };
+      const next = { ...c, [key]: nextQty };
       localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
@@ -102,17 +115,19 @@ export default function Cart() {
 
   const dec = (id) =>
     setCart((c) => {
-      const nextQty = Math.max((c[id] || 0) - 1, 0);
-      const next = { ...c, [id]: nextQty };
-      if (nextQty === 0) delete next[id];
+      const key = String(id);
+      const nextQty = Math.max((c[key] || 0) - 1, 0);
+      const next = { ...c, [key]: nextQty };
+      if (nextQty === 0) delete next[key];
       localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
 
   const removeLine = (id) =>
     setCart((c) => {
+      const key = String(id);
       const next = { ...c };
-      delete next[id];
+      delete next[key];
       localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
@@ -133,21 +148,14 @@ export default function Cart() {
 
     setSubmitting(true);
     try {
-      // ---- TODO: POST to /api/reservations ----
-      // const payload = {
-      //   items: list.map(({ id, qty }) => ({ id, qty })),
-      //   grade: reserve.grade,
-      //   section: reserve.section,
-      //   slot: reserve.slot,
-      //   note: reserve.note,
-      // };
-      // await fetch("/api/reservations", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      //   body: JSON.stringify(payload),
-      // });
-
-      await new Promise((r) => setTimeout(r, 900));
+      const payload = {
+        items: list.map(({ id, qty }) => ({ id: String(id), qty })),
+        grade: reserve.grade,
+        section: reserve.section,
+        slot: reserve.slot,
+        note: reserve.note,
+      };
+      await api.post('/reservations', payload);
       alert("Reservation submitted! Track status in History.");
       clearCart();
       setReserve({ grade: "", section: "", slot: "", note: "" });

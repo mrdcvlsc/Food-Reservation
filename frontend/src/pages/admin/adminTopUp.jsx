@@ -1,5 +1,5 @@
 ﻿// src/pages/admin/adminTopUp.jsx
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../../components/adminavbar";
 import {
   Upload, Trash2, Image as ImageIcon,
@@ -180,21 +180,24 @@ function TopUpManager() {
 
 /* ---------------------- Verify Top-Ups (queue) ---------------------- */
 function VerifyQueue() {
-  // mock data — replace with API GET /api/admin/topups?status=Pending
-  const [rows, setRows] = useState([
-    { id: "TU-002", student: "Maria Santos", provider: "Maya",   amount: 50,  submittedAt: "2:15 PM", img: null },
-    { id: "TU-004", student: "Juan Dela Cruz", provider: "GCash", amount: 200, submittedAt: "3:02 PM", img: null },
-    { id: "TU-006", student: "Pedro Reyes",    provider: "GCash", amount: 120, submittedAt: "3:20 PM", img: null },
-  ]);
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    let m = true;
+    import("../../lib/api").then(mod => mod.api.get('/topups/admin'))
+      .then(d => { if (!m) return; setRows(d || []); })
+      .catch(() => { if (!m) return; setRows([]); });
+    return () => (m = false);
+  }, []);
 
   const approve = async (id) => {
-    // await fetch(`/api/admin/topups/${id}`, { method: "PATCH", body: JSON.stringify({ status: "Approved" }) })
+    await import("../../lib/api").then(mod => mod.api.patch(`/topups/admin/${id}`, { status: 'Approved' }));
     setRows((r) => r.filter((x) => x.id !== id));
     alert(`Approved ${id}. Balance will be credited.`);
   };
 
   const reject = async (id) => {
-    // await fetch(`/api/admin/topups/${id}`, { method: "PATCH", body: JSON.stringify({ status: "Rejected" }) })
+    await import("../../lib/api").then(mod => mod.api.patch(`/topups/admin/${id}`, { status: 'Rejected' }));
     setRows((r) => r.filter((x) => x.id !== id));
     alert(`Rejected ${id}.`);
   };

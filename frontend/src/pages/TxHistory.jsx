@@ -1,19 +1,22 @@
 // src/pages/TxHistory.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/avbar";
+import { api } from "../lib/api";
 
 export default function TxHistory() {
-  // TODO: replace with real API call
-  const [history] = useState([
-    { id: 1, product: "Rice Meal 1", orderId: "#12436", date: "04/01/25", amount: 69, status: "Success" },
-    { id: 2, product: "Rice Meal 1", orderId: "#153587", date: "04/21/25", amount: 69, status: "Success" },
-    { id: 3, product: "Rice Meal 2", orderId: "#16879", date: "05/01/25", amount: 30, status: "Success" },
-    { id: 4, product: "Yakult",      orderId: "#16879", date: "05/01/25", amount: 30, status: "Success" },
-    { id: 5, product: "Nestlé Chuckie", orderId: "#16609", date: "05/09/25", amount: 25, status: "Failed"  },
-    { id: 6, product: "Oishi Pillows - Chocolate", orderId: "#16609", date: "05/09/25", amount: 12, status: "Success" },
-    { id: 7, product: "Rice Meal 1", orderId: "#16997", date: "05/10/25", amount: 30, status: "Pending" }
-  ]);
+  const [tx, setTx] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    api.get('/transactions/mine')
+      .then(d => { if (!mounted) return; setTx(d || []); })
+      .catch(() => { if (!mounted) return; setTx([]); })
+      .finally(() => { if (!mounted) return; setLoading(false); });
+    return () => (mounted = false);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -23,9 +26,7 @@ export default function TxHistory() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Back link + Page Title */}
         <div>
-          <Link to="/dashboard" className="text-gray-600 hover:underline flex items-center mb-4">
-            ← Back to home
-          </Link>
+          <Link to="/dashboard" className="text-gray-600 hover:underline flex items-center mb-4">← Back to home</Link>
           <h1 className="text-3xl font-bold">Transaction History</h1>
         </div>
 
@@ -47,9 +48,7 @@ export default function TxHistory() {
               <input type="date" className="border rounded px-2 py-1" />
             </label>
           </div>
-          <div className="text-sm text-gray-600">
-            Page 1 of 1
-          </div>
+          <div className="text-sm text-gray-600">Page 1 of 1</div>
         </div>
 
         {/* Transactions Table */}
@@ -65,27 +64,22 @@ export default function TxHistory() {
               </tr>
             </thead>
             <tbody>
-              {history.map((tx, idx) => (
-                <tr
-                  key={tx.id}
-                  className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                >
-                  <td className="px-4 py-3 text-sm">{tx.product}</td>
-                  <td className="px-4 py-3 text-center text-sm">{tx.orderId}</td>
-                  <td className="px-4 py-3 text-center text-sm">{tx.date}</td>
-                  <td className="px-4 py-3 text-right text-sm">₱{tx.amount.toFixed(2)}</td>
+              {loading && (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-600">Loading…</td></tr>
+              )}
+              {!loading && tx.length === 0 && (
+                <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-600">No transactions found.</td></tr>
+              )}
+              {!loading && tx.map((t, idx) => (
+                <tr key={t.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                  <td className="px-4 py-3 text-sm">{t.product || t.description || "—"}</td>
+                  <td className="px-4 py-3 text-center text-sm">{t.orderId || t.ref || "—"}</td>
+                  <td className="px-4 py-3 text-center text-sm">{t.date || (t.createdAt ? new Date(t.createdAt).toLocaleString() : "—")}</td>
+                  <td className="px-4 py-3 text-right text-sm">₱{(Number(t.amount) || 0).toFixed(2)}</td>
                   <td className="px-4 py-3 text-center text-sm">
-                    <span
-                      className={
-                        tx.status === "Success"
-                          ? "text-green-600 font-medium"
-                          : tx.status === "Failed"
-                          ? "text-red-600 font-medium"
-                          : "text-blue-600 font-medium"
-                      }
-                    >
-                      {tx.status}
-                    </span>
+                    <span className={
+                      t.status === "Success" ? "text-green-600 font-medium" : t.status === "Failed" ? "text-red-600 font-medium" : "text-blue-600 font-medium"
+                    }>{t.status || t.type || "—"}</span>
                   </td>
                 </tr>
               ))}

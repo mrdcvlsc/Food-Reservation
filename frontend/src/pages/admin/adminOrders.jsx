@@ -1,5 +1,6 @@
 ﻿// src/pages/admin/adminOrders.jsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { api } from "../../lib/api";
 import Navbar from "../../components/adminavbar";
 import {
   UtensilsCrossed,
@@ -27,42 +28,18 @@ function Pill({ status }) {
 }
 
 export default function AdminOrders() {
-  // mock queue — replace with API GET /api/admin/orders?date=...
-  const [orders, setOrders] = useState([
-    {
-      id: "ORD-001",
-      student: "Juan Dela Cruz",
-      grade: "G10",
-      section: "A",
-      pickup: "10:15 AM",
-      status: "Pending",
-      items: [
-        { name: "Chicken Adobo", qty: 1, price: 85 },
-        { name: "Yakult", qty: 2, price: 30 },
-      ],
-      note: "Less sauce pls.",
-    },
-    {
-      id: "ORD-002",
-      student: "Maria Santos",
-      grade: "G9",
-      section: "B",
-      pickup: "10:30 AM",
-      status: "Preparing",
-      items: [{ name: "Rice Meal 1", qty: 1, price: 69 }],
-      note: "",
-    },
-    {
-      id: "ORD-003",
-      student: "Pedro Reyes",
-      grade: "G8",
-      section: "C",
-      pickup: "10:45 AM",
-      status: "Ready",
-      items: [{ name: "Nestlé Chuckie", qty: 1, price: 25 }],
-      note: "Will come with classmate.",
-    },
-  ]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let m = true;
+    setLoading(true);
+    api.get('/reservations/admin')
+      .then(d => { if (!m) return; setOrders(d || []); })
+      .catch(() => setOrders([]))
+      .finally(() => m && setLoading(false));
+    return () => (m = false);
+  }, []);
 
   const [tab, setTab] = useState("All"); // All | Pending | Preparing | Ready
   const [q, setQ] = useState("");
@@ -84,10 +61,10 @@ export default function AdminOrders() {
     return data.sort(sorter);
   }, [orders, tab, q, sort]);
 
-  const transition = (id, next) =>
-    setOrders((list) =>
-      list.map((o) => (o.id === id ? { ...o, status: next } : o))
-    );
+  const transition = async (id, next) => {
+    await api.patch(`/reservations/admin/${id}`, { status: next });
+    setOrders((list) => list.map((o) => (o.id === id ? { ...o, status: next } : o)));
+  };
 
   const total = (o) => o.items.reduce((acc, it) => acc + it.qty * it.price, 0);
 

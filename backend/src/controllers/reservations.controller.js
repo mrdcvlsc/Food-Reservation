@@ -25,7 +25,17 @@ exports.create = async (req, res) => {
     // Validate & normalize items, ensure stock is sufficient
     const normalized = [];
     for (const { id, qty } of items) {
-      const m = db.menu.find((x) => Number(x.id) === Number(id));
+      // Primary: exact string match. Fallback: match numeric suffix (accept 4, '4', 'ITM-4')
+      let m = db.menu.find((x) => String(x.id) === String(id));
+      if (!m) {
+        const incoming = String(id || "").trim();
+        const incomingSuffix = incoming.split("-").pop();
+        m = db.menu.find((x) => {
+          const sid = String(x.id || "").trim();
+          const sfx = sid.split("-").pop();
+          return (sfx && incomingSuffix && sfx === incomingSuffix) || sid === incoming;
+        });
+      }
       if (!m) return res.status(400).json({ error: `Item ${id} not found` });
 
       const q = Number(qty) || 0;
@@ -45,7 +55,7 @@ exports.create = async (req, res) => {
 
     // Deduct stock
     for (const n of normalized) {
-      const m = db.menu.find((x) => Number(x.id) === Number(n.id));
+      const m = db.menu.find((x) => String(x.id) === String(n.id));
       if (typeof m.stock === "number") m.stock -= n.qty;
     }
 

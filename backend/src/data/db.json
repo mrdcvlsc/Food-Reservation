@@ -23,12 +23,12 @@
       "name": "Oishi Pillows",
       "category": "Snacks",
       "price": 12,
-      "stock": 15,
+      "stock": 14,
       "img": "/pillows.jpg",
       "isActive": true
     },
     {
-  "id": "ITM-4",
+      "id": "ITM-4",
       "name": "Fried Chicken",
       "category": "Meals",
       "price": 120,
@@ -36,23 +36,37 @@
       "img": ""
     },
     {
-  "id": "ITM-5",
-      "name": "Automated Test Item",
+      "id": "ITM-5",
+      "name": "fried lumpia",
       "category": "Meals",
-      "price": 99,
-      "stock": 5,
-      "img": ""
-    },
-    {
-  "id": "ITM-6",
-      "name": "Automated Test Item",
-      "category": "Meals",
-      "price": 77,
-      "stock": 3,
+      "price": 400,
+      "stock": 41,
       "img": ""
     }
   ],
-  "reservations": [],
+  "reservations": [
+    {
+      "id": "RES-1",
+      "userId": null,
+      "student": "Student",
+      "grade": "G8",
+      "section": "rizal",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 12,
+      "status": "Claimed",
+      "createdAt": "2025-08-27T05:53:38.163Z",
+      "updatedAt": "2025-08-27T06:51:14.068Z"
+    }
+  ],
   "topups": [],
   "users": [
     {

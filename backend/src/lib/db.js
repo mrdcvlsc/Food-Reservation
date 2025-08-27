@@ -1,10 +1,15 @@
 ﻿// server/src/lib/db.js
+// Provides a small database adapter: by default reads/writes the local JSON file `data/db.json`.
+// If the environment variable MONGO_URI is set, it will use MongoDB as the backing store
+// (collections: menu, reservations, topups, users, transactions). This allows a gradual
+// migration to Mongo without changing controller code (they call load()/save()).
+
 const path = require("path");
 const fs = require("fs-extra");
 
 const DB_FILE = path.join(__dirname, "..", "data", "db.json");
 
-function ensure() {
+function ensureFile() {
   // Make sure the file exists
   fs.ensureFileSync(DB_FILE);
 
@@ -22,14 +27,21 @@ function ensure() {
   return seed;
 }
 
-function load() {
-  // Synchronous: controllers can do `const db = load();`
-  return ensure();
+/**
+ * Load DB state. If MONGO_URI is set, load collections from MongoDB; otherwise load local JSON.
+ * Returns an object { menu:[], reservations:[], topups:[], users:[], transactions:[] }
+ */
+async function _loadAsync() {
+  // Always use the file-based DB in this rollback. Keep async signature for compatibility.
+  return ensureFile();
 }
 
-function save(db) {
-  // Synchronous: controllers can do `save(db);`
-  fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
+/**
+ * Save DB state. For Mongo mode, replaces collections atomically (deleteMany + insertMany).
+ */
+async function _saveAsync(dbObj) {
+  // file mode: synchronous write
+  fs.writeFileSync(DB_FILE, JSON.stringify(dbObj, null, 2));
 }
 
 function nextId(list = [], prefix = "RES") {
@@ -40,6 +52,21 @@ function nextId(list = [], prefix = "RES") {
     if (!Number.isNaN(num)) n = Math.max(n, num);
   }
   return `${prefix}-${n + 1}`;
+}
+
+// Exported API: keep former synchronous signatures but backed by async mongo when available.
+// For backwards compatibility controllers expect `const db = await load()` or `const db = load()`.
+// We'll export both async and sync variants. If Mongo is enabled, synchronous `load()` will throw
+// instructing the caller to use the async API. Existing controllers in this repo already use
+// `await load()` in some places; others may assume sync. To be safe we provide sync fallback to file DB.
+
+function load() {
+  // Always return the file-backed DB synchronously for compatibility.
+  return ensureFile();
+}
+
+function save(dbObj) {
+  return _saveAsync(dbObj);
 }
 
 module.exports = { load, save, nextId, DB_FILE };

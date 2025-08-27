@@ -88,3 +88,42 @@ exports.deleteMenu = async (req, res) => {
   await save(db);
   res.json({ ok: true });
 };
+
+// Admin dashboard: aggregate simple stats and recent orders
+exports.dashboard = async (req, res) => {
+  try {
+    const db = await load();
+
+    // total sales: sum of reservation totals
+    const totalSales = (Array.isArray(db.reservations) ? db.reservations : []).reduce((s, r) => s + (Number(r.total) || 0), 0);
+
+    // orders today: count reservations with createdAt on today's date
+    const startOfToday = new Date();
+    startOfToday.setHours(0,0,0,0);
+    const ordersToday = (db.reservations || []).filter(r => new Date(r.createdAt) >= startOfToday).length;
+
+    // new users: best-effort: count users (no createdAt available) -> return total users
+    const newUsers = Array.isArray(db.users) ? db.users.length : 0;
+
+    // pending reservations
+    const pending = (db.reservations || []).filter(r => String(r.status) === 'Pending').length;
+
+    // recent orders: latest 5 reservations with small summary
+    const recent = (Array.isArray(db.reservations) ? db.reservations.slice() : [])
+      .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0,5)
+      .map(r => ({
+        id: r.id,
+        product: (Array.isArray(r.items) && r.items[0]) ? r.items[0].name : "Reservation",
+        customer: r.student || (db.users.find(u => u.id === r.userId) || {}).name || "Guest",
+        time: new Date(r.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        amount: Number(r.total) || 0,
+        status: r.status || 'Pending'
+      }));
+
+    res.json({ totalSales, ordersToday, newUsers, pending, recentOrders: recent });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: 'Failed to compute dashboard' });
+  }
+};

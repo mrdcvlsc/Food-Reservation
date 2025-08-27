@@ -1,5 +1,6 @@
 ﻿// src/pages/admin/adminApproved.jsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import { api } from "../../lib/api";
 import Navbar from "../../components/adminavbar";
 import { CheckCircle2, PackageCheck, Search } from "lucide-react";
 
@@ -20,11 +21,18 @@ function Pill({ status }) {
 }
 
 export default function AdminApproved() {
-  // mock approved → will flow into orders as Preparing/Ready/Claimed
-  const [rows, setRows] = useState([
-    { id: "RES-090", student: "Leo Ramos", grade: "G8", section: "A", when: "Recess • 9:45 AM", status: "Approved", items: [{ name: "Rice Meal 1", qty: 1, price: 69 }] },
-    { id: "RES-072", student: "Kaye Sy", grade: "G10", section: "C", when: "Lunch • 12:10 PM", status: "Preparing", items: [{ name: "Chicken Adobo", qty: 1, price: 85 }] },
-  ]);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let m = true;
+    setLoading(true);
+    api.get('/reservations/admin')
+      .then(d => { if (!m) return; setRows((d || []).filter(r => r.status === 'Approved' || r.status === 'Preparing' || r.status === 'Ready')); })
+      .catch(() => setRows([]))
+      .finally(() => m && setLoading(false));
+    return () => (m = false);
+  }, []);
 
   const [q, setQ] = useState("");
 
@@ -42,14 +50,20 @@ export default function AdminApproved() {
 
   const total = (r) => r.items.reduce((a, b) => a + b.qty * b.price, 0);
 
-  const toPreparing = (id) =>
+  const toPreparing = async (id) => {
+    await api.patch(`/reservations/admin/${id}`, { status: 'Preparing' });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: "Preparing" } : r)));
+  };
 
-  const toReady = (id) =>
+  const toReady = async (id) => {
+    await api.patch(`/reservations/admin/${id}`, { status: 'Ready' });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: "Ready" } : r)));
+  };
 
-  const toClaimed = (id) =>
+  const toClaimed = async (id) => {
+    await api.patch(`/reservations/admin/${id}`, { status: 'Claimed' });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: "Claimed" } : r)));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

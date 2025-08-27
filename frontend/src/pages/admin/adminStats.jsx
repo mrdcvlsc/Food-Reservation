@@ -35,12 +35,16 @@ export default function AdminStats() {
         setReservations(db.reservations || []);
         setTopups(db.topups || []);
       } else {
-        const m = await api.get("/menu").catch(() => []);
-        const r = await api.get("/admin/reservations").catch(() => []);
-        const t = await api.get("/admin/topups").catch(() => []);
-        setMenu(Array.isArray(m) ? m : []);
-        setReservations(Array.isArray(r) ? r : []);
-        setTopups(Array.isArray(t) ? t : []);
+  const mres = await api.get("/menu").catch(() => []);
+  const rres = await api.get("/admin/reservations").catch(() => []);
+  const tres = await api.get("/admin/topups").catch(() => []);
+  // API may return arrays or { data: [...] }
+  const m = Array.isArray(mres) ? mres : (mres?.data || []);
+  const r = Array.isArray(rres) ? rres : (rres?.data || []);
+  const t = Array.isArray(tres) ? tres : (tres?.data || []);
+  setMenu(m);
+  setReservations(r);
+  setTopups(t);
       }
     } finally {
       setLoading(false);
@@ -50,9 +54,9 @@ export default function AdminStats() {
   useEffect(() => { load(); }, []);
 
   const menuById = useMemo(() => {
-    const map = {};
-    for (const m of menu || []) map[Number(m.id)] = m;
-    return map;
+  const map = {};
+  for (const m of menu || []) map[String(m.id)] = m;
+  return map;
   }, [menu]);
 
   // Only this month’s reservations/topups
@@ -79,7 +83,18 @@ export default function AdminStats() {
       // Revenue: count every non-rejected reservation by item lines
       if (status !== "Rejected" && Array.isArray(r.items)) {
         for (const { id, qty } of r.items) {
-          const m = menuById[Number(id)];
+          // menuById uses string keys (handles ITM-1). Try exact match first, then numeric-suffix fallback.
+          let m = menuById[String(id)];
+          if (!m) {
+            const incoming = String(id || "").trim();
+            const incomingSuffix = incoming.split("-").pop();
+            m = Object.values(menuById).find((x) => {
+              const sid = String(x.id || "").trim();
+              const sfx = sid.split("-").pop();
+              return (sfx && incomingSuffix && sfx === incomingSuffix) || sid === incoming;
+            });
+          }
+
           const price = Number(m?.price || 0);
           const cat = m?.category || "Uncategorized";
           const name = m?.name || `#${id}`;
@@ -136,6 +151,7 @@ export default function AdminStats() {
             <p className="text-gray-600">Month-to-date overview for the canteen.</p>
           </div>
           <button
+            type="button"
             onClick={load}
             className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
           >

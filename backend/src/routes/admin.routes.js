@@ -21,8 +21,13 @@ const upload = multer({
 
 const router = express.Router();
 
+router.get("/dashboard", requireAuth, requireAdmin, require("../controllers/admin.controller").dashboard);
 router.post("/menu", requireAuth, requireAdmin, upload.single("image"), M.create);
 router.put("/menu/:id", requireAuth, requireAdmin, upload.single("image"), M.update);
 router.delete("/menu/:id", requireAuth, requireAdmin, M.remove);
+// topups admin
+const T = require("../controllers/topups.controller");
+router.get("/topups", requireAuth, requireAdmin, T.listAdmin);
+router.patch("/topups/:id", requireAuth, requireAdmin, T.setStatus);
 
 module.exports = router;
