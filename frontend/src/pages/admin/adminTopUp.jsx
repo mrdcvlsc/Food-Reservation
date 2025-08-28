@@ -5,6 +5,7 @@ import {
   Upload, Trash2, Image as ImageIcon,
   Check, X, Wallet, Clock4
 } from "lucide-react";
+import { api } from "../../lib/api";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
@@ -49,38 +50,107 @@ function TopUpManager() {
     gcash: { accountName: "", mobile: "", reference: "" },
     maya: { accountName: "", mobile: "", reference: "" },
   });
-  const fileRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
+  const fileRef = useRef(null);
   const onPickFile = () => fileRef.current?.click();
 
-  const onFileChange = (e) => {
+  // Initial load of wallets (qr + meta)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const list = await api.get("/wallets"); // [{provider, accountName, mobile, reference, qrImageUrl, active}]
+        const nextMeta = { gcash: { accountName: "", mobile: "", reference: "" }, maya: { accountName: "", mobile: "", reference: "" } };
+        const nextPrev = { gcash: null, maya: null };
+        (list || []).forEach((w) => {
+          const key = (w.provider || "").toLowerCase();
+          if (key === "gcash" || key === "maya") {
+            nextMeta[key] = {
+              accountName: w.accountName || "",
+              mobile: w.mobile || "",
+              reference: w.reference || "",
+            };
+            nextPrev[key] = w.qrImageUrl || null;
+          }
+        });
+        if (!alive) return;
+        setMeta(nextMeta);
+        setQrPreview(nextPrev);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, []);
+
+  const onFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setQrPreview((prev) => ({ ...prev, [provider]: url }));
 
-    // TODO: upload (multipart) to /api/admin/wallet/qr
-    // const fd = new FormData(); fd.append("provider", provider); fd.append("qr", file);
-    // await fetch("/api/admin/wallet/qr", { method: "POST", body: fd });
+    // optimistic local preview
+    const localUrl = URL.createObjectURL(file);
+    setQrPreview((prev) => ({ ...prev, [provider]: localUrl }));
+
+    try {
+      setUploading(true);
+      const fd = new FormData();
+      fd.append("provider", provider);
+      fd.append("qr", file); // server expects 'qr'
+      const data = await api.post("/admin/wallets", fd); // { qrImageUrl, accountName, mobile, reference, ... }
+      setQrPreview((prev) => ({ ...prev, [provider]: data.qrImageUrl || localUrl }));
+      setMeta((m) => ({
+        ...m,
+        [provider]: {
+          accountName: data.accountName || m[provider].accountName,
+          mobile: data.mobile || m[provider].mobile,
+          reference: data.reference || m[provider].reference,
+        },
+      }));
+      alert("Saved wallet QR");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to upload");
+    } finally {
+      setUploading(false);
+      // clear input
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const onRemove = () => {
+    // (Optional) Call a DELETE endpoint if you implement one.
     setQrPreview((prev) => ({ ...prev, [provider]: null }));
-    // TODO: DELETE /api/admin/wallet/qr?provider=gcash|maya
   };
 
   const onSaveMeta = async () => {
-    const payload = { provider, ...meta[provider] };
-    console.log("SAVE WALLET META ->", payload);
-    // await fetch("/api/admin/wallet/meta", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload) });
-    alert("Saved wallet details (client-side). Wire to API next.");
+    try {
+      setSaving(true);
+      const fd = new FormData();
+      fd.append("provider", provider);
+      fd.append("accountName", meta[provider].accountName || "");
+      fd.append("mobile", meta[provider].mobile || "");
+      fd.append("reference", meta[provider].reference || "");
+      await api.post("/admin/wallets", fd);
+      alert("Saved wallet details");
+    } catch (e) {
+      console.error(e);
+      alert(e.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const active = meta[provider];
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      {/* Tabs */}
+      {/* Provider toggle */}
       <div className="flex w-full rounded-lg overflow-hidden mb-6">
         <button
           type="button"
@@ -106,14 +176,24 @@ function TopUpManager() {
         {/* Left: QR upload/preview */}
         <div>
           <div className="border border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[280px]">
-            {qrPreview[provider] ? (
+            {loading ? (
+              <p className="text-sm text-gray-500">Loading…</p>
+            ) : qrPreview[provider] ? (
               <>
                 <img src={qrPreview[provider]} alt={`${provider} QR`} className="w-56 h-56 object-contain rounded" />
                 <div className="mt-4 flex gap-2">
-                  <button onClick={onPickFile} className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black transition text-sm">
-                    <Upload className="w-4 h-4" /> Replace QR
+                  <button
+                    onClick={onPickFile}
+                    disabled={uploading}
+                    className="inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black transition text-sm disabled:opacity-60"
+                  >
+                    <Upload className="w-4 h-4" /> {uploading ? "Uploading…" : "Replace QR"}
                   </button>
-                  <button onClick={onRemove} className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm">
+                  <button
+                    onClick={onRemove}
+                    disabled={uploading}
+                    className="inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm disabled:opacity-60"
+                  >
                     <Trash2 className="w-4 h-4" /> Remove
                   </button>
                 </div>
@@ -121,15 +201,23 @@ function TopUpManager() {
             ) : (
               <>
                 <ImageIcon className="w-10 h-10 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-600">No QR uploaded for <span className="font-semibold uppercase">{provider}</span>.</p>
-                <button onClick={onPickFile} className="mt-4 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm">
-                  <Upload className="w-4 h-4" /> Upload QR (PNG/JPG/SVG)
+                <p className="text-sm text-gray-600">
+                  No QR uploaded for <span className="font-semibold uppercase">{provider}</span>.
+                </p>
+                <button
+                  onClick={onPickFile}
+                  disabled={uploading}
+                  className="mt-4 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-60"
+                >
+                  <Upload className="w-4 h-4" /> {uploading ? "Uploading…" : "Upload QR (PNG/JPG/SVG)"}
                 </button>
               </>
             )}
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFileChange} />
           </div>
-          <p className="text-xs text-gray-500 mt-3">Users will scan this on their top-up screen; staff verifies manually.</p>
+          <p className="text-xs text-gray-500 mt-3">
+            Users will scan this on their top-up screen; staff verifies manually.
+          </p>
         </div>
 
         {/* Right: account info */}
@@ -139,7 +227,9 @@ function TopUpManager() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
               <input
                 value={active.accountName}
-                onChange={(e) => setMeta((m) => ({ ...m, [provider]: { ...m[provider], accountName: e.target.value } }))}
+                onChange={(e) =>
+                  setMeta((m) => ({ ...m, [provider]: { ...m[provider], accountName: e.target.value } }))
+                }
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder={provider === "gcash" ? "e.g., Canteen GCash" : "e.g., Canteen Maya"}
               />
@@ -159,7 +249,9 @@ function TopUpManager() {
               <textarea
                 rows={3}
                 value={active.reference}
-                onChange={(e) => setMeta((m) => ({ ...m, [provider]: { ...m[provider], reference: e.target.value } }))}
+                onChange={(e) =>
+                  setMeta((m) => ({ ...m, [provider]: { ...m[provider], reference: e.target.value } }))
+                }
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Optional: e.g., 'Include student ID in note'."
               />
@@ -168,9 +260,10 @@ function TopUpManager() {
 
           <button
             onClick={onSaveMeta}
-            className="mt-4 w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-black transition text-sm font-medium"
+            disabled={saving}
+            className="mt-4 w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-black transition text-sm font-medium disabled:opacity-60"
           >
-            Save {provider === "gcash" ? "GCash" : "Maya"} Details
+            {saving ? "Saving…" : `Save ${provider === "gcash" ? "GCash" : "Maya"} Details`}
           </button>
         </div>
       </div>
@@ -184,20 +277,31 @@ function VerifyQueue() {
 
   useEffect(() => {
     let m = true;
-    import("../../lib/api").then(mod => mod.api.get('/topups/admin'))
-      .then(d => { if (!m) return; setRows(d || []); })
-      .catch(() => { if (!m) return; setRows([]); });
-    return () => (m = false);
+    (async () => {
+      try {
+        const d = await api.get('/admin/topups');
+        const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+        const norm = (u) => (u && u.startsWith('/') ? API_BASE + u : u);
+        // normalize proofUrl and only show topups that are still pending
+        const rows = (d || [])
+          .map((r) => ({ ...r, proofUrl: norm(r.proofUrl) }))
+          .filter((r) => String(r.status || '').toLowerCase() === 'pending');
+        if (m) setRows(rows);
+      } catch (err) {
+        if (m) setRows([]);
+      }
+    })();
+    return () => { m = false; };
   }, []);
 
   const approve = async (id) => {
-    await import("../../lib/api").then(mod => mod.api.patch(`/topups/admin/${id}`, { status: 'Approved' }));
+  await api.patch(`/admin/topups/${id}`, { status: "Approved" });
     setRows((r) => r.filter((x) => x.id !== id));
     alert(`Approved ${id}. Balance will be credited.`);
   };
 
   const reject = async (id) => {
-    await import("../../lib/api").then(mod => mod.api.patch(`/topups/admin/${id}`, { status: 'Rejected' }));
+  await api.patch(`/admin/topups/${id}`, { status: "Rejected" });
     setRows((r) => r.filter((x) => x.id !== id));
     alert(`Rejected ${id}.`);
   };
@@ -217,6 +321,7 @@ function VerifyQueue() {
               <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Student</th>
               <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Provider</th>
               <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Proof</th>
               <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
               <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
@@ -228,6 +333,9 @@ function VerifyQueue() {
                 <td className="px-6 py-4 text-sm text-gray-700">{r.student}</td>
                 <td className="px-6 py-4 text-sm text-center text-gray-600">{r.provider}</td>
                 <td className="px-6 py-4 text-sm font-medium text-center text-gray-900">{peso.format(r.amount)}</td>
+                <td className="px-6 py-4 text-sm text-center text-gray-700">
+                  {r.proofUrl ? <img src={r.proofUrl} alt="proof" className="w-20 h-12 object-contain rounded" /> : <span className="text-xs text-gray-500">No proof</span>}
+                </td>
                 <td className="px-6 py-4 text-sm text-center text-gray-600">{r.submittedAt}</td>
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
@@ -249,7 +357,7 @@ function VerifyQueue() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-500">
+                <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">
                   No pending top-ups. 🎉
                 </td>
               </tr>

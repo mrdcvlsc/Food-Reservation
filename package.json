@@ -1,0 +1,8 @@
+
+{
+	"name": "food-reservation-workspace",
+	"private": true,
+	"version": "1.0.0",
+	"description": "Workspace wrapper package.json to avoid invalid JSON errors",
+	"license": "MIT"
+}

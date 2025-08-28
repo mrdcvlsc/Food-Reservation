@@ -38,14 +38,14 @@ export default function AdminReservations() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
+  const [tab, setTab] = useState("All"); // All | Pending | Approved | Rejected | Claimed
 
   const fetchReservations = async () => {
     setLoading(true);
     try {
-      // api() returns parsed JSON directly
-      const data = await api.get("/admin/reservations?status=Pending");
-      // be defensive about shapes coming from the server
-      setRows(Array.isArray(data) ? data : []);
+  // fetch admin reservations (server returns array)
+  const data = await api.get('/reservations/admin');
+  setRows(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Load reservations failed:", e);
       setRows([]);
@@ -79,15 +79,12 @@ export default function AdminReservations() {
   );
 
   const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    const list = normalized.filter((r) => r.status === "Pending");
+    const s = String(q || "").trim().toLowerCase();
+    let list = normalized.slice();
+    if (tab !== "All") list = list.filter((r) => r.status === tab);
     if (!s) return list;
-    return list.filter(
-      (r) =>
-        (r.id || "").toString().toLowerCase().includes(s) ||
-        (r.student || "").toLowerCase().includes(s) ||
-        (r.grade || "").toLowerCase().includes(s) ||
-        (r.section || "").toLowerCase().includes(s)
+    return list.filter((r) =>
+      (String(r.id || "") + " " + String(r.student || "") + " " + String(r.grade || "") + " " + String(r.section || "")).toLowerCase().includes(s)
     );
   }, [normalized, q]);
 
@@ -101,9 +98,10 @@ export default function AdminReservations() {
   const updateStatus = async (id, status) => {
     setBusyId(id);
     try {
-      await api.put(`/admin/reservations/${id}`, { status });
+  // use the unified admin reservations endpoint
+  await api.patch(`/reservations/admin/${id}`, { status });
       // Optimistic update: remove from pending list
-      setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
+  setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status } : r)));
     } catch (e) {
       console.error(`Set status ${status} failed:`, e);
       alert(`Failed to mark as ${status}.`);
@@ -159,6 +157,18 @@ export default function AdminReservations() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <div className="flex rounded-lg overflow-hidden border bg-white">
+          {["All", "Pending", "Approved", "Rejected", "Claimed"].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-4 py-2 text-sm font-medium ${tab === t ? "bg-gray-900 text-white" : "bg-white text-gray-700"}`}>
+              {t}
+            </button>
+          ))}
+        </div>
+
         {/* List */}
         {loading ? (
           <div className="bg-white rounded-xl border border-gray-100 p-10 text-center text-sm text-gray-500">
@@ -168,7 +178,7 @@ export default function AdminReservations() {
           <div className="bg-white rounded-xl border border-gray-100 p-10 text-center text-sm text-gray-500">
             No pending reservations right now.
           </div>
-        ) : (
+  ) : (
           <div className="space-y-3">
             {filtered.map((r) => (
               <div
@@ -227,30 +237,26 @@ export default function AdminReservations() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-end gap-2">
-                  <button
-                    onClick={() => approve(r.id)}
-                    disabled={busyId === r.id}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
-                  >
-                    {busyId === r.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Check className="w-4 h-4" />
-                    )}
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => reject(r.id)}
-                    disabled={busyId === r.id}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
-                  >
-                    {busyId === r.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <X className="w-4 h-4" />
-                    )}
-                    Reject
-                  </button>
+                  {r.status === "Pending" && (
+                    <>
+                      <button
+                        onClick={() => updateStatus(r.id, "Approved")}
+                        disabled={busyId === r.id}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
+                      >
+                        {busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => updateStatus(r.id, "Rejected")}
+                        disabled={busyId === r.id}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+                      >
+                        {busyId === r.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                        Reject
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

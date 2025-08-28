@@ -2,29 +2,62 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
-import {
-  TrendingUp,
-  ClipboardList,
-  Clock,
-  Wallet,
-  RefreshCw,
-} from "lucide-react";
+import { TrendingUp, ClipboardList, Clock, Wallet, RefreshCw } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 const USE_FAKE = process.env.REACT_APP_FAKE_API === "1";
 const FAKE_DB_KEY = "FAKE_DB_V1";
+
+const CANONICAL_STATUSES = ["Pending", "Approved", "Preparing", "Ready", "Claimed", "Rejected"];
+
+/** Normalize any incoming status to one of our canonical keys */
+function normalizeStatus(raw) {
+  const s = String(raw || "").trim().toLowerCase();
+  if (!s) return "Pending";
+  if (["pending"].includes(s)) return "Pending";
+  if (["approved", "approve"].includes(s)) return "Approved";
+  if (["preparing", "in-prep", "in_prep", "prep"].includes(s)) return "Preparing";
+  if (["ready", "done"].includes(s)) return "Ready";
+  if (["claimed", "pickedup", "picked_up", "picked-up"].includes(s)) return "Claimed";
+  if (["rejected", "declined"].includes(s)) return "Rejected";
+  // If API sends unknown strings, keep them from breaking counts:
+  return "Pending";
+}
+
+/** Extract a creation/submission timestamp from many possible fields */
+function getCreated(obj) {
+  return (
+    obj?.createdAt ||
+    obj?.created_at ||
+    obj?.submittedAt ||
+    obj?.submitted_at ||
+    obj?.date ||
+    obj?.created ||
+    obj?.updatedAt ||
+    obj?.updated_at ||
+    null
+  );
+}
+
+/** Safe month check */
+function isInThisMonth(iso, now = new Date()) {
+  if (!iso) return false;
+  const d = new Date(iso);
+  return !isNaN(d) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+}
 
 export default function AdminStats() {
   const [loading, setLoading] = useState(true);
   const [menu, setMenu] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [topups, setTopups] = useState([]);
-
-  const now = new Date();
-  const inThisMonth = (iso) => {
-    const d = new Date(iso);
-    return !isNaN(d) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  };
+  const [dashboard, setDashboard] = useState({
+    totalSales: 0,
+    ordersToday: 0,
+    newUsers: 0,
+    pending: 0,
+    recentOrders: [],
+  });
 
   async function load() {
     setLoading(true);
@@ -35,76 +68,117 @@ export default function AdminStats() {
         setReservations(db.reservations || []);
         setTopups(db.topups || []);
       } else {
-  const mres = await api.get("/menu").catch(() => []);
-  const rres = await api.get("/admin/reservations").catch(() => []);
-  const tres = await api.get("/admin/topups").catch(() => []);
-  // API may return arrays or { data: [...] }
-  const m = Array.isArray(mres) ? mres : (mres?.data || []);
-  const r = Array.isArray(rres) ? rres : (rres?.data || []);
-  const t = Array.isArray(tres) ? tres : (tres?.data || []);
-  setMenu(m);
-  setReservations(r);
-  setTopups(t);
+        // Correct endpoints:
+        // - menu: GET /api/menu
+        // - reservations (admin): GET /api/reservations/admin
+        // - topups (admin): GET /api/admin/topups
+        // - dashboard (admin): GET /api/admin/dashboard
+        const [mres, rres, tres, dres] = await Promise.all([
+          api.get("/menu").catch(() => []),
+          api.get("/reservations/admin").catch(() => []),
+          api.get("/admin/topups").catch(() => []),
+          api.get("/admin/dashboard").catch(() => ({})),
+        ]);
+
+        const unwrap = (res) => {
+          if (res == null) return null;
+          if (Array.isArray(res)) return res;
+          if (typeof res === "object" && Object.prototype.hasOwnProperty.call(res, "data")) return res.data;
+          return res;
+        };
+
+        const m = unwrap(mres) || [];
+        const r = unwrap(rres) || [];
+
+        // normalize topup proof URLs if server returns relative paths
+        const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
+        const norm = (u) => (u && typeof u === "string" && u.startsWith("/") ? API_BASE + u : u);
+        const t = (unwrap(tres) || []).map((x) => ({ ...x, proofUrl: norm(x?.proofUrl) }));
+
+        const d = unwrap(dres) || {};
+
+        setMenu(m);
+        setReservations(r);
+        setTopups(t);
+        setDashboard({
+          totalSales: Number(d.totalSales) || 0,
+          ordersToday: Number(d.ordersToday) || 0,
+          newUsers: Number(d.newUsers) || 0,
+          pending: Number(d.pending) || 0,
+          recentOrders: Array.isArray(d.recentOrders) ? d.recentOrders : d.recentOrders ? [d.recentOrders] : [],
+        });
       }
     } finally {
       setLoading(false);
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
+  // Map menu by id for quick lookup
   const menuById = useMemo(() => {
-  const map = {};
-  for (const m of menu || []) map[String(m.id)] = m;
-  return map;
+    const map = {};
+    for (const m of menu || []) map[String(m.id)] = m;
+    return map;
   }, [menu]);
 
-  // Only this month’s reservations/topups
+  // Filter reservations/topups to this month
+  const now = new Date();
   const resMonth = useMemo(
-    () => reservations.filter((r) => inThisMonth(r.createdAt)),
-    [reservations]
-  );
-  const topMonth = useMemo(
-    () => topups.filter((t) => inThisMonth(t.createdAt)),
-    [topups]
+    () => (reservations || []).filter((r) => isInThisMonth(getCreated(r), now)),
+    [reservations, now]
   );
 
-  // Build revenue + breakdowns
+  const topMonth = useMemo(
+    () => (topups || []).filter((t) => isInThisMonth(getCreated(t), now)),
+    [topups, now]
+  );
+
+  // Revenue & reservation status breakdown
   const resStats = useMemo(() => {
     let revenue = 0;
-    let counts = { Pending: 0, Approved: 0, Preparing: 0, Ready: 0, Claimed: 0, Rejected: 0 };
+
+    // initialize counts with all keys so UI never shows undefined
+    const counts = CANONICAL_STATUSES.reduce((acc, k) => ((acc[k] = 0), acc), {});
     const byCategory = {};
     const byItem = {};
 
     for (const r of resMonth) {
-      const status = r.status || "Pending";
+      const status = normalizeStatus(r?.status);
       if (counts[status] !== undefined) counts[status]++;
 
-      // Revenue: count every non-rejected reservation by item lines
-      if (status !== "Rejected" && Array.isArray(r.items)) {
-        for (const { id, qty } of r.items) {
-          // menuById uses string keys (handles ITM-1). Try exact match first, then numeric-suffix fallback.
-          let m = menuById[String(id)];
+      // Only add to revenue if not rejected and items are present
+      if (status !== "Rejected" && Array.isArray(r?.items)) {
+        for (const it of r.items) {
+          const rid = it?.id;
+          const qty = Number(it?.qty) || 0;
+
+          // Attempt to resolve through the current menu
+          let m = menuById[String(rid)];
           if (!m) {
-            const incoming = String(id || "").trim();
+            // Support ids like "ITM-5" vs "5"
+            const incoming = String(rid ?? "").trim();
             const incomingSuffix = incoming.split("-").pop();
             m = Object.values(menuById).find((x) => {
-              const sid = String(x.id || "").trim();
+              const sid = String(x?.id ?? "").trim();
               const sfx = sid.split("-").pop();
               return (sfx && incomingSuffix && sfx === incomingSuffix) || sid === incoming;
             });
           }
 
-          const price = Number(m?.price || 0);
-          const cat = m?.category || "Uncategorized";
-          const name = m?.name || `#${id}`;
-          const line = price * (Number(qty) || 0);
+          const price = Number(m?.price ?? it?.price ?? 0) || 0;
+          const name = m?.name ?? it?.name ?? `#${rid}`;
+          const cat = m?.category ?? it?.category ?? "Uncategorized";
 
+          const line = price * qty;
           revenue += line;
+
           byCategory[cat] = (byCategory[cat] || 0) + line;
 
           if (!byItem[name]) byItem[name] = { name, qty: 0, revenue: 0 };
-          byItem[name].qty += Number(qty) || 0;
+          byItem[name].qty += qty;
           byItem[name].revenue += line;
         }
       }
@@ -125,16 +199,22 @@ export default function AdminStats() {
       categoryRows,
       topItems,
       pendingReservations: counts.Pending,
-      readyReservations: counts.Ready,
     };
   }, [resMonth, menuById]);
 
+  // Top-up stats
   const topupStats = useMemo(() => {
-    let pending = 0, approvedAmt = 0, approvedCount = 0, rejected = 0;
+    let pending = 0,
+      approvedAmt = 0,
+      approvedCount = 0,
+      rejected = 0;
     for (const t of topMonth) {
-      if (t.status === "Pending") pending++;
-      else if (t.status === "Approved") { approvedCount++; approvedAmt += Number(t.amount) || 0; }
-      else if (t.status === "Rejected") rejected++;
+      const s = String(t?.status || "").toLowerCase();
+      if (s === "pending") pending++;
+      else if (s === "approved") {
+        approvedCount++;
+        approvedAmt += Number(t?.amount) || 0;
+      } else if (s === "rejected") rejected++;
     }
     return { pending, approvedAmt, approvedCount, rejected, total: topMonth.length };
   }, [topMonth]);
@@ -168,7 +248,7 @@ export default function AdminStats() {
               <TrendingUp className="w-5 h-5 text-emerald-600" />
             </div>
             <div className="text-3xl font-bold text-gray-900">
-              {peso.format(resStats.revenue || 0)}
+              {peso.format((dashboard.totalSales || 0) || resStats.revenue || 0)}
             </div>
           </div>
 
@@ -177,7 +257,9 @@ export default function AdminStats() {
               <span className="text-sm text-gray-600">Orders (this month)</span>
               <ClipboardList className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="text-3xl font-bold text-gray-900">{resStats.orders}</div>
+            <div className="text-3xl font-bold text-gray-900">
+              {resStats.orders}
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -185,7 +267,9 @@ export default function AdminStats() {
               <span className="text-sm text-gray-600">Pending reservations</span>
               <Clock className="w-5 h-5 text-amber-600" />
             </div>
-            <div className="text-3xl font-bold text-gray-900">{resStats.pendingReservations}</div>
+            <div className="text-3xl font-bold text-gray-900">
+              {resStats.pendingReservations}
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -197,24 +281,19 @@ export default function AdminStats() {
           </div>
         </section>
 
-        {/* Status breakdown + Top-ups summary */}
+        {/* Status breakdown + Top-ups summary + Revenue by category */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Reservation status table */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservation status (this month)</h3>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
-                {[
-                  ["Pending", resStats.counts.Pending],
-                  ["Approved", resStats.counts.Approved],
-                  ["Preparing", resStats.counts.Preparing],
-                  ["Ready", resStats.counts.Ready],
-                  ["Claimed", resStats.counts.Claimed],
-                  ["Rejected", resStats.counts.Rejected],
-                ].map(([label, val]) => (
+                {CANONICAL_STATUSES.map((label) => (
                   <tr key={label}>
                     <td className="py-2 text-gray-600">{label}</td>
-                    <td className="py-2 text-right font-semibold text-gray-900">{val}</td>
+                    <td className="py-2 text-right font-semibold text-gray-900">
+                      {resStats.counts[label]}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -311,9 +390,7 @@ export default function AdminStats() {
           )}
         </section>
 
-        {loading && (
-          <div className="text-center text-sm text-gray-500">Loading…</div>
-        )}
+        {loading && <div className="text-center text-sm text-gray-500">Loading…</div>}
       </main>
     </div>
   );

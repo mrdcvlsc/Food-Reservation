@@ -2,7 +2,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const { load, save, nextId } = require("../lib/db");
 
-const UPLOAD_DIR = path.join(process.cwd(), "server", "uploads");
+const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
 fs.ensureDirSync(UPLOAD_DIR);
 
 function safeName(name = "") {

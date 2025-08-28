@@ -11,6 +11,7 @@ import {
   Trash2,
   Eye,
   Wallet,
+  RefreshCw,
 } from "lucide-react";
 import { api } from "../../lib/api";
 
@@ -23,13 +24,12 @@ const peso = new Intl.NumberFormat("en-PH", {
 // ---- single source of truth for admin routes
 const ADMIN_ROUTES = {
   home: "/admin",
-  shop: "/admin/shop",               // file: adminShop.jsx
-  topup: "/admin/topup",             // file: adminTopUp.jsx
-  orders: "/admin/orders",           // file: adminOrders.jsx
+  shop: "/admin/shop", // file: adminShop.jsx
+  topup: "/admin/topup", // file: adminTopUp.jsx
+  orders: "/admin/orders", // file: adminOrders.jsx
   reservations: "/admin/reservations", // file: adminReservations.jsx
-  stats: "/admin/stats",             // file: adminStats.jsx (or your existing stats page)
+  stats: "/admin/stats", // file: adminStats.jsx
   itemEdit: (id) => `/admin/items/edit/${id}`, // file: adminEditItems.jsx
-  // if you have a "view" page later: itemView: (id) => `/admin/items/view/${id}`,
 };
 
 export default function AdminHome() {
@@ -111,36 +111,47 @@ export default function AdminHome() {
     };
   }, []);
 
-  // Current products
+  // Current products (single source of truth = /menu)
   const [currentProducts, setCurrentProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
+  const mapMenuToRow = (r) => {
+    const id = r._id || r.id || r.productId || String(Math.random());
+    const name = r.name || r.title || "Unnamed";
+    const price = Number(r.price) || 0;
+    const stock = Number(r.stock ?? r.quantity ?? 0);
+    const category = r.category || r.type || "";
+    // Treat “availability” strictly as stock > 0, but allow a separate active flag to hide products entirely
+    const activeFlag =
+      r.active !== undefined ? !!r.active :
+      r.isActive !== undefined ? !!r.isActive : true;
+    const available = activeFlag && stock > 0;
+
+    return { id, name, price, stock, category, available, activeFlag };
+  };
+
+  const loadProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const data = await api.get("/menu");
+      const rows = Array.isArray(data) ? data : data?.data || [];
+      const mapped = rows.map(mapMenuToRow);
+      // Optional: sort by name asc
+      mapped.sort((a, b) => a.name.localeCompare(b.name));
+      setCurrentProducts(mapped);
+    } catch {
+      setCurrentProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
-    setLoadingProducts(true);
-    api
-      .get("/menu")
-      .then((data) => {
-        if (!mounted) return;
-        const rows = Array.isArray(data) ? data : data?.data || [];
-        const mapped = rows.map((r) => {
-          const id = r._id || r.id || r.productId || String(Math.random());
-          return {
-            id,
-            name: r.name || r.title || "Unnamed",
-            price: Number(r.price) || 0,
-            stock: Number(r.stock ?? r.quantity ?? 0),
-            category: r.category || r.type || "",
-            isActive:
-              r.isActive !== undefined
-                ? !!r.isActive
-                : (r.stock ?? 0) > 0,
-          };
-        });
-        setCurrentProducts(mapped);
-      })
-      .catch(() => setCurrentProducts([]))
-      .finally(() => mounted && setLoadingProducts(false));
+    (async () => {
+      await loadProducts();
+      if (!mounted) return;
+    })();
     return () => {
       mounted = false;
     };
@@ -305,13 +316,24 @@ export default function AdminHome() {
               <h2 className="text-xl font-semibold text-gray-900">
                 Current Products
               </h2>
-              <button
-                type="button"
-                onClick={safeNav(ADMIN_ROUTES.shop)}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Add Product
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={loadProducts}
+                  className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
+                  title="Refresh products"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Refresh
+                </button>
+                <button
+                  type="button"
+                  onClick={safeNav(ADMIN_ROUTES.shop)}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Add Product
+                </button>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -370,32 +392,32 @@ export default function AdminHome() {
                           {peso.format(p.price)}
                         </td>
                         <td className="px-6 py-4 text-center text-sm text-gray-600">
-                          {p.stock} units
+                          {p.stock} {p.stock === 1 ? "unit" : "units"}
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              p.isActive
+                              p.available
                                 ? "bg-green-100 text-green-700"
                                 : "bg-red-100 text-red-700"
                             }`}
                           >
-                            {p.isActive ? "Available" : "Out of Stock"}
+                            {p.available ? "Available" : "Out of stock"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
-                            {/* VIEW (route optional; keep in shop for now) */}
                             <button
                               type="button"
-                              onClick={safeNav(ADMIN_ROUTES.shop + `?product=${encodeURIComponent(p.id)}`)}
+                              onClick={safeNav(
+                                ADMIN_ROUTES.shop + `?product=${encodeURIComponent(p.id)}`
+                              )}
                               className="p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                               aria-label={`View ${p.name}`}
                             >
                               <Eye className="w-4 h-4" />
                             </button>
 
-                            {/* EDIT */}
                             <button
                               type="button"
                               onClick={safeNav(ADMIN_ROUTES.itemEdit(p.id))}
@@ -405,13 +427,12 @@ export default function AdminHome() {
                               <Edit className="w-4 h-4" />
                             </button>
 
-                            {/* DELETE (wire up later) */}
                             <button
                               type="button"
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                // TODO: open confirm modal then call your delete API
+                                // TODO: wire up delete API
                                 console.log("delete", p.id);
                               }}
                               className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"

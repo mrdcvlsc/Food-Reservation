@@ -1,6 +1,7 @@
 // src/pages/TopUp.jsx
 import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/avbar";
+import { api } from "../lib/api";
 import { Upload, Image as ImageIcon, Wallet, CheckCircle2, Loader2 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
@@ -12,26 +13,57 @@ export default function TopUp() {
     gcash: { accountName: "", mobile: "" },
     maya: { accountName: "", mobile: "" },
   });
+  const [loading, setLoading] = useState(true);
 
   const [amount, setAmount] = useState("");
-  const [refNo, setRefNo] = useState(""); // optional user note / last 4 digits
+  const [refNo, setRefNo] = useState(""); // optional user note / reference
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const fileRef = useRef(null);
 
-  // TODO: replace with real fetch to your API
+  // Load wallets (QR + meta)
   useEffect(() => {
-    // Example: GET /api/wallet  -> { gcash: {qrUrl, accountName, mobile}, maya: {...} }
-    // For now, just placeholders so UI works.
-    setQr({
-      gcash: null, // put a URL if you have one already like "https://.../gcash.png"
-      maya: null,  // put a URL if you have one already like "https://.../maya.png"
-    });
-    setMeta({
-      gcash: { accountName: "Canteen GCash", mobile: "09•• ••• ••••" },
-      maya: { accountName: "Canteen Maya", mobile: "09•• ••• ••••" },
-    });
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const list = await api.get("/wallets"); // [{provider, accountName, mobile, qrImageUrl, active}]
+        const nextQr = { gcash: null, maya: null };
+        const nextMeta = {
+          gcash: { accountName: "", mobile: "" },
+          maya: { accountName: "", mobile: "" },
+        };
+        (list || []).forEach((w) => {
+          const key = String(w.provider || "").toLowerCase();
+          if (key === "gcash" || key === "maya") {
+            // normalize backend /uploads paths to full URL so the CRA dev server doesn't serve index.html
+            const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+            const q = w.qrImageUrl || null;
+            nextQr[key] = q && q.startsWith('/') ? API_BASE + q : q;
+            nextMeta[key] = {
+              accountName: w.accountName || "",
+              mobile: w.mobile || "",
+            };
+          }
+        });
+        if (!alive) return;
+  setQr(nextQr);
+        setMeta(nextMeta);
+
+        // Pick first available provider with a QR; fallback to gcash
+        const first =
+          (nextQr.gcash && "gcash") || (nextQr.maya && "maya") || "gcash";
+        setProvider(first);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const openPicker = () => fileRef.current?.click();
@@ -67,21 +99,19 @@ export default function TopUp() {
 
     setSubmitting(true);
     try {
-      // ---- Replace with your real API call ----
-      // const fd = new FormData();
-      // fd.append("provider", provider);
-      // fd.append("amount", amount);
-      // fd.append("refNo", refNo);
-      // fd.append("proof", file);
-      // await fetch("/api/topups", { method: "POST", body: fd, headers: { Authorization: `Bearer ${token}` }});
-      await new Promise((r) => setTimeout(r, 900));
-      // -----------------------------------------
+      // IMPORTANT: api.post handles FormData (no JSON header) if body is FormData
+      const fd = new FormData();
+      fd.append("provider", provider);
+      fd.append("amount", amount);
+      fd.append("reference", refNo || "");
+      fd.append("proof", file);
 
+      await api.post("/topups", fd);
       alert("Top-up submitted! Please wait for canteen approval.");
       resetForm();
     } catch (err) {
       console.error(err);
-      alert("Failed to submit. Please try again.");
+      alert(err.message || "Failed to submit. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -107,13 +137,17 @@ export default function TopUp() {
         <div className="flex w-full rounded-lg overflow-hidden">
           <button
             onClick={() => setProvider("gcash")}
-            className={`flex-1 py-2 text-sm font-medium ${provider === "gcash" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"}`}
+            className={`flex-1 py-2 text-sm font-medium ${
+              provider === "gcash" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
+            }`}
           >
             GCash
           </button>
           <button
             onClick={() => setProvider("maya")}
-            className={`flex-1 py-2 text-sm font-medium ${provider === "maya" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700"}`}
+            className={`flex-1 py-2 text-sm font-medium ${
+              provider === "maya" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700"
+            }`}
           >
             Maya
           </button>
@@ -123,13 +157,26 @@ export default function TopUp() {
           {/* Left: QR + account info */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-semibold mb-4">Scan & Pay</h2>
+
             <div className="border border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[280px]">
-              {qr[provider] ? (
-                <img src={qr[provider]} alt={`${provider} qr`} className="w-56 h-56 object-contain rounded" />
+              {loading ? (
+                <div className="text-sm text-gray-500">Loading…</div>
+              ) : qr[provider] ? (
+                <img
+                  src={qr[provider]}
+                  alt={`${provider} qr`}
+                  className="w-56 h-56 object-contain rounded"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "";
+                  }}
+                />
               ) : (
                 <>
                   <ImageIcon className="w-10 h-10 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">QR not available. Ask canteen to upload one.</p>
+                  <p className="text-sm text-gray-600">
+                    QR not available. Ask the canteen to upload one.
+                  </p>
                 </>
               )}
             </div>
@@ -137,11 +184,15 @@ export default function TopUp() {
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500">Account Name</p>
-                <p className="font-medium text-gray-900">{activeMeta.accountName || "—"}</p>
+                <p className="font-medium text-gray-900">
+                  {activeMeta.accountName || "—"}
+                </p>
               </div>
               <div>
                 <p className="text-gray-500">Mobile</p>
-                <p className="font-medium text-gray-900">{activeMeta.mobile || "—"}</p>
+                <p className="font-medium text-gray-900">
+                  {activeMeta.mobile || "—"}
+                </p>
               </div>
             </div>
 
@@ -157,10 +208,14 @@ export default function TopUp() {
             <div className="space-y-4">
               {/* Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (PHP)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Amount (PHP)
+                </label>
                 <input
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value.replace(/[^\d.]/g, ""))}
+                  onChange={(e) =>
+                    setAmount(e.target.value.replace(/[^\d.]/g, ""))
+                  }
                   inputMode="decimal"
                   placeholder="e.g., 200"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -172,7 +227,9 @@ export default function TopUp() {
 
               {/* Optional ref */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reference / Note (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reference / Note (optional)
+                </label>
                 <input
                   value={refNo}
                   onChange={(e) => setRefNo(e.target.value)}
@@ -183,19 +240,27 @@ export default function TopUp() {
 
               {/* Proof upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Screenshot</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Payment Screenshot
+                </label>
                 <div className="border border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[220px]">
                   {preview ? (
                     <>
-                      <img src={preview} alt="proof" className="w-56 h-56 object-contain rounded" />
-                      <div className="mt-3 text-xs text-gray-500">Ready to submit</div>
+                      <img
+                        src={preview}
+                        alt="proof"
+                        className="w-56 h-56 object-contain rounded"
+                      />
+                      <div className="mt-3 text-xs text-gray-500">
+                        Ready to submit
+                      </div>
                     </>
                   ) : (
                     <>
                       <ImageIcon className="w-10 h-10 text-gray-400 mb-2" />
                       <p className="text-sm text-gray-600">No file selected.</p>
                       <button
-                        onClick={() => fileRef.current?.click()}
+                        onClick={openPicker}
                         className="mt-3 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
                       >
                         <Upload className="w-4 h-4" />
@@ -222,7 +287,11 @@ export default function TopUp() {
                 onClick={onSubmit}
                 className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black transition text-sm disabled:opacity-60"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4" />
+                )}
                 Submit Top-Up for Review
               </button>
             </div>

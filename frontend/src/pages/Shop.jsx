@@ -3,14 +3,26 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/avbar";
 import { api } from "../lib/api";
-import { Plus, Minus, ShoppingCart, Search, Clock, X, CheckCircle2 } from "lucide-react";
+import {
+  Plus,
+  Minus,
+  ShoppingCart,
+  Search,
+  Clock,
+  X,
+  CheckCircle2,
+  RefreshCw,
+  Filter,
+  Wallet,
+  AlertTriangle,
+} from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
 const SLOTS = [
   { id: "recess", label: "Recess • 9:45–10:00 AM" },
-  { id: "lunch",  label: "Lunch • 12:00–12:30 PM" },
-  { id: "after",  label: "After Class • 4:00–4:15 PM" },
+  { id: "lunch", label: "Lunch • 12:00–12:30 PM" },
+  { id: "after", label: "After Class • 4:00–4:15 PM" },
 ];
 
 export default function Shop() {
@@ -20,29 +32,74 @@ export default function Shop() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // search + cart
+  // wallet
+  const [wallet, setWallet] = useState({ balance: 0 });
+  const [loadingWallet, setLoadingWallet] = useState(true);
+  const [walletError, setWalletError] = useState("");
+
+  // search + filters
   const [q, setQ] = useState("");
-  const [cart, setCart] = useState({}); // { [id]: qty }
+  const [category, setCategory] = useState("all");
+  const [sort, setSort] = useState("featured");
+
+  // cart
+  const [cart, setCart] = useState({});
 
   // reservation modal
   const [open, setOpen] = useState(false);
   const [reserve, setReserve] = useState({ grade: "", section: "", slot: "", note: "" });
   const [submitting, setSubmitting] = useState(false);
 
-  // fetch menu (live)
-  useEffect(() => {
-    let mounted = true;
+  // ==== DATA LOADERS =========================================================
+  const fetchMenu = async () => {
     setLoading(true);
-    api.get("/menu")
-      .then((data) => {
-        if (!mounted) return;
-        // api.get returns parsed JSON (array); fall back safe
-        const rows = Array.isArray(data) ? data : (data?.data || []);
-        setItems(rows);
-      })
-      .catch(() => mounted && setItems([]))
-      .finally(() => mounted && setLoading(false));
-    return () => (mounted = false);
+    try {
+      const data = await api.get("/menu");
+      const rows = Array.isArray(data) ? data : data?.data || [];
+      setItems(
+        rows.map((r) => ({
+          id: r.id ?? r._id,
+          name: r.name,
+          category: r.category || "Others",
+          price: Number(r.price) || 0,
+          stock: Number(r.stock ?? 0),
+          img: r.img || r.image || "",
+        }))
+      );
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchWallet = async () => {
+    setLoadingWallet(true);
+    setWalletError("");
+    try {
+      // expected payload: { balance: number, ... }
+      const w = await api.get("/wallets/me");
+      const val = (w && (w.data || w)) || {};
+      const bal = Number(val.balance) || 0;
+      setWallet({ balance: bal });
+      try {
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        if (u && u.id) {
+          u.balance = bal;
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      } catch {}
+    } catch (e) {
+      setWallet({ balance: 0 });
+      setWalletError("Unable to load wallet. You might not be logged in.");
+    } finally {
+      setLoadingWallet(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMenu();
+    fetchWallet();
   }, []);
 
   // restore cart
@@ -56,22 +113,54 @@ export default function Shop() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
-  // computed views
+  // ==== DERIVED ==============================================================
+  const categories = useMemo(() => {
+    const set = new Set(items.map((i) => i.category).filter(Boolean));
+    return ["all", ...Array.from(set)];
+  }, [items]);
+
   const filtered = useMemo(() => {
+    let rows = items.slice(0);
     const s = q.toLowerCase().trim();
-    if (!s) return items;
-    return items.filter(
-      (i) =>
-        i.name?.toLowerCase().includes(s) ||
-        i.category?.toLowerCase().includes(s)
-    );
-  }, [q, items]);
+
+    if (s) {
+      rows = rows.filter(
+        (i) =>
+          String(i.name || "").toLowerCase().includes(s) ||
+          String(i.category || "").toLowerCase().includes(s)
+      );
+    }
+    if (category !== "all") rows = rows.filter((i) => i.category === category);
+
+    switch (sort) {
+      case "name-asc":
+        rows.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name-desc":
+        rows.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "price-asc":
+        rows.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        rows.sort((a, b) => b.price - a.price);
+        break;
+      case "stock-desc":
+        rows.sort((a, b) => b.stock - a.stock);
+        break;
+      default:
+        rows.sort((a, b) => {
+          const av = Number(b.stock > 0) - Number(a.stock > 0);
+          return av !== 0 ? av : a.name.localeCompare(b.name);
+        });
+    }
+    return rows;
+  }, [items, q, category, sort]);
 
   const list = useMemo(
     () =>
       Object.entries(cart)
         .map(([id, qty]) => {
-          // Compare IDs as strings to avoid Number(null) -> 0 or NaN mismatches
           const p = items.find((x) => String(x.id) === String(id));
           return p ? { ...p, qty } : null;
         })
@@ -79,16 +168,21 @@ export default function Shop() {
     [cart, items]
   );
 
-  const total = useMemo(() => list.reduce((a, b) => a + b.qty * (Number(b.price) || 0), 0), [list]);
+  const total = useMemo(
+    () => list.reduce((a, b) => a + b.qty * (Number(b.price) || 0), 0),
+    [list]
+  );
 
-  // cart ops
+  const insufficient = total > (Number(wallet.balance) || 0);
+
+  // ==== CART OPS =============================================================
   const inc = (id) => {
     const prod = items.find((x) => String(x.id) === String(id));
     if (!prod) return;
     setCart((c) => {
       const key = String(id);
       const next = (c[key] || 0) + 1;
-      if (prod.stock >= 0 && next > Number(prod.stock)) return c; // cap at stock if tracked
+      if (prod.stock >= 0 && next > Number(prod.stock)) return c; // cap at stock
       return { ...c, [key]: next };
     });
   };
@@ -97,75 +191,158 @@ export default function Shop() {
       const key = String(id);
       const next = Math.max((c[key] || 0) - 1, 0);
       const copy = { ...c, [key]: next };
-      if (next === 0) delete copy[id];
+      if (next === 0) delete copy[key];
       return copy;
     });
+  const removeFromCart = (id) =>
+    setCart((c) => {
+      const copy = { ...c };
+      delete copy[String(id)];
+      return copy;
+    });
+  const clearCart = () => setCart({});
 
-  // nav shortcuts
+  // ==== NAV / MODAL ==========================================================
   const goCart = () => navigate("/cart");
   const openReserve = () => setOpen(true);
   const closeReserve = () => setOpen(false);
 
-  // submit reservation (server computes price/stock/balance)
+  // ==== SUBMIT ===============================================================
   const submitReservation = async () => {
     if (!list.length) return alert("Your cart is empty.");
     if (!reserve.grade) return alert("Select grade level.");
     if (!reserve.section.trim()) return alert("Enter section.");
     if (!reserve.slot) return alert("Choose a pickup window.");
 
-    // must be logged in (token is added by api helper)
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in first.");
       return navigate("/login");
     }
 
+    // Enforce wallet balance check (remove this if you allow COD)
+    if (insufficient) {
+      return alert("Insufficient wallet balance. Please top-up first.");
+    }
+
     setSubmitting(true);
     try {
       const payload = {
-        items: list.map(({ id, qty }) => ({ id, qty })), // ONLY id & qty; server looks up price & checks stock
+        items: list.map(({ id, qty }) => ({ id, qty })), // server validates price/stock
         grade: reserve.grade,
         section: reserve.section.trim(),
-        slot: reserve.slot, // "recess" | "lunch" | "after"
+        slot: reserve.slot,
         note: reserve.note || "",
+        // some backends also accept `payWith: 'wallet'`
       };
 
-      await api.post("/reservations", payload);
+      // Prefer a SINGLE atomic endpoint if available
+      // It should: validate stock, create reservation, deduct wallet, create tx logs
+      let r;
+      try {
+        r = await api.post("/reservations/checkout", payload);
+      } catch {
+        // Fallback to 2-step if atomic route not implemented
+        const created = await api.post("/reservations", payload);
+        const createdId = created?.id || created?.data?.id;
+        const amount = created?.total ?? created?.data?.total ?? total;
 
-      alert("Reservation submitted! You can track it in History.");
+        if (!createdId) throw new Error("Reservation created without an id. Please check backend response.");
+        // Charge wallet now; backend should reject if balance changed / insufficient
+        await api.post("/wallets/charge", {
+          amount: Number(amount),
+          refType: "reservation",
+          refId: createdId,
+        });
+
+        r = created;
+      }
+
+      alert("Reservation submitted and wallet charged.");
       setCart({});
       localStorage.removeItem("cart");
       setReserve({ grade: "", section: "", slot: "", note: "" });
       closeReserve();
-      // Optionally refresh menu to reflect reduced stock
-      setLoading(true);
-      const data = await api.get("/menu");
-      setItems(Array.isArray(data) ? data : (data?.data || []));
-      setLoading(false);
+
+      // refresh UI: stock + wallet
+      await Promise.all([fetchMenu(), fetchWallet()]);
     } catch (e) {
       console.error(e);
-      alert(e.message || "Failed to reserve. Try again.");
+      // bubble up concise message
+      const msg = e?.response?.data?.error || e?.message || "Failed to reserve. Try again.";
+      alert(msg);
     } finally {
       setSubmitting(false);
     }
   };
 
+  // ==== RENDER ===============================================================
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* header + search */}
+        {/* header */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Canteen Menu</h1>
-          <div className="relative">
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search menu…"
-              className="w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search menu…"
+                className="w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+            <button
+              onClick={() => { fetchMenu(); fetchWallet(); }}
+              className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
+              title="Refresh"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
+        </div>
+
+        {/* filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex items-center gap-2 mr-2 text-gray-600">
+            <Filter className="w-4 h-4" />
+            <span className="text-sm">Filter</span>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCategory(c)}
+                className={`px-3 py-1.5 rounded-full border text-sm ${
+                  category === c
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                {c === "all" ? "All" : c}
+              </button>
+            ))}
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            <label className="text-sm text-gray-600">Sort</label>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            >
+              <option value="featured">Featured</option>
+              <option value="name-asc">Name (A–Z)</option>
+              <option value="name-desc">Name (Z–A)</option>
+              <option value="price-asc">Price (Low→High)</option>
+              <option value="price-desc">Price (High→Low)</option>
+              <option value="stock-desc">Stock (High→Low)</option>
+            </select>
           </div>
         </div>
 
@@ -174,87 +351,143 @@ export default function Shop() {
           <section className="lg:col-span-2">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {loading ? (
-                <div className="col-span-full text-center text-gray-500 py-10">Loading menu…</div>
+                Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={`skeleton-${i}`}
+                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 animate-pulse"
+                  >
+                    <div className="h-32 rounded bg-gray-200 mb-4" />
+                    <div className="h-4 w-1/2 bg-gray-200 rounded mb-2" />
+                    <div className="h-3 w-1/3 bg-gray-200 rounded mb-4" />
+                    <div className="flex items-center justify-between">
+                      <div className="h-8 w-24 bg-gray-200 rounded" />
+                      <div className="h-8 w-20 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                ))
               ) : filtered.length === 0 ? (
                 <div className="col-span-full bg-white rounded-lg border border-gray-100 p-10 text-center text-sm text-gray-500">
                   No items found.
                 </div>
               ) : (
-                filtered.map((it) => (
-                  <div key={it.id} className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col">
-                    <div className="mb-4 h-32 w-full rounded bg-gray-100 overflow-hidden">
-                      <img
-                        src={it.img || "/logo192.png"}
-                        alt={it.name}
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = "/logo192.png";
-                        }}
-                      />
-                    </div>
-
-                    <h3 className="font-medium text-lg text-gray-900">{it.name}</h3>
-                    <div className="mt-1 flex items-center justify-between">
-                      <p className="text-gray-700 font-semibold">{peso.format(Number(it.price) || 0)}</p>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          Number(it.stock) > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                        }`}
-                      >
-                        {Number(it.stock) > 0 ? `${it.stock} in stock` : "Out of stock"}
-                      </span>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between">
-                      <div className="inline-flex items-center border rounded-lg">
-                        <button
-                          className="px-3 py-2 hover:bg-gray-50"
-                          onClick={() => dec(it.id)}
-                          disabled={!cart[it.id]}
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="px-4 text-sm min-w-[2.5rem] text-center">
-                          {cart[it.id] || 0}
+                filtered.map((it) => {
+                  const inCart = cart[String(it.id)] || 0;
+                  const soldOut = Number(it.stock) <= 0;
+                  return (
+                    <div
+                      key={it.id}
+                      className="relative bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col"
+                    >
+                      {soldOut && (
+                        <span className="absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700">
+                          Sold out
                         </span>
-                        <button
-                          className="px-3 py-2 hover:bg-gray-50"
-                          onClick={() => inc(it.id)}
-                          disabled={Number(it.stock) === 0}
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
+                      )}
+                      {inCart > 0 && (
+                        <span className="absolute top-2 right-2 text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                          In cart: {inCart}
+                        </span>
+                      )}
+
+                      <div className="mb-4 h-32 w-full rounded bg-gray-100 overflow-hidden">
+                        <img
+                          src={it.img || "/logo192.png"}
+                          alt={it.name}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = "/logo192.png";
+                          }}
+                        />
                       </div>
 
-                      <button
-                        onClick={() => inc(it.id)}
-                        disabled={Number(it.stock) === 0}
-                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                        Add
-                      </button>
+                      <h3 className="font-medium text-lg text-gray-900">{it.name}</h3>
+                      <div className="mt-1 flex items-center justify-between">
+                        <p className="text-gray-700 font-semibold">
+                          {peso.format(Number(it.price) || 0)}
+                        </p>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            Number(it.stock) > 0
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {Number(it.stock) > 0 ? `${it.stock} in stock` : "Out of stock"}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="inline-flex items-center border rounded-lg">
+                          <button
+                            className="px-3 py-2 hover:bg-gray-50"
+                            onClick={() => dec(it.id)}
+                            disabled={!cart[String(it.id)]}
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-4 text-sm min-w-[2.5rem] text-center">
+                            {cart[String(it.id)] || 0}
+                          </span>
+                          <button
+                            className="px-3 py-2 hover:bg-gray-50"
+                            onClick={() => inc(it.id)}
+                            disabled={soldOut}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => inc(it.id)}
+                          disabled={soldOut}
+                          className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                          Add
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </section>
 
-            {/* cart sidebar */}
+          {/* cart sidebar */}
           <aside className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 h-fit sticky top-20">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-gray-900">Your Cart</h2>
-              <span className="text-xs text-gray-600">{list.length} items</span>
+              <span className="text-xs text-gray-600">
+                {list.reduce((a, b) => a + b.qty, 0)} items
+              </span>
             </div>
+
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <div className="inline-flex items-center gap-2 text-gray-700">
+                <Wallet className="w-4 h-4" />
+                <span>Wallet:</span>
+              </div>
+              <div className="font-semibold">
+                {loadingWallet ? "…" : peso.format(Number(wallet.balance) || 0)}
+              </div>
+            </div>
+
+            {insufficient && list.length > 0 && (
+              <div className="mt-2 text-xs inline-flex items-center gap-2 text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                Insufficient balance. Please top-up before reserving.
+              </div>
+            )}
 
             <div className="mt-3 divide-y">
               {list.map((it) => (
-                <div key={it.id} className="py-3 flex items-center justify-between">
+                <div key={it.id} className="py-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-gray-900 truncate">{it.name}</div>
-                    <div className="text-xs text-gray-500">{peso.format(Number(it.price) || 0)}</div>
+                    <div className="text-xs text-gray-500">
+                      {peso.format(Number(it.price) || 0)}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="inline-flex items-center border rounded-lg">
@@ -262,11 +495,25 @@ export default function Shop() {
                         <Minus className="w-4 h-4" />
                       </button>
                       <span className="px-3 text-sm">{it.qty}</span>
-                      <button onClick={() => inc(it.id)} className="px-2 py-1.5 hover:bg-gray-50">
+                      <button
+                        onClick={() => inc(it.id)}
+                        className="px-2 py-1.5 hover:bg-gray-50"
+                        disabled={it.qty >= it.stock}
+                        title={it.qty >= it.stock ? "Max stock reached" : undefined}
+                      >
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="text-sm font-medium">{peso.format((Number(it.price) || 0) * it.qty)}</div>
+                    <div className="text-sm font-medium">
+                      {peso.format((Number(it.price) || 0) * it.qty)}
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(it.id)}
+                      className="text-xs text-gray-500 hover:text-red-600"
+                      title="Remove"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
               ))}
@@ -297,6 +544,14 @@ export default function Shop() {
                 <Clock className="w-4 h-4" />
                 Reserve for Pickup
               </button>
+              {list.length > 0 && (
+                <button
+                  onClick={clearCart}
+                  className="w-full inline-flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Clear cart
+                </button>
+              )}
             </div>
           </aside>
         </div>
@@ -329,8 +584,12 @@ export default function Shop() {
                         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="">Select grade</option>
-                        <option>G7</option><option>G8</option><option>G9</option>
-                        <option>G10</option><option>G11</option><option>G12</option>
+                        <option>G7</option>
+                        <option>G8</option>
+                        <option>G9</option>
+                        <option>G10</option>
+                        <option>G11</option>
+                        <option>G12</option>
                       </select>
                     </div>
                     <div>
@@ -348,7 +607,10 @@ export default function Shop() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Window</label>
                     <div className="grid grid-cols-1 gap-2">
                       {SLOTS.map((s) => (
-                        <label key={s.id} className="flex items-center gap-3 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer">
+                        <label
+                          key={s.id}
+                          className="flex items-center gap-3 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer"
+                        >
                           <input
                             type="radio"
                             name="pickup-slot"
@@ -380,25 +642,60 @@ export default function Shop() {
                       <div key={it.id} className="p-3 flex items-center justify-between text-sm">
                         <div className="min-w-0">
                           <div className="font-medium text-gray-900 truncate">{it.name}</div>
-                          <div className="text-xs text-gray-500">{peso.format(Number(it.price) || 0)}</div>
+                          <div className="text-xs text-gray-500">
+                            {peso.format(Number(it.price) || 0)}
+                          </div>
                         </div>
-                        <div className="font-medium">{it.qty} × {peso.format(Number(it.price) || 0)}</div>
+                        <div className="font-medium">
+                          {it.qty} × {peso.format(Number(it.price) || 0)}
+                        </div>
                       </div>
                     ))}
                     <div className="p-3 flex items-center justify-between">
                       <span className="text-sm text-gray-600">Total</span>
                       <span className="text-lg font-semibold">{peso.format(total)}</span>
                     </div>
+                    <div className="p-3 flex items-center justify-between text-sm">
+                      <div className="inline-flex items-center gap-2 text-gray-700">
+                        <Wallet className="w-4 h-4" />
+                        <span>Wallet Balance</span>
+                      </div>
+                      <div className="font-semibold">
+                        {loadingWallet ? "…" : peso.format(Number(wallet.balance) || 0)}
+                      </div>
+                    </div>
+                    <div className="p-3 flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Remaining</span>
+                      <span className={`font-semibold ${insufficient ? "text-red-700" : "text-emerald-700"}`}>
+                        {loadingWallet
+                          ? "…"
+                          : peso.format(Math.max(0, (Number(wallet.balance) || 0) - total))}
+                      </span>
+                    </div>
                   </div>
+
+                  {walletError && (
+                    <div className="mt-2 text-xs text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
+                      {walletError}
+                    </div>
+                  )}
 
                   <button
                     onClick={submitReservation}
-                    disabled={submitting || !list.length}
+                    disabled={submitting || !list.length || insufficient}
                     className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-60"
                   >
-                    {submitting
-                      ? <span className="inline-flex items-center gap-2"><Clock className="w-4 h-4 animate-pulse" />Submitting…</span>
-                      : <span className="inline-flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />Submit Reservation</span>}
+                    {submitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <Clock className="w-4 h-4 animate-pulse" />
+                        Submitting…
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Submit Reservation
+                      </span>
+                    )}
                   </button>
                 </div>
               </div>

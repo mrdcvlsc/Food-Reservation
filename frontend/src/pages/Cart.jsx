@@ -146,15 +146,33 @@ export default function Cart() {
     if (!reserve.section.trim()) return alert("Enter section.");
     if (!reserve.slot) return alert("Choose a pickup window.");
 
+    // require login so the reservation is associated with a user
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in first.");
+      return navigate("/login");
+    }
+
     setSubmitting(true);
     try {
+      const user = (() => {
+        try {
+          return JSON.parse(localStorage.getItem("user") || "{}") || {};
+        } catch {
+          return {};
+        }
+      })();
+
       const payload = {
         items: list.map(({ id, qty }) => ({ id: String(id), qty })),
         grade: reserve.grade,
         section: reserve.section,
         slot: reserve.slot,
         note: reserve.note,
+        // include student display name so backend can resolve user if needed
+        student: user.name || "",
       };
+
       await api.post('/reservations', payload);
       alert("Reservation submitted! Track status in History.");
       clearCart();

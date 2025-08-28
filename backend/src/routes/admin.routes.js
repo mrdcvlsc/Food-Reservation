@@ -30,4 +30,8 @@ const T = require("../controllers/topups.controller");
 router.get("/topups", requireAuth, requireAdmin, T.listAdmin);
 router.patch("/topups/:id", requireAuth, requireAdmin, T.setStatus);
 
+// Wallets (QR) admin endpoints
+const W = require("../controllers/wallets.controller");
+router.post("/wallets", requireAuth, requireAdmin, upload.single("qr"), W.upsert);
+
 module.exports = router;

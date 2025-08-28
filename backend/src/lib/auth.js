@@ -1,4 +1,5 @@
-﻿const jwt = require("jsonwebtoken");
+﻿// server/src/lib/auth.js
+const jwt = require("jsonwebtoken");
 const SECRET = process.env.JWT_SECRET || "dev_secret_key";
 
 function sign(user) {

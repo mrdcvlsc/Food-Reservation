@@ -1,31 +1,129 @@
-const { load } = require("../lib/db");
+// backend/src/controllers/transactions.controller.js
+// Orders-only "transactions" for the current user (db.json edition)
 
-exports.mine = (req, res) => {
-  const db = load();
-  const uid = req.user.id;
+const fs = require("fs");
+const path = require("path");
 
-  const txTopups = db.topups
-    .filter(t => t.userId === uid)
-    .map(t => ({
-      id: t.id,
-      title: `${t.method.toUpperCase()} Top-Up`,
-      amount: t.amount,
-      time: t.createdAt,
-      status: t.status,
-      type: "topup"
-    }));
+const DB_PATH = path.join(__dirname, "..", "data", "db.json");
 
-  const txRes = db.reservations
-    .filter(r => r.userId === uid)
-    .map(r => ({
-      id: r.id,
-      title: "Reservation",
-      amount: r.total,
-      time: r.createdAt,
-      status: r.status,
-      type: "reservation"
-    }));
+function readDB() {
+  try {
+    const raw = fs.readFileSync(DB_PATH, "utf8");
+    const data = JSON.parse(raw || "{}");
+    return {
+      users: data.users || [],
+      reservations: data.reservations || [],
+      menu: data.menu || [],
+      transactions: data.transactions || [],
+      topups: data.topups || [],
+    };
+  } catch {
+    return { users: [], reservations: [], menu: [], transactions: [], topups: [] };
+  }
+}
 
-  const merged = [...txTopups, ...txRes].sort((a, b) => new Date(b.time) - new Date(a.time));
-  res.json(merged);
+// Map one reservation/order into a transaction row for the UI
+function mapReservationToTx(r) {
+  const id = r.id || r.ref || r.reference || r._id || `R-${Math.random().toString(36).slice(2)}`;
+  const createdAt = r.createdAt || r.date || r.time || r.when || r.pickupTime || new Date().toISOString();
+  const status = r.status || "Success";
+
+  // best-effort total
+  let total = Number(r.total ?? r.amount ?? 0);
+  if (!Number.isFinite(total) || total === 0) {
+    // compute from items + menu if needed
+    const items = Array.isArray(r.items) ? r.items : [];
+    const priceMap = new Map((r.menu || []).map(m => [m.id, Number(m.price) || 0])); // fallback if reservation carries menu
+    total = items.reduce((sum, it) => {
+      const qty = Number(it.qty || it.quantity || 1);
+      const price =
+        Number(it.price) ||
+        Number(priceMap.get(it.menuId || it.id)) ||
+        0;
+      return sum + qty * price;
+    }, 0);
+  }
+
+  return {
+    id,                          // show in Ref column
+    title: r.title || "Food Order",
+    createdAt,                   // date/time
+    status,                      // Pending | Success | etc.
+    statusLC: String(status).toLowerCase(),
+    direction: "debit",          // orders are always money-out
+    sign: -1,
+    amount: Math.abs(Number(total) || 0),
+    raw: r,
+  };
+}
+
+exports.getMyTransactions = (req, res) => {
+  // your auth middleware typically sets req.user (id or {_id, id})
+  const userId = req.user?.id || req.user?._id || req.user;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  const db = readDB();
+
+  // Try to find the user record so we can also match by student name/email
+  const me = (db.users || []).find((u) => String(u.id) === String(userId));
+
+  // Filter only this user's reservations (orders). Some reservations were
+  // created without a `userId` (guest/student flow) — include those when the
+  // reservation.student matches the authenticated user's name or email.
+  const mine = (db.reservations || []).filter((r) => {
+    const uid = r.userId || r.user || r.ownerId || r.uid;
+    if (String(uid) === String(userId)) return true;
+
+    // No explicit user id on reservation: try matching by student name/email
+    if (!uid && me) {
+      const student = String(r.student || "").trim().toLowerCase();
+      if (!student) return false;
+      const name = String(me.name || "").trim().toLowerCase();
+      const email = String(me.email || "").trim().toLowerCase();
+      if (student === name || student === email) return true;
+    }
+
+    return false;
+  });
+
+  const resRows = mine.map(mapReservationToTx);
+
+  // Also include persisted ledger transactions (manual ledger entries).
+  // Exclude explicit Top-Up ledger rows so Transaction History remains for
+  // food/order transactions only. However include persisted transactions
+  // that reference a reservation (ref/reservation id) so reservation charging
+  // appears in the ledger.
+  const persisted = (db.transactions || [])
+    .filter((t) => {
+      const type = (t.type || t.kind || "").toString().toLowerCase();
+      const isTopup = type.includes("topup") || type === "topup" || (t.topupId != null) || type.includes("top-");
+      const ref = String(t.ref || t.reference || "").toLowerCase();
+      const hasResRef = ref.includes("res-") || ref.startsWith("res-");
+      // include if not a topup, or if it explicitly references a reservation
+      return !isTopup || hasResRef;
+    })
+    .map((t) => {
+      const isTopup = ((t.type || "") + "").toString().toLowerCase().includes("topup") || (t.topupId != null);
+      return {
+        id: t.id || t.txId || t._id || `TX-${Math.random().toString(36).slice(2)}`,
+        title: isTopup ? "Top-Up" : (t.title || t.type || "Transaction"),
+        createdAt: t.createdAt || t.date || new Date().toISOString(),
+        status: t.status || "Success",
+        statusLC: String(t.status || "Success").toLowerCase(),
+        direction: isTopup ? "credit" : (t.direction || (Number(t.amount || 0) < 0 ? "debit" : "credit")),
+        sign: isTopup ? 1 : (Number(t.amount || 0) < 0 ? -1 : 1),
+        amount: Math.abs(Number(t.amount || t.value || 0) || 0),
+        raw: t,
+      };
+    });
+
+  const merged = [...persisted, ...resRows];
+  merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return res.json(merged);
 };
+
+// Alias `mine` to match route import: `const { mine } = require(...);`
+exports.mine = exports.getMyTransactions;

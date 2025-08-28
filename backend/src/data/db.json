@@ -5,7 +5,7 @@
       "name": "Rice Meal A",
       "category": "Meals",
       "price": 75,
-      "stock": 20,
+      "stock": 16,
       "img": "/rice-meal.jpg",
       "isActive": true
     },
@@ -32,7 +32,7 @@
       "name": "Fried Chicken",
       "category": "Meals",
       "price": 120,
-      "stock": 400,
+      "stock": 394,
       "img": ""
     },
     {
@@ -40,7 +40,15 @@
       "name": "fried lumpia",
       "category": "Meals",
       "price": 400,
-      "stock": 41,
+      "stock": 39,
+      "img": ""
+    },
+    {
+      "id": "ITM-6",
+      "name": "hotdog",
+      "category": "Meals",
+      "price": 89,
+      "stock": 48,
       "img": ""
     }
   ],
@@ -65,9 +73,313 @@
       "status": "Claimed",
       "createdAt": "2025-08-27T05:53:38.163Z",
       "updatedAt": "2025-08-27T06:51:14.068Z"
+    },
+    {
+      "id": "RES-2",
+      "userId": null,
+      "student": "Student",
+      "grade": "G7",
+      "section": "rizal",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-1",
+          "name": "Rice Meal A",
+          "price": 75,
+          "qty": 3
+        }
+      ],
+      "total": 225,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T02:18:46.976Z",
+      "updatedAt": "2025-08-28T02:23:03.576Z"
+    },
+    {
+      "id": "RES-3",
+      "userId": null,
+      "student": "Student",
+      "grade": "G7",
+      "section": "45",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 120,
+          "qty": 2
+        }
+      ],
+      "total": 240,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T06:49:28.193Z",
+      "updatedAt": "2025-08-28T06:50:15.856Z"
+    },
+    {
+      "id": "RES-4",
+      "userId": null,
+      "student": "Student",
+      "grade": "G8",
+      "section": "sec",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "fried lumpia",
+          "price": 400,
+          "qty": 1
+        }
+      ],
+      "total": 400,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T06:53:22.274Z",
+      "updatedAt": "2025-08-28T06:53:52.307Z"
+    },
+    {
+      "id": "RES-5",
+      "userId": null,
+      "student": "Student",
+      "grade": "G7",
+      "section": "s",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "fried lumpia",
+          "price": 400,
+          "qty": 1
+        },
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 120,
+          "qty": 1
+        }
+      ],
+      "total": 520,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T07:11:12.123Z",
+      "updatedAt": "2025-08-28T11:33:05.330Z"
+    },
+    {
+      "id": "RES-6",
+      "userId": null,
+      "student": "Student",
+      "grade": "G7",
+      "section": "S",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T09:12:01.026Z",
+      "updatedAt": "2025-08-28T11:33:04.350Z"
+    },
+    {
+      "id": "RES-7",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "a",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        },
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 120,
+          "qty": 3
+        }
+      ],
+      "total": 449,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T09:16:02.987Z",
+      "updatedAt": "2025-08-28T11:33:03.299Z"
+    },
+    {
+      "id": "RES-8",
+      "userId": null,
+      "student": "Student",
+      "grade": "G8",
+      "section": "rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-1",
+          "name": "Rice Meal A",
+          "price": 75,
+          "qty": 1
+        }
+      ],
+      "total": 75,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T10:20:48.673Z",
+      "updatedAt": "2025-08-28T11:33:02.520Z"
+    },
+    {
+      "id": "RES-9",
+      "userId": null,
+      "student": "Student",
+      "grade": "G12",
+      "section": "rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "fried lumpia",
+          "price": 400,
+          "qty": 1
+        },
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 120,
+          "qty": 1
+        }
+      ],
+      "total": 520,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T11:34:11.325Z",
+      "transactionId": "txn_mevbt6ej",
+      "charged": true,
+      "chargedAt": "2025-08-28T11:34:11.371Z",
+      "updatedAt": "2025-08-28T12:59:13.325Z"
+    },
+    {
+      "id": "RES-10",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "rizal",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Rejected",
+      "createdAt": "2025-08-28T11:52:49.224Z",
+      "updatedAt": "2025-08-28T11:53:33.802Z"
+    },
+    {
+      "id": "RES-11",
+      "userId": null,
+      "student": "Student",
+      "grade": "G8",
+      "section": "s",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 120,
+          "qty": 1
+        }
+      ],
+      "total": 120,
+      "status": "Claimed",
+      "createdAt": "2025-08-28T12:54:01.866Z",
+      "transactionId": "txn_mevenuz5",
+      "charged": true,
+      "chargedAt": "2025-08-28T12:54:02.129Z",
+      "updatedAt": "2025-08-28T12:59:32.086Z"
     }
   ],
-  "topups": [],
+  "topups": [
+    {
+      "id": "top_meuxt00z",
+      "userId": "usr_meshwbp7",
+      "student": "usr_meshwbp7",
+      "provider": "gcash",
+      "amount": 200,
+      "reference": "",
+      "status": "Approved",
+      "proofUrl": "/uploads/meuxt00x_521575483_735105082737834_291713336103637321_n.png",
+      "submittedAt": "2025-08-28T05:02:08.483Z",
+      "createdAt": "2025-08-28T05:02:08.483Z",
+      "updatedAt": "2025-08-28T05:18:43.043Z"
+    },
+    {
+      "id": "top_meuy7iej",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "",
+      "status": "Approved",
+      "proofUrl": "/uploads/meuy7ieg_519105070_1481013749582578_6635021841656309545_n.png",
+      "submittedAt": "2025-08-28T05:13:25.483Z",
+      "createdAt": "2025-08-28T05:13:25.483Z",
+      "updatedAt": "2025-08-28T05:18:46.099Z"
+    },
+    {
+      "id": "top_meuy9bwt",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "provider": "gcash",
+      "amount": 1050,
+      "reference": "",
+      "status": "Approved",
+      "proofUrl": "/uploads/meuy9bws_522170091_1076489007797012_7476012406399204589_n.png",
+      "submittedAt": "2025-08-28T05:14:50.381Z",
+      "createdAt": "2025-08-28T05:14:50.381Z",
+      "updatedAt": "2025-08-28T05:18:47.907Z",
+      "credited": true,
+      "creditedAt": "2025-08-28T05:18:47.907Z"
+    },
+    {
+      "id": "top_meuyf58f",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "provider": "gcash",
+      "amount": 5000,
+      "reference": "",
+      "status": "Rejected",
+      "proofUrl": "/uploads/meuyf58d_521575483_735105082737834_291713336103637321_n.png",
+      "submittedAt": "2025-08-28T05:19:21.663Z",
+      "createdAt": "2025-08-28T05:19:21.663Z",
+      "updatedAt": "2025-08-28T05:22:52.050Z"
+    },
+    {
+      "id": "top_meuz95zi",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "provider": "gcash",
+      "amount": 190,
+      "reference": "",
+      "status": "Approved",
+      "proofUrl": "/uploads/meuz95zf_518972592_1837820953832958_5928762010319791358_n.png",
+      "submittedAt": "2025-08-28T05:42:42.318Z",
+      "createdAt": "2025-08-28T05:42:42.318Z",
+      "updatedAt": "2025-08-28T12:59:41.496Z",
+      "credited": true,
+      "creditedAt": "2025-08-28T12:59:41.496Z"
+    }
+  ],
   "users": [
     {
       "id": "u_admin",
@@ -85,8 +397,94 @@
       "role": "student",
       "grade": "",
       "section": "",
+      "balance": 1436
+    },
+    {
+      "id": "usr_meusxal8",
+      "name": "Jessica Bertud",
+      "email": "jbertud32@gmail.com",
+      "passwordHash": "$2a$10$r7leyNBb7mmWNfbgPTEU1uqbT7HAFuCBTqVqTrU8O2xPTIkdeb4FO",
+      "role": "student",
+      "grade": "",
+      "section": "",
       "balance": 0
     }
   ],
-  "transactions": []
+  "transactions": [
+    {
+      "id": "txn_meuy8mya",
+      "userId": "usr_meshwbp7",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": null,
+      "topupId": "top_meuy7iej",
+      "createdAt": "2025-08-28T05:14:18.034Z"
+    },
+    {
+      "id": "txn_meuyef6r",
+      "userId": "usr_meshwbp7",
+      "type": "TopUp",
+      "amount": 1050,
+      "reference": null,
+      "topupId": "top_meuy9bwt",
+      "createdAt": "2025-08-28T05:18:47.907Z"
+    },
+    {
+      "id": "txn_mev96tgo",
+      "userId": "usr_meshwbp7",
+      "type": "reservation",
+      "amount": 75,
+      "ref": "RES-8",
+      "createdAt": "2025-08-28T10:20:48.936Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mevbt6ej",
+      "userId": "usr_meshwbp7",
+      "type": "reservation",
+      "amount": 520,
+      "ref": "RES-9",
+      "createdAt": "2025-08-28T11:34:11.371Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mevch4zc",
+      "userId": "usr_meshwbp7",
+      "type": "reservation",
+      "amount": 89,
+      "ref": "RES-10",
+      "createdAt": "2025-08-28T11:52:49.272Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mevenuz5",
+      "userId": "usr_meshwbp7",
+      "type": "reservation",
+      "amount": 120,
+      "ref": "RES-11",
+      "createdAt": "2025-08-28T12:54:02.129Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mevev4u1",
+      "userId": "usr_meshwbp7",
+      "type": "TopUp",
+      "amount": 190,
+      "reference": null,
+      "topupId": "top_meuz95zi",
+      "createdAt": "2025-08-28T12:59:41.496Z"
+    }
+  ],
+  "wallets": [
+    {
+      "provider": "gcash",
+      "accountName": "Bernie ",
+      "mobile": "09162390244",
+      "reference": "hello whats up",
+      "qrImageUrl": "/uploads/1756348312198_521467.png",
+      "active": true,
+      "updatedAt": "2025-08-28T05:01:53.234Z",
+      "createdAt": "2025-08-28T02:07:30.818Z"
+    }
+  ]
 }

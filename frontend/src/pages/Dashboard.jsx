@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/avbar";
+import { api } from "../lib/api";
 import {
   ShoppingBag,
   Wallet,
@@ -34,20 +35,47 @@ export default function Dashboard() {
 
   // --- recent activity (orders / transactions) ---
   const [activity, setActivity] = useState([]);
+  const loadActivity = async () => {
+    // Try live API first, fall back to localStorage for offline/dev
+    try {
+      const d = await api.get("/transactions/mine");
+      const list = Array.isArray(d) ? d : d?.data || [];
+      const norm = list
+        .slice(-20)
+        .reverse()
+        .map((r, i) => {
+          const createdAt = r.createdAt || r.time || r.date || r.when || new Date().toISOString();
+          // infer direction (debit for reservations/orders)
+          const direction = (r.direction || (String(r.type || "")).toLowerCase().includes("reservation") ? "debit" : (r.direction || "credit"));
+          const amount = Math.abs(Number(r.amount ?? r.total ?? r.value ?? 0) || 0);
+          return {
+            id: r.id || r.txId || r._id || `TX-${i + 1}`,
+            title: r.title || r.product || (r.type === "reservation" ? "Reservation" : r.type) || "Order",
+            amount,
+            time: createdAt,
+            status: r.status || r.state || "Success",
+            direction,
+          };
+        })
+        .slice(0, 5);
 
-  const loadActivity = () => {
+      setActivity(norm);
+      return;
+    } catch (e) {
+      // fallback to localStorage
+    }
+
     try {
       const tx = JSON.parse(localStorage.getItem("transactions") || "[]");
       const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-      const rows = Array.isArray(tx) && tx.length ? tx
-        : Array.isArray(orders) ? orders
-        : [];
+      const rows = Array.isArray(tx) && tx.length ? tx : Array.isArray(orders) ? orders : [];
       const norm = rows.slice(-5).reverse().map((r, i) => ({
         id: r.id || r.txId || `TX-${i + 1}`,
         title: r.title || r.product || r.type || "Order",
-        amount: typeof r.amount === "number" ? r.amount : (r.amount ? parseFloat(r.amount) : 0),
+        amount: typeof r.amount === "number" ? r.amount : r.amount ? parseFloat(r.amount) : 0,
         time: r.time || r.date || new Date().toLocaleString(),
-        status: r.status || "Success", // e.g., Pending | Preparing | Ready | Claimed | Approved | Rejected | Success
+        status: r.status || "Success",
+        direction: r.direction || (r.type && String(r.type).toLowerCase().includes("reservation") ? "debit" : "credit"),
       }));
       setActivity(norm);
     } catch {
@@ -55,8 +83,23 @@ export default function Dashboard() {
     }
   };
 
+  // Keep wallet in sync with server
+  const syncWallet = async () => {
+    try {
+      const me = await api.get("/wallets/me");
+      if (me && me.id) {
+        const cur = { ...(JSON.parse(localStorage.getItem("user") || "{}") || {}), balance: me.balance };
+        localStorage.setItem("user", JSON.stringify(cur));
+        setUser(cur);
+      }
+    } catch (e) {
+      // ignore, keep local state
+    }
+  };
+
   useEffect(() => {
-    loadActivity();
+  loadActivity();
+  syncWallet();
     const onStorage = (e) => {
       if (["transactions", "orders", "user"].includes(e.key)) {
         if (e.key === "user") {
@@ -73,9 +116,10 @@ export default function Dashboard() {
   // --- derived stats (simple, school-friendly) ---
   const stats = useMemo(() => {
     const month = new Date().getMonth();
+    // Only consider 'debit' entries (food orders) for orders/total spent
     const thisMonth = activity.filter((a) => {
       const d = new Date(a.time);
-      return !isNaN(d) && d.getMonth() === month;
+      return !isNaN(d) && d.getMonth() === month && (a.direction || "debit") === "debit";
     });
     const ordersCount = thisMonth.length;
     const totalSpent = thisMonth.reduce((s, a) => s + (a.amount || 0), 0);

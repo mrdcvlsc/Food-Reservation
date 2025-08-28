@@ -1,5 +1,8 @@
-﻿const express = require("express");
+﻿// backend/src/routes/reservations.routes.js
+const express = require("express");
 const R = require("../controllers/reservations.controller");
+// If you want to protect admin endpoints later, import your auth here:
+// const { requireAuth, requireAdmin } = require("../lib/auth");
 
 const router = express.Router();
 
@@ -10,13 +13,10 @@ router.post("/", R.create);
 // (uses req.user if available; otherwise supports ?student= query per controller)
 router.get("/mine", R.mine);
 
-// Admin: list reservations (optional ?status=Pending|Approved|Rejected)
-// exposed at GET /api/reservations/admin
+// Admin: list reservations (optional ?status=Pending|Approved|Rejected|Claimed)
 router.get("/admin", R.listAdmin);
 
-// Admin: update reservation status { status: "Approved" | "Rejected" }
-// exposed at PATCH /api/reservations/admin/:id
+// Admin: update reservation status (Approved / Rejected / Preparing / Ready / Claimed)
 router.patch("/admin/:id", R.setStatus);
 
 module.exports = router;
-    
