@@ -92,17 +92,30 @@ exports.getMyTransactions = (req, res) => {
   const resRows = mine.map(mapReservationToTx);
 
   // Also include persisted ledger transactions (manual ledger entries).
-  // Exclude explicit Top-Up ledger rows so Transaction History remains for
-  // food/order transactions only. However include persisted transactions
-  // that reference a reservation (ref/reservation id) so reservation charging
-  // appears in the ledger.
+  // Only include persisted rows that belong to the authenticated user, or
+  // that explicitly reference a reservation that belongs to this user. This
+  // prevents showing global ledger rows to other users.
+  const myResIds = new Set((mine || []).map((r) => String(r.id)));
+
   const persisted = (db.transactions || [])
     .filter((t) => {
+      // basic ownership: userId match
+      if (String(t.userId) === String(userId)) return true;
+
+      // allow transactions that reference one of this user's reservations
+      const ref = String(t.ref || t.reference || "").trim();
+      if (ref && myResIds.has(ref)) return true;
+
+      return false;
+    })
+    .filter((t) => {
+      // of the owned/related rows, exclude pure top-up rows unless they are
+      // explicitly linked to a topup object we own (handled above by userId)
       const type = (t.type || t.kind || "").toString().toLowerCase();
       const isTopup = type.includes("topup") || type === "topup" || (t.topupId != null) || type.includes("top-");
       const ref = String(t.ref || t.reference || "").toLowerCase();
       const hasResRef = ref.includes("res-") || ref.startsWith("res-");
-      // include if not a topup, or if it explicitly references a reservation
+      // keep rows that are not topups, or those that reference a reservation
       return !isTopup || hasResRef;
     })
     .map((t) => {

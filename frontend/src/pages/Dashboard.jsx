@@ -35,50 +35,64 @@ export default function Dashboard() {
 
   // --- recent activity (orders / transactions) ---
   const [activity, setActivity] = useState([]);
-  const loadActivity = async () => {
-    // Try live API first, fall back to localStorage for offline/dev
+  const fetchArr = async (path) => {
     try {
-      const d = await api.get("/transactions/mine");
-      const list = Array.isArray(d) ? d : d?.data || [];
-      const norm = list
-        .slice(-20)
-        .reverse()
-        .map((r, i) => {
-          const createdAt = r.createdAt || r.time || r.date || r.when || new Date().toISOString();
-          // infer direction (debit for reservations/orders)
-          const direction = (r.direction || (String(r.type || "")).toLowerCase().includes("reservation") ? "debit" : (r.direction || "credit"));
-          const amount = Math.abs(Number(r.amount ?? r.total ?? r.value ?? 0) || 0);
-          return {
-            id: r.id || r.txId || r._id || `TX-${i + 1}`,
-            title: r.title || r.product || (r.type === "reservation" ? "Reservation" : r.type) || "Order",
-            amount,
-            time: createdAt,
-            status: r.status || r.state || "Success",
-            direction,
-          };
-        })
-        .slice(0, 5);
-
-      setActivity(norm);
-      return;
-    } catch (e) {
-      // fallback to localStorage
-    }
-
-    try {
-      const tx = JSON.parse(localStorage.getItem("transactions") || "[]");
-      const orders = JSON.parse(localStorage.getItem("orders") || "[]");
-      const rows = Array.isArray(tx) && tx.length ? tx : Array.isArray(orders) ? orders : [];
-      const norm = rows.slice(-5).reverse().map((r, i) => ({
-        id: r.id || r.txId || `TX-${i + 1}`,
-        title: r.title || r.product || r.type || "Order",
-        amount: typeof r.amount === "number" ? r.amount : r.amount ? parseFloat(r.amount) : 0,
-        time: r.time || r.date || new Date().toLocaleString(),
-        status: r.status || "Success",
-        direction: r.direction || (r.type && String(r.type).toLowerCase().includes("reservation") ? "debit" : "credit"),
-      }));
-      setActivity(norm);
+      const d = await api.get(path);
+      if (Array.isArray(d)) return d;
+      if (d && Array.isArray(d.data)) return d.data;
+      return [];
     } catch {
+      return [];
+    }
+  };
+
+  const loadActivity = async () => {
+    try {
+      // Fetch both sources in parallel and merge them. Reservations are the
+      // canonical source for food orders; transactions may contain ledger
+      // rows that reference reservations or standalone debit entries.
+      const [reservations, txs] = await Promise.all([fetchArr('/reservations/mine'), fetchArr('/transactions/mine')]);
+
+      const rows = [];
+
+      if (Array.isArray(reservations) && reservations.length > 0) {
+        for (const r of reservations) {
+          rows.push({
+            id: r.id || `R-${rows.length + 1}`,
+            title: r.title || 'reservation',
+            amount: Math.abs(Number(r.total || r.amount || 0) || 0),
+            time: r.createdAt || r.date || r.time || new Date().toISOString(),
+            status: r.status || 'Success',
+            direction: 'debit',
+          });
+        }
+      }
+
+      if (Array.isArray(txs) && txs.length > 0) {
+        for (const t of txs) {
+          const id = t.id || t.txId || `TX-${rows.length + 1}`;
+          const direction = (t.direction || (String(t.type || '')).toLowerCase().includes('reservation') ? 'debit' : (t.direction || 'credit'));
+          // include if debit or references a reservation
+          const ref = String(t.ref || t.reference || t.reservationId || '').toLowerCase();
+          const isReservationRef = ref.includes('res') || ref.startsWith('r-');
+          if (direction === 'debit' || isReservationRef) {
+            rows.push({
+              id,
+              title: t.title || t.type || (isReservationRef ? 'Reservation' : 'Transaction'),
+              amount: Math.abs(Number(t.amount ?? t.total ?? t.value ?? 0) || 0),
+              time: t.createdAt || t.time || t.date || new Date().toISOString(),
+              status: t.status || t.state || 'Success',
+              direction,
+            });
+          }
+        }
+      }
+
+      // Sort by time desc and take top 5
+      rows.sort((a, b) => new Date(b.time) - new Date(a.time));
+      setActivity(rows.slice(0, 5));
+    } catch (e) {
+      console.error('loadActivity error', e);
       setActivity([]);
     }
   };
@@ -86,11 +100,17 @@ export default function Dashboard() {
   // Keep wallet in sync with server
   const syncWallet = async () => {
     try {
+      // Prefer full user object from server. Some endpoints return { balance } only.
       const me = await api.get("/wallets/me");
-      if (me && me.id) {
-        const cur = { ...(JSON.parse(localStorage.getItem("user") || "{}") || {}), balance: me.balance };
-        localStorage.setItem("user", JSON.stringify(cur));
-        setUser(cur);
+      if (me && (me.id || me.balance != null)) {
+        const curLocal = JSON.parse(localStorage.getItem("user") || "{}") || {};
+        const merged = { ...curLocal, ...(me || {}) };
+        // ensure balance is numeric
+        if (merged.balance && typeof merged.balance !== "number") merged.balance = Number(merged.balance) || 0;
+        localStorage.setItem("user", JSON.stringify(merged));
+        setUser(merged);
+  // reload recent activity after wallet sync (user identity may have changed)
+  loadActivity();
       }
     } catch (e) {
       // ignore, keep local state

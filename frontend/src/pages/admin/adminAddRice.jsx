@@ -1,5 +1,4 @@
-﻿// src/pages/admin/adminAddRice.jsx
-import React, { useRef, useState } from "react";
+﻿import React, { useRef, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
@@ -13,6 +12,55 @@ import {
 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+
+/** ---------- image helpers ---------- **/
+function readAsImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+async function compressImage(file, {
+  maxW = 1024,
+  maxH = 1024,
+  quality = 0.82,
+  mime = "image/jpeg",
+} = {}) {
+  const img = await readAsImage(file);
+  const ratio = Math.min(maxW / img.width, maxH / img.height, 1);
+  const w = Math.round(img.width * ratio);
+  const h = Math.round(img.height * ratio);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+
+  return new Promise((resolve) => {
+    canvas.toBlob(
+      (blob) => {
+        // Name the file similar to original to keep extensions reasonable
+        const out = new File([blob], file.name.replace(/\.(png|jpeg|jpg|webp|gif)$/i, "") + ".jpg", { type: mime });
+        resolve({ file: out, width: w, height: h });
+      },
+      mime,
+      quality
+    );
+  });
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes)) return "—";
+  const units = ["B", "KB", "MB"];
+  let i = 0, n = bytes;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${n.toFixed(1)} ${units[i]}`;
+}
+/** ------------------------------------ **/
 
 export default function AdminAddRice() {
   const navigate = useNavigate();
@@ -32,29 +80,57 @@ export default function AdminAddRice() {
 
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [imageMeta, setImageMeta] = useState({ w: 0, h: 0, size: 0 });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState("");
 
   const setField = (key, val) => setForm((f) => ({ ...f, [key]: val }));
-
   const openPicker = () => fileRef.current?.click();
 
-  const onPickImage = (e) => {
+  const onPickImage = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, image: "Max image size is 2MB." }));
+
+    // Basic type guard
+    if (!/^image\//i.test(file.type)) {
+      setErrors((prev) => ({ ...prev, image: "Please choose a valid image file." }));
       return;
     }
+
     setErrors((prev) => ({ ...prev, image: undefined }));
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+
+    try {
+      // Compress to keep payload small
+      const { file: compressed, width, height } = await compressImage(file, {
+        maxW: 1024,
+        maxH: 1024,
+        quality: 0.82,
+        mime: "image/jpeg",
+      });
+
+      // Soft client cap ~1.2MB after compression to avoid server 413
+      if (compressed.size > 1.2 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          image: "Image is still too large after compression (max ~1.2MB). Try a smaller picture.",
+        }));
+        return;
+      }
+
+      setImageFile(compressed);
+      setImageMeta({ w: width, h: height, size: compressed.size });
+      const url = URL.createObjectURL(compressed);
+      setImagePreview(url);
+    } catch {
+      setErrors((prev) => ({ ...prev, image: "Could not process the image." }));
+    }
   };
 
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setImageMeta({ w: 0, h: 0, size: 0 });
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -67,38 +143,34 @@ export default function AdminAddRice() {
     return e;
   };
 
-  const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ""));
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-
   const onSubmit = async (goToList = false) => {
     setFormError("");
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length) return;
 
-    const payload = {
-      name: form.name.trim(),
-      category: "Meals",
-      price: Number(form.price),
-      stock: form.stock === "" ? 0 : Number(form.stock),
-      img: "",
-    };
-
     try {
       setSubmitting(true);
 
+      // Build multipart form-data (no JSON/base64)
+      const fd = new FormData();
+      fd.append("name", form.name.trim());
+      fd.append("category", "Meals");
+      fd.append("price", String(Number(form.price)));
+      fd.append("stock", String(form.stock === "" ? 0 : Number(form.stock)));
+      if (form.mealType) fd.append("mealType", form.mealType);
+      if (form.servingGrams) fd.append("servingGrams", String(Number(form.servingGrams)));
+      if (form.calories) fd.append("calories", String(Number(form.calories)));
+      if (form.description) fd.append("description", form.description);
+      fd.append("isActive", form.isActive ? "true" : "false");
+
       if (imageFile) {
-        payload.img = await fileToBase64(imageFile);
-      } else if (imagePreview) {
-        payload.img = imagePreview;
+        // If your backend expects the field name 'img' instead of 'image', change it here.
+        fd.append("image", imageFile, imageFile.name);
       }
 
-  await api.post("/admin/menu", payload);
+      // IMPORTANT: api.post will pass through FormData without JSON headers.
+      await api.post("/admin/menu", fd);
 
       if (goToList) {
         navigate("/admin/shop", { replace: true });
@@ -118,7 +190,14 @@ export default function AdminAddRice() {
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     } catch (err) {
-      setFormError(err?.message || "Failed to save meal. Please try again.");
+      const msg = String(err?.message || "");
+      if (msg.includes("413") || /entity too large|payload too large/i.test(msg)) {
+        setFormError(
+          "Upload rejected: the request is too large. We now compress client-side, but your server may still have a low limit. Ask the backend to raise 'limit' for multipart uploads (e.g., 5–10MB)."
+        );
+      } else {
+        setFormError(msg || "Failed to save meal. Please try again.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -290,6 +369,9 @@ export default function AdminAddRice() {
                 {imagePreview ? (
                   <>
                     <img src={imagePreview} alt="Meal" className="w-56 h-56 object-contain rounded" />
+                    <div className="mt-2 text-xs text-gray-500">
+                      {imageMeta.w && imageMeta.h ? `${imageMeta.w}×${imageMeta.h}px` : ""} • {formatBytes(imageMeta.size)}
+                    </div>
                     <div className="mt-4 flex gap-2">
                       <button
                         onClick={openPicker}
@@ -319,18 +401,12 @@ export default function AdminAddRice() {
                       className="mt-4 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
                     >
                       <Upload className="w-4 h-4" />
-                      Upload (PNG/JPG, ≤ 2MB)
+                      Upload (auto-compressed ≤ ~1.2MB)
                     </button>
                     {errors.image && <p className="text-xs text-red-600 mt-2">{errors.image}</p>}
                   </>
                 )}
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={onPickImage}
-                />
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
               </div>
               <p className="text-xs text-gray-500 mt-3">
                 Tip: square crop with clean background for better menu thumbnails.

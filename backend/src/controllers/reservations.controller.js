@@ -103,14 +103,31 @@ exports.mine = async (req, res) => {
     const db = await load();
     const uid = req.user?.id;
 
-    let rows;
+    // If authenticated, try to return reservations belonging to the user.
+    // Also include legacy/guest reservations where `userId` is missing but the
+    // reservation.student matches the user's name/email/id.
+    let rows = [];
     if (uid) {
-      rows = (db.reservations || []).filter((r) => r.userId === uid);
+      const users = Array.isArray(db.users) ? db.users : [];
+      const me = users.find((u) => String(u.id) === String(uid));
+
+      rows = (db.reservations || []).filter((r) => {
+        const rid = r.userId || r.user || r.ownerId || r.uid;
+        if (String(rid) === String(uid)) return true;
+        // no explicit user id: try matching by student name/email/uid
+        if (!rid && me) {
+          const student = String(r.student || "").trim().toLowerCase();
+          if (!student) return false;
+          const name = String(me.name || "").trim().toLowerCase();
+          const email = String(me.email || "").trim().toLowerCase();
+          const meId = String(me.id || "").trim().toLowerCase();
+          if (student === name || student === email || student === meId) return true;
+        }
+        return false;
+      });
     } else if (req.query.student) {
       const s = String(req.query.student).toLowerCase();
-      rows = (db.reservations || []).filter(
-        (r) => String(r.student || "").toLowerCase() === s
-      );
+      rows = (db.reservations || []).filter((r) => String(r.student || "").toLowerCase() === s);
     } else {
       return res.status(400).json({ error: "Missing identity" });
     }

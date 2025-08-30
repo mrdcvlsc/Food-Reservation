@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Search,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", {
@@ -15,11 +16,23 @@ const peso = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
 });
 
-function Pill({ status }) {
+function normalizeStatus(raw) {
+  const s = String(raw || "").trim().toLowerCase();
+  if (!s) return "Approved";
+  if (["approved", "approve"].includes(s)) return "Approved";
+  if (["preparing", "prep", "in-prep", "in_prep"].includes(s)) return "Preparing";
+  if (["ready", "done"].includes(s)) return "Ready";
+  if (["claimed", "pickedup", "picked_up", "picked-up"].includes(s)) return "Claimed";
+  if (["pending"].includes(s)) return "Pending";
+  if (["rejected", "declined"].includes(s)) return "Rejected";
+  return "Approved";
+}
+
+const Pill = ({ status }) => {
   const tone =
     {
       Approved: "bg-emerald-100 text-emerald-700",
-      Pending: "bg-yellow-100 text-yellow-700",
+      Pending: "bg-amber-100 text-amber-700",
       Preparing: "bg-blue-100 text-blue-700",
       Ready: "bg-green-100 text-green-700",
       Claimed: "bg-gray-100 text-gray-700",
@@ -30,27 +43,33 @@ function Pill({ status }) {
       {status}
     </span>
   );
-}
+};
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
 
   // ---- fetch orders
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const data = await api.get("/reservations/admin");
+      const arr = Array.isArray(data) ? data : data?.reservations || [];
+      setOrders(arr);
+    } catch (e) {
+      console.error("Load orders failed:", e);
+      setOrders([]);
+      // surface error to admin
+      alert(e?.message || "Failed to load orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let alive = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const data = await api.get("/reservations/admin");
-        if (!alive) return;
-        setOrders(Array.isArray(data) ? data : []);
-      } catch {
-        setOrders([]);
-      } finally {
-        alive && setLoading(false);
-      }
-    })();
+    fetchOrders();
     return () => {
       alive = false;
     };
@@ -65,46 +84,58 @@ export default function AdminOrders() {
   const filtered = useMemo(() => {
     const ql = String(q || "").toLowerCase();
 
-    // show only rows that match selected tab
-    let rows = (orders || []).filter((o) => {
-      const s = String(o?.status || "");
-      if (tab !== "All" && s !== tab) return false;
-      if (tab === "All" && (s === "Pending" || s === "Rejected")) return false; // exclude non-active from All
-      const student = String(o?.student || "").toLowerCase();
-      const id = String(o?.id || "").toLowerCase();
-      const grade = String(o?.grade || "").toLowerCase();
-      const section = String(o?.section || "").toLowerCase();
-      return (
-        student.includes(ql) ||
-        id.includes(ql) ||
-        grade.includes(ql) ||
-        section.includes(ql)
-      );
-    });
+    // show only fulfillment states; All excludes Pending/Rejected
+    let rows = (orders || [])
+      .map((o) => ({ ...o, status: normalizeStatus(o.status) }))
+      .filter((o) => {
+        const s = o.status;
+        if (tab !== "All" && s !== tab) return false;
+        if (tab === "All" && (s === "Pending" || s === "Rejected")) return false;
+        const student = String(o?.student || "").toLowerCase();
+        const id = String(o?.id || "").toLowerCase();
+        const grade = String(o?.grade || "").toLowerCase();
+        const section = String(o?.section || "").toLowerCase();
+        return (
+          student.includes(ql) || id.includes(ql) || grade.includes(ql) || section.includes(ql)
+        );
+      });
 
-    // sort by pickup text (string)
     const sorter =
       {
-        "time-asc": (a, b) =>
-          String(a?.pickup || "").localeCompare(String(b?.pickup || "")),
-        "time-desc": (a, b) =>
-          String(b?.pickup || "").localeCompare(String(a?.pickup || "")),
+        "time-asc": (a, b) => String(a?.pickup || "").localeCompare(String(b?.pickup || "")),
+        "time-desc": (a, b) => String(b?.pickup || "").localeCompare(String(a?.pickup || "")),
       }[sort] || ((a) => a);
+
     return rows.slice().sort(sorter);
   }, [orders, tab, q, sort]);
 
   // ---- actions
   const transition = async (id, next) => {
-    await api.patch(`/reservations/admin/${id}`, { status: next });
-    setOrders((list) =>
-      list.map((o) => (o.id === id ? { ...o, status: next } : o))
-    );
+    setBusyId(id);
+    try {
+      const res = await api.patch(`/reservations/admin/${id}`, { status: next });
+      if (res && res.reservation) {
+        setOrders((list) => list.map((o) => (String(o.id) === String(id) ? res.reservation : o)));
+      } else if (res && (res.id || res.status)) {
+        setOrders((list) => list.map((o) => (String(o.id) === String(id) ? { ...o, ...res } : o)));
+      } else {
+        // fallback: refresh whole list
+        await fetchOrders();
+      }
+    } catch (e) {
+      console.error("Transition failed:", e);
+      alert(e?.message || `Failed to set status to ${next}`);
+    } finally {
+      setBusyId(null);
+    }
   };
 
   const orderTotal = (o) =>
-    (o?.items || []).reduce((acc, it) => acc + (Number(it?.qty) || 0) * (Number(it?.price) || 0), 0);
+    (o?.items || []).reduce(
+      (acc, it) => acc + (Number(it?.qty ?? it?.quantity ?? 0) || 0) * (Number(it?.price ?? it?.unitPrice ?? 0) || 0),
+      0
+    );
 
-  // ---- ui
   const tabs = ["All", "Approved", "Preparing", "Ready", "Claimed"];
 
   return (
@@ -115,9 +146,7 @@ export default function AdminOrders() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <UtensilsCrossed className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Orders Queue
-            </h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Orders Queue</h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -141,7 +170,7 @@ export default function AdminOrders() {
           </div>
         </div>
 
-        {/* Tabs (single row, chip style) */}
+        {/* Tabs (chip style) */}
         <div className="flex items-center gap-2">
           {tabs.map((t) => {
             const active = tab === t;
@@ -149,12 +178,11 @@ export default function AdminOrders() {
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition
-                  ${
-                    active
-                      ? "bg-gray-900 text-white border-gray-900"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                  }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
+                  active
+                    ? "bg-gray-900 text-white border-gray-900"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                }`}
               >
                 {t}
               </button>
@@ -166,10 +194,7 @@ export default function AdminOrders() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="animate-pulse bg-white rounded-xl border border-gray-100 p-4"
-              >
+              <div key={i} className="animate-pulse bg-white rounded-xl border border-gray-100 p-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <div className="h-4 w-28 bg-gray-200 rounded" />
@@ -188,77 +213,66 @@ export default function AdminOrders() {
         ) : (
           <div className="space-y-3">
             {filtered.map((o) => (
-              <div
-                key={o.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-4"
-              >
+              <div key={o.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                 {/* Card header */}
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">RES-{o.id}</span>
-                      <Pill status={o.status} />
+                      <span className="text-sm text-gray-500">{o.id}</span>
+                      <Pill status={normalizeStatus(o.status)} />
                     </div>
                     <div className="mt-1 text-gray-900 font-medium">
                       {o.student} • {o.grade}-{o.section}
                     </div>
-                    <div className="text-sm text-gray-600">
-                      Pickup: {o.pickup}
-                    </div>
-                    {!!o.note && (
-                      <div className="text-sm text-gray-500 mt-1">
-                        Note: {o.note}
-                      </div>
-                    )}
+                    <div className="text-sm text-gray-600">Pickup: {o.pickup || "—"}</div>
+                    {!!o.note && <div className="text-sm text-gray-500 mt-1">Note: {o.note}</div>}
                   </div>
 
                   <div className="text-right shrink-0">
                     <div className="text-sm text-gray-500">Total</div>
-                    <div className="text-lg font-semibold">
-                      {peso.format(orderTotal(o))}
-                    </div>
+                    <div className="text-lg font-semibold">{peso.format(orderTotal(o))}</div>
                   </div>
                 </div>
 
                 {/* Items */}
                 <div className="mt-3 border-t pt-3">
                   {(o.items || []).map((it, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between text-sm py-1"
-                    >
+                    <div key={idx} className="flex items-center justify-between text-sm py-1">
                       <div className="text-gray-700">{it.name}</div>
-                      <div className="text-gray-600">x{it.qty}</div>
+                      <div className="text-gray-600">x{it.qty ?? it.quantity ?? 0}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* Actions */}
                 <div className="mt-3 flex items-center justify-end">
-                  {o.status === "Approved" && (
+                  {normalizeStatus(o.status) === "Approved" && (
                     <button
                       onClick={() => transition(o.id, "Preparing")}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-blue-600 text-white hover:bg-blue-700"
+                      disabled={busyId === o.id}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
                     >
-                      <Timer className="w-4 h-4" />
+                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Timer className="w-4 h-4" />}
                       Move to Preparing
                     </button>
                   )}
-                  {o.status === "Preparing" && (
+                  {normalizeStatus(o.status) === "Preparing" && (
                     <button
                       onClick={() => transition(o.id, "Ready")}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 text-white hover:bg-emerald-700"
+                      disabled={busyId === o.id}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
                     >
-                      <CheckCircle2 className="w-4 h-4" />
+                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                       Mark Ready
                     </button>
                   )}
-                  {o.status === "Ready" && (
+                  {normalizeStatus(o.status) === "Ready" && (
                     <button
                       onClick={() => transition(o.id, "Claimed")}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-gray-900 text-white hover:bg-black"
+                      disabled={busyId === o.id}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-gray-900 text-white hover:bg-black disabled:opacity-60"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
                       Mark Claimed
                     </button>
                   )}

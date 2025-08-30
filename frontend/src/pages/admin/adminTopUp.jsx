@@ -3,14 +3,23 @@ import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../../components/adminavbar";
 import {
   Upload, Trash2, Image as ImageIcon,
-  Check, X, Wallet, Clock4
+  Check, X, Wallet, Clock4, RefreshCw, ExternalLink
 } from "lucide-react";
 import { api } from "../../lib/api";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+const fmtDT = (v) => {
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return String(v || "");
+  return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(d);
+};
+const badge = (p) =>
+  p?.toLowerCase() === "maya"
+    ? "inline-flex px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-700"
+    : "inline-flex px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700";
 
 export default function AdminTopUp() {
-  const [tab, setTab] = useState("wallet"); // wallet | verify
+  const [tab, setTab] = useState("verify"); // default to verify
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -118,7 +127,6 @@ function TopUpManager() {
       alert(err.message || "Failed to upload");
     } finally {
       setUploading(false);
-      // clear input
       if (fileRef.current) fileRef.current.value = "";
     }
   };
@@ -274,80 +282,213 @@ function TopUpManager() {
 /* ---------------------- Verify Top-Ups (queue) ---------------------- */
 function VerifyQueue() {
   const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(""); // disable buttons per row while acting
+  const [error, setError] = useState("");
+  const [q, setQ] = useState("");
+  const [provider, setProvider] = useState("all");
+  const [lightbox, setLightbox] = useState({ open: false, src: "", alt: "" });
+
+  const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const norm = (u) => (u && u.startsWith("/") ? API_BASE + u : u);
+
+  const fetchRows = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const d = await api.get("/admin/topups");
+      const list = (d || [])
+        .map((r) => ({
+          ...r,
+          proofUrl: norm(r.proofUrl),
+          statusLC: String(r.status || "").toLowerCase(),
+        }))
+        .filter((r) => r.statusLC === "pending"); // only show pending
+      setRows(list);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load top-ups.");
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let m = true;
-    (async () => {
-      try {
-        const d = await api.get('/admin/topups');
-        const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000';
-        const norm = (u) => (u && u.startsWith('/') ? API_BASE + u : u);
-        // normalize proofUrl and only show topups that are still pending
-        const rows = (d || [])
-          .map((r) => ({ ...r, proofUrl: norm(r.proofUrl) }))
-          .filter((r) => String(r.status || '').toLowerCase() === 'pending');
-        if (m) setRows(rows);
-      } catch (err) {
-        if (m) setRows([]);
-      }
-    })();
-    return () => { m = false; };
+    fetchRows();
+    const id = setInterval(fetchRows, 30000); // auto-refresh every 30s
+    return () => clearInterval(id);
   }, []);
 
-  const approve = async (id) => {
-  await api.patch(`/admin/topups/${id}`, { status: "Approved" });
-    setRows((r) => r.filter((x) => x.id !== id));
-    alert(`Approved ${id}. Balance will be credited.`);
+  const approve = async (r) => {
+    if (!window.confirm(`Approve ₱${r.amount} for ${r.student || r.payerName || "user"}?`)) return;
+    try {
+      setBusyId(r.id);
+      await api.patch(`/admin/topups/${r.id}`, { status: "Approved" });
+      setRows((list) => list.filter((x) => x.id !== r.id));
+      alert(`Approved ${r.id}. Balance will be credited.`);
+    } catch (e) {
+      alert(e?.message || "Failed to approve.");
+    } finally {
+      setBusyId("");
+    }
   };
 
-  const reject = async (id) => {
-  await api.patch(`/admin/topups/${id}`, { status: "Rejected" });
-    setRows((r) => r.filter((x) => x.id !== id));
-    alert(`Rejected ${id}.`);
+  const reject = async (r) => {
+    const reason = window.prompt("Reject reason (optional):", "");
+    if (!window.confirm(`Reject top-up ${r.id}?`)) return;
+    try {
+      setBusyId(r.id);
+      await api.patch(`/admin/topups/${r.id}`, { status: "Rejected", reason: reason || "" });
+      setRows((list) => list.filter((x) => x.id !== r.id));
+    } catch (e) {
+      alert(e?.message || "Failed to reject.");
+    } finally {
+      setBusyId("");
+    }
   };
+
+  const filtered = rows.filter((r) => {
+    const s = q.trim().toLowerCase();
+    const providerOk = provider === "all" || String(r.provider || "").toLowerCase() === provider;
+    if (!s) return providerOk;
+    return (
+      providerOk &&
+      (String(r.id).toLowerCase().includes(s) ||
+        String(r.reference || "").toLowerCase().includes(s) ||
+        String(r.student || r.payerName || "").toLowerCase().includes(s) ||
+        String(r.studentId || "").toLowerCase().includes(s))
+    );
+  });
 
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Clock4 className="w-5 h-5 text-gray-500" />
-        <h2 className="text-lg font-semibold">Pending Top-Ups</h2>
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Clock4 className="w-5 h-5 text-gray-500" />
+          <h2 className="text-lg font-semibold">Pending Top-Ups</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search ID, name, student ID, ref…"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          />
+          <select
+            value={provider}
+            onChange={(e) => setProvider(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="all">All providers</option>
+            <option value="gcash">GCash</option>
+            <option value="maya">Maya</option>
+          </select>
+          <button
+            onClick={fetchRows}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm border hover:bg-gray-50"
+          >
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-100">
+      {error && (
+        <div className="text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-4 py-3 mb-3">
+          {error}
+        </div>
+      )}
+
+      <div className="overflow-x-auto rounded-lg border border-gray-100">
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Student</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Provider</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Proof</th>
-              <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
-              <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              <th className="px-4 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+              <th className="px-4 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Payer / Student</th>
+              <th className="px-4 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Ref #</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Provider</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Proof</th>
+              <th className="px-4 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Meta</th>
+              <th className="px-4 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
+              <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {rows.map((r) => (
+            {loading && (
+              <tr>
+                <td colSpan={9} className="px-6 py-10 text-center text-sm text-gray-500">Loading…</td>
+              </tr>
+            )}
+
+            {!loading && filtered.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm font-medium text-gray-900">{r.id}</td>
-                <td className="px-6 py-4 text-sm text-gray-700">{r.student}</td>
-                <td className="px-6 py-4 text-sm text-center text-gray-600">{r.provider}</td>
-                <td className="px-6 py-4 text-sm font-medium text-center text-gray-900">{peso.format(r.amount)}</td>
-                <td className="px-6 py-4 text-sm text-center text-gray-700">
-                  {r.proofUrl ? <img src={r.proofUrl} alt="proof" className="w-20 h-12 object-contain rounded" /> : <span className="text-xs text-gray-500">No proof</span>}
+                <td className="px-4 py-3 text-sm font-medium text-gray-900">{r.id}</td>
+
+                <td className="px-4 py-3 text-sm text-gray-700">
+                  <div className="font-medium">{r.payerName || r.student || "—"}</div>
+                  <div className="text-xs text-gray-500">
+                    {r.studentId ? `ID: ${r.studentId}` : "ID: —"} • {r.contact || "No contact"}
+                  </div>
+                  {r.email && <div className="text-xs text-gray-400">{r.email}</div>}
                 </td>
-                <td className="px-6 py-4 text-sm text-center text-gray-600">{r.submittedAt}</td>
-                <td className="px-6 py-4">
+
+                <td className="px-4 py-3 text-sm text-gray-700">{r.reference || "—"}</td>
+
+                <td className="px-4 py-3 text-sm text-center">
+                  <span className={badge(r.provider)}>{String(r.provider || "").toUpperCase()}</span>
+                </td>
+
+                <td className="px-4 py-3 text-sm font-semibold text-center text-emerald-700">
+                  {peso.format(Number(r.amount || 0))}
+                </td>
+
+                <td className="px-4 py-3 text-sm text-center">
+                  {r.proofUrl ? (
+                    <div className="inline-flex flex-col items-center gap-1">
+                      <img
+                        src={r.proofUrl}
+                        alt="payment proof"
+                        className="w-20 h-12 object-contain rounded border cursor-zoom-in"
+                        onClick={() => setLightbox({ open: true, src: r.proofUrl, alt: `Proof ${r.id}` })}
+                      />
+                      <a
+                        href={r.proofUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-xs text-blue-600 inline-flex items-center gap-1 hover:underline"
+                        title="Open in new tab"
+                      >
+                        <ExternalLink className="w-3 h-3" /> open
+                      </a>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-gray-500">No proof</span>
+                  )}
+                </td>
+
+                <td className="px-4 py-3 text-xs text-gray-600 leading-5">
+                  {(r.imgWidth && r.imgHeight) ? `${r.imgWidth}×${r.imgHeight}px` : "—"}
+                  {r.fileHash && (
+                    <> • hash: <span title={r.fileHash} className="font-mono">{String(r.fileHash).slice(0, 8)}…</span></>
+                  )}
+                </td>
+
+                <td className="px-4 py-3 text-sm text-gray-600">{fmtDT(r.submittedAt || r.createdAt)}</td>
+
+                <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
                     <button
-                      onClick={() => approve(r.id)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-green-600 text-white hover:bg-green-700"
+                      disabled={busyId === r.id}
+                      onClick={() => approve(r)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-green-600 text-white hover:bg-green-700 disabled:opacity-60"
                     >
                       <Check className="w-4 h-4" /> Approve
                     </button>
                     <button
-                      onClick={() => reject(r.id)}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-red-600 text-white hover:bg-red-700"
+                      disabled={busyId === r.id}
+                      onClick={() => reject(r)}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
                     >
                       <X className="w-4 h-4" /> Reject
                     </button>
@@ -355,9 +496,10 @@ function VerifyQueue() {
                 </td>
               </tr>
             ))}
-            {rows.length === 0 && (
+
+            {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-6 py-10 text-center text-sm text-gray-500">
+                <td colSpan={9} className="px-6 py-10 text-center text-sm text-gray-500">
                   No pending top-ups. 🎉
                 </td>
               </tr>
@@ -365,6 +507,40 @@ function VerifyQueue() {
           </tbody>
         </table>
       </div>
+
+      {/* Lightbox modal for proof image */}
+      {lightbox.open && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setLightbox({ open: false, src: "", alt: "" })}
+        >
+          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-3 flex items-center justify-between border-b">
+              <div className="text-sm font-medium truncate pr-3">{lightbox.alt}</div>
+              <button
+                className="text-sm px-3 py-1.5 rounded bg-gray-900 text-white hover:bg-black"
+                onClick={() => setLightbox({ open: false, src: "", alt: "" })}
+              >
+                Close
+              </button>
+            </div>
+            <div className="p-4 bg-gray-50">
+              <img src={lightbox.src} alt={lightbox.alt} className="max-h-[75vh] mx-auto w-auto object-contain rounded" />
+            </div>
+            <div className="p-3 border-t text-right">
+              <a
+                href={lightbox.src}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+              >
+                <ExternalLink className="w-4 h-4" />
+                Open original
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

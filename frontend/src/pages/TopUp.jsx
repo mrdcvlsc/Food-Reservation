@@ -1,70 +1,159 @@
 // src/pages/TopUp.jsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "../components/avbar";
 import { api } from "../lib/api";
-import { Upload, Image as ImageIcon, Wallet, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  Upload,
+  Image as ImageIcon,
+  Wallet,
+  CheckCircle2,
+  Loader2,
+  Info,
+  ShieldCheck,
+} from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
+// ---------- helpers ----------
+const clamp2 = (s) => {
+  // keep only digits + one dot, clamp to 2 decimals
+  s = (s || "").replace(/[^\d.]/g, "");
+  const parts = s.split(".");
+  if (parts.length > 2) s = parts[0] + "." + parts.slice(1).join("");
+  const [a, b = ""] = s.split(".");
+  return b.length ? `${a}.${b.slice(0, 2)}` : a;
+};
+
+const toNumber = (v, d = 0) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : d;
+};
+
+const normProvider = (p) => (String(p || "").toLowerCase() === "maya" ? "maya" : "gcash");
+
+const within = (n, min, max) => n >= min && n <= max;
+
+async function sha256File(file) {
+  const buf = await file.arrayBuffer();
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  const view = new Uint8Array(hash);
+  return Array.from(view)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function readLocalUser() {
+  const keys = ["user", "auth", "profile", "account"];
+  for (const k of keys) {
+    try {
+      const raw = localStorage.getItem(k);
+      if (!raw) continue;
+      const obj = JSON.parse(raw);
+      const u = obj?.user && typeof obj.user === "object" ? obj.user : obj;
+      if (u && (u.email || u.name)) return u;
+    } catch {}
+  }
+  return {};
+}
+
+// ---------- component ----------
 export default function TopUp() {
+  // wallet QR + meta
   const [provider, setProvider] = useState("gcash"); // 'gcash' | 'maya'
   const [qr, setQr] = useState({ gcash: null, maya: null });
   const [meta, setMeta] = useState({
     gcash: { accountName: "", mobile: "" },
     maya: { accountName: "", mobile: "" },
   });
-  const [loading, setLoading] = useState(true);
 
+  // user
+  const [user, setUser] = useState(() => {
+    const u = readLocalUser();
+    return {
+      name: u.name || u.fullName || "",
+      email: u.email || "",
+      studentId: u.studentId || u.studentID || u.sid || "",
+      phone: u.phone || u.contact || "",
+      balance: toNumber(u.balance ?? u.wallet ?? 0, 0),
+      createdAt: u.createdAt || u.memberSince || u.registeredAt || null,
+    };
+  });
+
+  // form
   const [amount, setAmount] = useState("");
-  const [refNo, setRefNo] = useState(""); // optional user note / reference
+  const [refNo, setRefNo] = useState(""); // required
+  const [payerName, setPayerName] = useState("");
+  const [studentId, setStudentId] = useState("");
+  const [contact, setContact] = useState("");
+  const [agree, setAgree] = useState(false);
+
   const [file, setFile] = useState(null);
+  const [fileHash, setFileHash] = useState("");
+  const [imgMeta, setImgMeta] = useState({ w: 0, h: 0 });
   const [preview, setPreview] = useState(null);
+
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
   const fileRef = useRef(null);
 
-  // Load wallets (QR + meta)
+  // Load wallets (QR + meta) and refresh user from /me if token is present
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         setLoading(true);
-        const list = await api.get("/wallets"); // [{provider, accountName, mobile, qrImageUrl, active}]
+
+        // ---- wallets ----
+        const list = await api.get("/wallets").catch(() => []);
         const nextQr = { gcash: null, maya: null };
-        const nextMeta = {
-          gcash: { accountName: "", mobile: "" },
-          maya: { accountName: "", mobile: "" },
-        };
+        const nextMeta = { gcash: { accountName: "", mobile: "" }, maya: { accountName: "", mobile: "" } };
         (list || []).forEach((w) => {
           const key = String(w.provider || "").toLowerCase();
           if (key === "gcash" || key === "maya") {
-            // normalize backend /uploads paths to full URL so the CRA dev server doesn't serve index.html
-            const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:4000';
+            const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
             const q = w.qrImageUrl || null;
-            nextQr[key] = q && q.startsWith('/') ? API_BASE + q : q;
-            nextMeta[key] = {
-              accountName: w.accountName || "",
-              mobile: w.mobile || "",
-            };
+            nextQr[key] = q && q.startsWith("/") ? API_BASE + q : q;
+            nextMeta[key] = { accountName: w.accountName || "", mobile: w.mobile || "" };
           }
         });
-        if (!alive) return;
-  setQr(nextQr);
-        setMeta(nextMeta);
 
-        // Pick first available provider with a QR; fallback to gcash
-        const first =
-          (nextQr.gcash && "gcash") || (nextQr.maya && "maya") || "gcash";
+        // ---- user (/me) ----
+        const meRes = await api.get("/me").catch(() => null);
+        const me = meRes?.data || meRes;
+        if (alive && me) {
+          setUser((u) => ({
+            ...u,
+            name: me.name || me.fullName || u.name,
+            email: me.email || u.email,
+            studentId: me.studentId || u.studentId,
+            phone: me.phone || me.contact || u.phone,
+            balance: toNumber(me.balance ?? me.walletBalance ?? u.balance, u.balance),
+          }));
+        }
+
+        if (!alive) return;
+        setQr(nextQr);
+        setMeta(nextMeta);
+        const first = (nextQr.gcash && "gcash") || (nextQr.maya && "maya") || "gcash";
         setProvider(first);
-      } catch (e) {
-        console.error(e);
       } finally {
-        if (alive) setLoading(false);
+        alive && setLoading(false);
       }
     })();
     return () => {
       alive = false;
     };
   }, []);
+
+  // initialize form defaults once user is known
+  useEffect(() => {
+    if (payerName === "") setPayerName(user.name || "");
+    if (studentId === "") setStudentId(user.studentId || "");
+    if (contact === "") setContact(user.phone || "");
+  }, [user]); // eslint-disable-line
+
+  const activeMeta = meta[provider];
 
   const openPicker = () => fileRef.current?.click();
 
@@ -77,33 +166,55 @@ export default function TopUp() {
     }
     setFile(f);
     setPreview(URL.createObjectURL(f));
+    // get basic image dimensions for server-side sanity checks
+    const img = new Image();
+    img.onload = () => setImgMeta({ w: img.width, h: img.height });
+    img.src = URL.createObjectURL(f);
+    // compute sha256
+    sha256File(f).then(setFileHash).catch(() => setFileHash(""));
   };
 
   const resetForm = () => {
     setAmount("");
     setRefNo("");
+    setAgree(false);
     setFile(null);
+    setFileHash("");
+    setImgMeta({ w: 0, h: 0 });
     setPreview(null);
     if (fileRef.current) fileRef.current.value = "";
   };
 
+  // derived flags
+  const numAmount = useMemo(() => toNumber(amount, 0), [amount]);
+  const amountOk = useMemo(() => within(numAmount, 20, 20000), [numAmount]); // sensible range
+  const refOk = useMemo(() => refNo.trim().length >= 6, [refNo]);
+  const nameOk = useMemo(() => payerName.trim().length >= 3, [payerName]);
+  const sidOk = useMemo(() => studentId.trim().length >= 3, [studentId]);
+  const contactOk = useMemo(() => contact.trim().length >= 7, [contact]);
+  const imgOk = useMemo(() => !!file && imgMeta.w >= 300 && imgMeta.h >= 300, [file, imgMeta]);
+
+  const canSubmit = amountOk && refOk && nameOk && sidOk && contactOk && imgOk && agree && !submitting;
+
   const onSubmit = async () => {
-    if (!amount || Number(amount) <= 0) {
-      alert("Enter a valid amount.");
-      return;
-    }
-    if (!file) {
-      alert("Upload a screenshot or proof of payment.");
+    if (!canSubmit) {
+      alert("Please complete all required fields correctly.");
       return;
     }
 
     setSubmitting(true);
     try {
-      // IMPORTANT: api.post handles FormData (no JSON header) if body is FormData
       const fd = new FormData();
-      fd.append("provider", provider);
-      fd.append("amount", amount);
-      fd.append("reference", refNo || "");
+      fd.append("provider", normProvider(provider));
+      fd.append("amount", numAmount.toFixed(2));
+      fd.append("reference", refNo.trim()); // transaction ref from GCash/Maya
+      fd.append("payerName", payerName.trim());
+      fd.append("studentId", studentId.trim());
+      fd.append("contact", contact.trim());
+      if (user.email) fd.append("email", user.email);
+      if (fileHash) fd.append("fileHash", fileHash);
+      if (imgMeta?.w) fd.append("imgWidth", String(imgMeta.w));
+      if (imgMeta?.h) fd.append("imgHeight", String(imgMeta.h));
       fd.append("proof", file);
 
       await api.post("/topups", fd);
@@ -111,13 +222,11 @@ export default function TopUp() {
       resetForm();
     } catch (err) {
       console.error(err);
-      alert(err.message || "Failed to submit. Please try again.");
+      alert(err?.message || "Failed to submit. Please try again.");
     } finally {
       setSubmitting(false);
     }
   };
-
-  const activeMeta = meta[provider];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,6 +241,18 @@ export default function TopUp() {
           Send money to the canteen wallet using the QR below, then upload a screenshot of the payment.
           Your balance updates after staff approval.
         </p>
+
+        {/* User summary */}
+        <div className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            <div className="font-medium">{user.name || "—"}</div>
+            <div className="text-gray-500">{user.email || "—"}</div>
+          </div>
+          <div className="text-right">
+            <div className="text-xs text-gray-500">Current Balance</div>
+            <div className="text-xl font-bold text-green-700">{peso.format(user.balance || 0)}</div>
+          </div>
+        </div>
 
         {/* Provider tabs */}
         <div className="flex w-full rounded-lg overflow-hidden">
@@ -174,9 +295,7 @@ export default function TopUp() {
               ) : (
                 <>
                   <ImageIcon className="w-10 h-10 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
-                    QR not available. Ask the canteen to upload one.
-                  </p>
+                  <p className="text-sm text-gray-600">QR not available. Ask the canteen to upload one.</p>
                 </>
               )}
             </div>
@@ -184,21 +303,21 @@ export default function TopUp() {
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
               <div>
                 <p className="text-gray-500">Account Name</p>
-                <p className="font-medium text-gray-900">
-                  {activeMeta.accountName || "—"}
-                </p>
+                <p className="font-medium text-gray-900">{activeMeta.accountName || "—"}</p>
               </div>
               <div>
                 <p className="text-gray-500">Mobile</p>
-                <p className="font-medium text-gray-900">
-                  {activeMeta.mobile || "—"}
-                </p>
+                <p className="font-medium text-gray-900">{activeMeta.mobile || "—"}</p>
               </div>
             </div>
 
-            <p className="text-xs text-gray-500 mt-3">
-              Tip: put your full name & student ID in the payment note to speed up verification.
-            </p>
+            <div className="mt-4 flex items-start gap-2 text-xs text-gray-600">
+              <Info className="w-4 h-4 mt-0.5" />
+              <p>
+                Tip: Include your full name & student ID in the payment note. Make sure the app shows the{" "}
+                <strong>reference/transaction ID</strong>—you will type it below.
+              </p>
+            </div>
           </div>
 
           {/* Right: submit proof */}
@@ -206,54 +325,100 @@ export default function TopUp() {
             <h2 className="text-lg font-semibold mb-4">Submit Proof</h2>
 
             <div className="space-y-4">
+              {/* Payer Name */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Payer Full Name</label>
+                <input
+                  value={payerName}
+                  onChange={(e) => setPayerName(e.target.value)}
+                  placeholder="Your name as shown in GCash/Maya"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {!nameOk && <p className="text-xs text-rose-600 mt-1">Enter at least 3 characters.</p>}
+              </div>
+
+              {/* Student ID & contact */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                  <input
+                    value={studentId}
+                    onChange={(e) => setStudentId(e.target.value)}
+                    placeholder="e.g., 23-12345"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {!sidOk && <p className="text-xs text-rose-600 mt-1">Provide your student ID.</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
+                  <input
+                    value={contact}
+                    onChange={(e) => setContact(e.target.value)}
+                    placeholder="09xxxxxxxxx"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  {!contactOk && <p className="text-xs text-rose-600 mt-1">Provide a valid contact number.</p>}
+                </div>
+              </div>
+
               {/* Amount */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount (PHP)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount (PHP)</label>
                 <input
                   value={amount}
-                  onChange={(e) =>
-                    setAmount(e.target.value.replace(/[^\d.]/g, ""))
-                  }
+                  onChange={(e) => setAmount(clamp2(e.target.value))}
                   inputMode="decimal"
-                  placeholder="e.g., 200"
+                  placeholder="e.g., 200.00"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Preview: {amount ? peso.format(Number(amount)) : "—"}
+                  Preview: {amount ? peso.format(numAmount) : "—"} (Allowed: ₱20 – ₱20,000)
                 </p>
+                {!amountOk && amount !== "" && (
+                  <p className="text-xs text-rose-600 mt-1">Enter an amount between ₱20 and ₱20,000.</p>
+                )}
               </div>
 
-              {/* Optional ref */}
+              {/* Reference */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Reference / Note (optional)
+                  Reference / Transaction ID
                 </label>
                 <input
                   value={refNo}
                   onChange={(e) => setRefNo(e.target.value)}
-                  placeholder="e.g., GCash ref # or 'Juan D. - G10'"
+                  placeholder="e.g., GCash/Maya reference number"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+                {!refOk && refNo !== "" && (
+                  <p className="text-xs text-rose-600 mt-1">Enter at least 6 characters.</p>
+                )}
               </div>
 
               {/* Proof upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Screenshot
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Screenshot</label>
                 <div className="border border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[220px]">
                   {preview ? (
                     <>
-                      <img
-                        src={preview}
-                        alt="proof"
-                        className="w-56 h-56 object-contain rounded"
-                      />
+                      <img src={preview} alt="proof" className="w-56 h-56 object-contain rounded" />
                       <div className="mt-3 text-xs text-gray-500">
-                        Ready to submit
+                        {imgMeta.w && imgMeta.h ? `${imgMeta.w}×${imgMeta.h}px` : "Ready to submit"}
+                        {fileHash ? ` • hash: ${fileHash.slice(0, 8)}…` : ""}
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFile(null);
+                          setPreview(null);
+                          setFileHash("");
+                          setImgMeta({ w: 0, h: 0 });
+                          if (fileRef.current) fileRef.current.value = "";
+                        }}
+                        className="mt-2 text-xs underline text-gray-600"
+                      >
+                        Choose a different file
+                      </button>
                     </>
                   ) : (
                     <>
@@ -268,30 +433,51 @@ export default function TopUp() {
                       </button>
                     </>
                   )}
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={onPickImage}
-                  />
+                  <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
                 </div>
+                {!imgOk && file && (
+                  <p className="text-xs text-rose-600 mt-2">
+                    Image seems too small. Please upload a clearer screenshot (≥300×300).
+                  </p>
+                )}
                 <p className="text-xs text-gray-500 mt-2">
-                  Make sure the amount and reference are visible.
+                  Make sure the amount and reference number are clearly visible.
                 </p>
+              </div>
+
+              {/* Checklist & consent */}
+              <div className="rounded-lg border p-3 text-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
+                  <span className="font-medium">Before you submit</span>
+                </div>
+                <ul className="list-disc pl-5 text-gray-600 space-y-1">
+                  <li>
+                    Name on the app matches <strong>{payerName || "your name"}</strong>.
+                  </li>
+                  <li>Reference/Transaction ID typed correctly.</li>
+                  <li>Screenshot shows the amount clearly.</li>
+                </ul>
+                <label className="mt-3 flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    onChange={(e) => setAgree(e.target.checked)}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <span className="text-gray-700">
+                    I confirm the details are accurate and understand false submissions may be rejected.
+                  </span>
+                </label>
               </div>
 
               {/* Submit */}
               <button
-                disabled={submitting}
+                disabled={!canSubmit}
                 onClick={onSubmit}
                 className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black transition text-sm disabled:opacity-60"
               >
-                {submitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="w-4 h-4" />
-                )}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                 Submit Top-Up for Review
               </button>
             </div>
