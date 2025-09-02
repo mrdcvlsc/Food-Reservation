@@ -5,6 +5,7 @@ const fs = require("fs-extra");
 const M = require("../controllers/menu.controller");
 const { requireAuth, requireAdmin } = require("../lib/auth");
 
+// Limit menu images to 4MB to avoid very large uploads from the admin UI
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
@@ -18,6 +19,8 @@ const upload = multer({
     }
   })
 });
+
+// If you later add endpoint handlers that accept files here, use `upload.single('image')`
 
 const router = express.Router();
 

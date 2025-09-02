@@ -15,6 +15,8 @@ import {
   Filter,
   Wallet,
   AlertTriangle,
+  Image as ImageIcon,
+  ChevronRight,
 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
@@ -39,6 +41,7 @@ export default function Shop() {
 
   // search + filters
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("featured");
 
@@ -49,6 +52,9 @@ export default function Shop() {
   const [open, setOpen] = useState(false);
   const [reserve, setReserve] = useState({ grade: "", section: "", slot: "", note: "" });
   const [submitting, setSubmitting] = useState(false);
+
+  // item preview modal
+  const [preview, setPreview] = useState(null); // item or null
 
   // ==== DATA LOADERS =========================================================
   const fetchMenu = async () => {
@@ -64,6 +70,7 @@ export default function Shop() {
           price: Number(r.price) || 0,
           stock: Number(r.stock ?? 0),
           img: r.img || r.image || "",
+          desc: r.desc || r.description || "",
         }))
       );
     } catch {
@@ -77,16 +84,15 @@ export default function Shop() {
     setLoadingWallet(true);
     setWalletError("");
     try {
-      // expected payload: { balance: number, ... }
       const w = await api.get("/wallets/me");
       const val = (w && (w.data || w)) || {};
       const bal = Number(val.balance) || 0;
       setWallet({ balance: bal });
       try {
-        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        const u = JSON.parse(localStorage.getItem("user") || "{}");
         if (u && u.id) {
           u.balance = bal;
-          localStorage.setItem('user', JSON.stringify(u));
+          localStorage.setItem("user", JSON.stringify(u));
         }
       } catch {}
     } catch (e) {
@@ -113,21 +119,48 @@ export default function Shop() {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
 
+  // debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedQ(q.trim().toLowerCase()), 200);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  // prefill grade/section from saved user when opening reserve
+  useEffect(() => {
+    if (!open) return;
+    try {
+      const u = JSON.parse(localStorage.getItem("user") || "{}");
+      setReserve((r) => ({
+        ...r,
+        grade: r.grade || u.grade || "",
+        section: r.section || u.section || "",
+      }));
+    } catch {}
+  }, [open]);
+
   // ==== DERIVED ==============================================================
+
   const categories = useMemo(() => {
     const set = new Set(items.map((i) => i.category).filter(Boolean));
     return ["all", ...Array.from(set)];
   }, [items]);
 
+  const catCounts = useMemo(() => {
+    const map = new Map();
+    for (const it of items) {
+      map.set(it.category || "Others", (map.get(it.category || "Others") || 0) + 1);
+    }
+    return map;
+  }, [items]);
+
   const filtered = useMemo(() => {
     let rows = items.slice(0);
-    const s = q.toLowerCase().trim();
 
-    if (s) {
+    if (debouncedQ) {
       rows = rows.filter(
         (i) =>
-          String(i.name || "").toLowerCase().includes(s) ||
-          String(i.category || "").toLowerCase().includes(s)
+          String(i.name || "").toLowerCase().includes(debouncedQ) ||
+          String(i.category || "").toLowerCase().includes(debouncedQ)
       );
     }
     if (category !== "all") rows = rows.filter((i) => i.category === category);
@@ -155,7 +188,7 @@ export default function Shop() {
         });
     }
     return rows;
-  }, [items, q, category, sort]);
+  }, [items, debouncedQ, category, sort]);
 
   const list = useMemo(
     () =>
@@ -220,7 +253,6 @@ export default function Shop() {
       return navigate("/login");
     }
 
-    // Enforce wallet balance check (remove this if you allow COD)
     if (insufficient) {
       return alert("Insufficient wallet balance. Please top-up first.");
     }
@@ -233,22 +265,19 @@ export default function Shop() {
         section: reserve.section.trim(),
         slot: reserve.slot,
         note: reserve.note || "",
-        // some backends also accept `payWith: 'wallet'`
       };
 
-      // Prefer a SINGLE atomic endpoint if available
-      // It should: validate stock, create reservation, deduct wallet, create tx logs
+      // Prefer atomic endpoint
       let r;
       try {
         r = await api.post("/reservations/checkout", payload);
       } catch {
-        // Fallback to 2-step if atomic route not implemented
+        // Fallback 2-step
         const created = await api.post("/reservations", payload);
         const createdId = created?.id || created?.data?.id;
         const amount = created?.total ?? created?.data?.total ?? total;
 
         if (!createdId) throw new Error("Reservation created without an id. Please check backend response.");
-        // Charge wallet now; backend should reject if balance changed / insufficient
         await api.post("/wallets/charge", {
           amount: Number(amount),
           refType: "reservation",
@@ -264,11 +293,9 @@ export default function Shop() {
       setReserve({ grade: "", section: "", slot: "", note: "" });
       closeReserve();
 
-      // refresh UI: stock + wallet
       await Promise.all([fetchMenu(), fetchWallet()]);
     } catch (e) {
       console.error(e);
-      // bubble up concise message
       const msg = e?.response?.data?.error || e?.message || "Failed to reserve. Try again.";
       alert(msg);
     } finally {
@@ -285,18 +312,22 @@ export default function Shop() {
         {/* header */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Canteen Menu</h1>
-          <div className="flex items-center gap-2">
-            <div className="relative">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search menu…"
-                className="w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full sm:w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Search menu"
               />
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
             <button
-              onClick={() => { fetchMenu(); fetchWallet(); }}
+              onClick={() => {
+                fetchMenu();
+                fetchWallet();
+              }}
               className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
               title="Refresh"
             >
@@ -307,10 +338,10 @@ export default function Shop() {
         </div>
 
         {/* filters */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex items-center gap-2 mr-2 text-gray-600">
+        <div className="flex flex-wrap items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-3 sticky top-16 z-10">
+          <div className="inline-flex items-center gap-2 mr-2 text-gray-700">
             <Filter className="w-4 h-4" />
-            <span className="text-sm">Filter</span>
+            <span className="text-sm font-medium">Filter</span>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -318,13 +349,19 @@ export default function Shop() {
               <button
                 key={c}
                 onClick={() => setCategory(c)}
-                className={`px-3 py-1.5 rounded-full border text-sm ${
+                className={`px-3 py-1.5 rounded-full border text-sm transition ${
                   category === c
                     ? "bg-gray-900 text-white border-gray-900"
                     : "bg-white text-gray-700 hover:bg-gray-50"
                 }`}
+                aria-pressed={category === c}
               >
-                {c === "all" ? "All" : c}
+                {c === "all" ? "All" : c}{" "}
+                {c !== "all" && (
+                  <span className="ml-1 text-[10px] opacity-70">
+                    {catCounts.get(c) || 0}
+                  </span>
+                )}
               </button>
             ))}
           </div>
@@ -335,6 +372,7 @@ export default function Shop() {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              aria-label="Sort menu"
             >
               <option value="featured">Featured</option>
               <option value="name-asc">Name (A–Z)</option>
@@ -343,6 +381,18 @@ export default function Shop() {
               <option value="price-desc">Price (High→Low)</option>
               <option value="stock-desc">Stock (High→Low)</option>
             </select>
+            {(debouncedQ || category !== "all" || sort !== "featured") && (
+              <button
+                onClick={() => {
+                  setQ("");
+                  setCategory("all");
+                  setSort("featured");
+                }}
+                className="text-sm text-gray-600 hover:text-gray-900 underline decoration-dotted"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
 
@@ -356,7 +406,7 @@ export default function Shop() {
                     key={`skeleton-${i}`}
                     className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 animate-pulse"
                   >
-                    <div className="h-32 rounded bg-gray-200 mb-4" />
+                    <div className="h-36 rounded bg-gray-200 mb-4" />
                     <div className="h-4 w-1/2 bg-gray-200 rounded mb-2" />
                     <div className="h-3 w-1/3 bg-gray-200 rounded mb-4" />
                     <div className="flex items-center justify-between">
@@ -373,6 +423,7 @@ export default function Shop() {
                 filtered.map((it) => {
                   const inCart = cart[String(it.id)] || 0;
                   const soldOut = Number(it.stock) <= 0;
+                  const hasImg = Boolean(it.img);
                   return (
                     <div
                       key={it.id}
@@ -389,21 +440,39 @@ export default function Shop() {
                         </span>
                       )}
 
-                      <div className="mb-4 h-32 w-full rounded bg-gray-100 overflow-hidden">
-                        <img
-                          src={it.img || "/logo192.png"}
-                          alt={it.name}
-                          className="h-full w-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = "/logo192.png";
-                          }}
-                        />
-                      </div>
+                      {/* image / placeholder (clickable) */}
+                      <button
+                        type="button"
+                        onClick={() => setPreview(it)}
+                        className="group mb-4 h-36 w-full rounded-lg bg-gray-100 overflow-hidden relative"
+                        title="View"
+                      >
+                        {hasImg ? (
+                          <img
+                            src={it.img}
+                            alt={it.name}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center text-gray-400">
+                            <ImageIcon className="w-8 h-8" />
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2 text-left">
+                          <span className="text-white text-xs inline-flex items-center gap-1">
+                            Preview <ChevronRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                      </button>
 
                       <h3 className="font-medium text-lg text-gray-900">{it.name}</h3>
                       <div className="mt-1 flex items-center justify-between">
-                        <p className="text-gray-700 font-semibold">
+                        <p className="text-gray-800 font-semibold">
                           {peso.format(Number(it.price) || 0)}
                         </p>
                         <span
@@ -420,9 +489,10 @@ export default function Shop() {
                       <div className="mt-4 flex items-center justify-between">
                         <div className="inline-flex items-center border rounded-lg">
                           <button
-                            className="px-3 py-2 hover:bg-gray-50"
+                            className="px-3 py-2 hover:bg-gray-50 disabled:opacity-50"
                             onClick={() => dec(it.id)}
                             disabled={!cart[String(it.id)]}
+                            aria-label="Decrease quantity"
                           >
                             <Minus className="w-4 h-4" />
                           </button>
@@ -430,9 +500,17 @@ export default function Shop() {
                             {cart[String(it.id)] || 0}
                           </span>
                           <button
-                            className="px-3 py-2 hover:bg-gray-50"
+                            className="px-3 py-2 hover:bg-gray-50 disabled:opacity-50"
                             onClick={() => inc(it.id)}
-                            disabled={soldOut}
+                            disabled={soldOut || (cart[String(it.id)] || 0) >= Number(it.stock)}
+                            title={
+                              soldOut
+                                ? "Out of stock"
+                                : (cart[String(it.id)] || 0) >= Number(it.stock)
+                                ? "Max stock reached"
+                                : "Increase quantity"
+                            }
+                            aria-label="Increase quantity"
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -455,7 +533,7 @@ export default function Shop() {
           </section>
 
           {/* cart sidebar */}
-          <aside className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 h-fit sticky top-20">
+          <aside className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 h-fit sticky top-24">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold text-gray-900">Your Cart</h2>
               <span className="text-xs text-gray-600">
@@ -497,7 +575,7 @@ export default function Shop() {
                       <span className="px-3 text-sm">{it.qty}</span>
                       <button
                         onClick={() => inc(it.id)}
-                        className="px-2 py-1.5 hover:bg-gray-50"
+                        className="px-2 py-1.5 hover:bg-gray-50 disabled:opacity-50"
                         disabled={it.qty >= it.stock}
                         title={it.qty >= it.stock ? "Max stock reached" : undefined}
                       >
@@ -557,6 +635,35 @@ export default function Shop() {
         </div>
       </main>
 
+      {/* mobile sticky checkout bar */}
+      {list.length > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
+          <div className="mx-3 mb-3 rounded-xl shadow-lg bg-white border border-gray-200 p-3 flex items-center justify-between">
+            <div className="text-sm">
+              <div className="font-semibold">{peso.format(total)}</div>
+              <div className="text-xs text-gray-500">{list.reduce((a, b) => a + b.qty, 0)} items</div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={goCart}
+                className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm"
+              >
+                <ShoppingCart className="w-4 h-4" />
+                Cart
+              </button>
+              <button
+                onClick={openReserve}
+                disabled={insufficient}
+                className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-60"
+              >
+                <Clock className="w-4 h-4" />
+                Reserve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* reservation modal */}
       {open && (
         <div className="fixed inset-0 z-50">
@@ -568,7 +675,7 @@ export default function Shop() {
                   <Clock className="w-5 h-5 text-blue-600" />
                   <h3 className="font-semibold">Confirm Reservation</h3>
                 </div>
-                <button onClick={closeReserve} className="p-2 rounded-lg hover:bg-gray-100">
+                <button onClick={closeReserve} className="p-2 rounded-lg hover:bg-gray-100" aria-label="Close">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -704,6 +811,75 @@ export default function Shop() {
                 <button onClick={closeReserve} className="text-sm px-3 py-2 rounded-lg border hover:bg-gray-50">
                   Close
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* item preview modal */}
+      {preview && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setPreview(null)} />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="w-full max-w-xl bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="relative h-56 bg-gray-100">
+                {preview.img ? (
+                  <img
+                    src={preview.img}
+                    alt={preview.name}
+                    className="h-full w-full object-cover"
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-gray-400">
+                    <ImageIcon className="w-8 h-8" />
+                  </div>
+                )}
+                <button
+                  onClick={() => setPreview(null)}
+                  className="absolute top-2 right-2 p-2 bg-white/90 rounded-full shadow hover:bg-white"
+                  aria-label="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">{preview.name}</h3>
+                    <div className="text-sm text-gray-500">{preview.category}</div>
+                  </div>
+                  <div className="text-lg font-semibold">{peso.format(preview.price || 0)}</div>
+                </div>
+                {preview.desc && (
+                  <p className="text-sm text-gray-600 leading-relaxed">{preview.desc}</p>
+                )}
+                <div className="flex items-center justify-between pt-2">
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      Number(preview.stock) > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {Number(preview.stock) > 0 ? `${preview.stock} in stock` : "Out of stock"}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => dec(preview.id)}
+                      className="px-3 py-2 border rounded-lg hover:bg-gray-50"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => inc(preview.id)}
+                      disabled={Number(preview.stock) <= 0}
+                      className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                    >
+                      <ShoppingCart className="w-4 h-4" />
+                      Add
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

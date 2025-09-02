@@ -20,8 +20,9 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// Allow larger JSON and urlencoded payloads (image uploads or embedded data)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
 
 /**
  * Static: serve uploaded images/files (multer target)
@@ -51,13 +52,16 @@ app.use((_req, res) => {
 /**
  * Central error handler (always JSON)
  */
-// eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
-  console.error("API error:", err);
-  const code = err.status || err.statusCode || 500;
-  res.status(code).json({ error: err.message || "Internal Server Error" });
+  console.error("API error:", err && err.message ? err.message : err);
+  // Multer file-size or express payload too large
+  if (err && (err.code === 'LIMIT_FILE_SIZE' || err.code === 'ETOOBIG' || err.status === 413 || err.statusCode === 413)) {
+    return res.status(413).json({ error: 'Uploaded file too large.' });
+  }
+  const code = err && (err.status || err.statusCode) ? (err.status || err.statusCode) : 500;
+  res.status(code).json({ error: (err && err.message) || 'Internal Server Error' });
 });
-
+ 
 app.listen(PORT, () => {
   console.log(`API @ http://localhost:${PORT}`);
 });

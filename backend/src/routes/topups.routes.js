@@ -12,7 +12,8 @@ const storage = multer.diskStorage({
 	destination: function (req, file, cb) { cb(null, uploadDir); },
 	filename: function (req, file, cb) { cb(null, Date.now().toString(36) + '_' + file.originalname.replace(/\s+/g,'_')); }
 });
-const upload = multer({ storage });
+// limit proofs to 8MB
+const upload = multer({ storage, limits: { fileSize: 8 * 1024 * 1024 } });
 
 router.post("/", requireAuth, upload.single('proof'), create);
 router.get("/mine", requireAuth, mine);

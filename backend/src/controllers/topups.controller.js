@@ -1,6 +1,13 @@
 const { load, save } = require("../lib/db");
 
 exports.create = (req, res) => {
+  // multer may attach a file and may also raise a MulterError which is handled
+  // by Express' error middleware; however, in some setups multer errors
+  // surface here as `req.fileValidationError` or thrown. We'll defensively
+  // check for common multer overflow case and return a 413.
+  if (req.file && req.file.size && req.file.size > 8 * 1024 * 1024) {
+    return res.status(413).json({ error: 'Uploaded file too large (limit 8MB).' });
+  }
   const { amount, reference = "", provider } = req.body || {};
   const method = provider || req.body.method || 'gcash';
   const amt = Number(amount);

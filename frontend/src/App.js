@@ -30,10 +30,12 @@ import AdminSummary        from "./pages/admin/adminSummary";
 import AdminReservations   from "./pages/admin/adminReservations";
 import AdminApproved       from "./pages/admin/adminApproved";
 import AdminStats          from "./pages/admin/adminStats";
+import BackButton from "./components/BackButton";
 
 function App() {
   return (
     <BrowserRouter>
+  <BackButton />
       <Routes>
         {/* ---------- Public / student routes ---------- */}
         <Route path="/"               element={<Landing />} />
