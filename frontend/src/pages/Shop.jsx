@@ -429,11 +429,7 @@ export default function Shop() {
                       key={it.id}
                       className="relative bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col"
                     >
-                      {soldOut && (
-                        <span className="absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full bg-red-100 text-red-700">
-                          Sold out
-                        </span>
-                      )}
+                      {/* removed redundant top-left "Sold out" badge to avoid visual artifact; keep the price pill */}
                       {inCart > 0 && (
                         <span className="absolute top-2 right-2 text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700">
                           In cart: {inCart}

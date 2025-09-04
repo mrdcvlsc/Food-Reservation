@@ -25,6 +25,13 @@ router.get("/dashboard", requireAuth, requireAdmin, require("../controllers/admi
 router.post("/menu", requireAuth, requireAdmin, upload.single("image"), M.create);
 router.put("/menu/:id", requireAuth, requireAdmin, upload.single("image"), M.update);
 router.delete("/menu/:id", requireAuth, requireAdmin, M.remove);
+// Admin-only uploads cleanup (dry run by default)
+router.post("/uploads/cleanup", requireAuth, requireAdmin, async (req, res) => {
+  const cleanup = require("../lib/cleanupUploads");
+  const dry = req.query.dry !== 'false' && req.body && req.body.dry !== false;
+  const result = await cleanup({ dryRun: !!dry });
+  res.json(result);
+});
 // topups admin
 const T = require("../controllers/topups.controller");
 router.get("/topups", requireAuth, requireAdmin, T.listAdmin);

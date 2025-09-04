@@ -44,6 +44,7 @@ exports.update = (req, res) => {
   if (i === -1) return res.status(404).json({ error: "Not found" });
   // Build patch from body, and if multer uploaded a file, use it
   const patch = { ...(req.body || {}) };
+  const prevImg = db.menu[i] && db.menu[i].img ? db.menu[i].img : null;
   if (req.file && req.file.filename) {
     patch.img = `/uploads/${req.file.filename}`;
   }
@@ -52,6 +53,20 @@ exports.update = (req, res) => {
 
   db.menu[i] = { ...db.menu[i], ...patch };
   save(db);
+
+  // If the image changed or was cleared, delete the previous file if it was in uploads/
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    if (prevImg && prevImg.includes('/uploads/') && prevImg !== db.menu[i].img) {
+      const fname = path.basename(prevImg);
+      const fp = path.join(__dirname, '..', 'uploads', fname);
+      if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    }
+  } catch (e) {
+    // ignore cleanup errors
+  }
+
   res.json({ ...db.menu[i], _fileUploaded: !!req.file, _fileName: req.file && req.file.filename ? req.file.filename : null });
 };
 
@@ -63,5 +78,16 @@ exports.remove = (req, res) => {
 
   const removed = db.menu.splice(i, 1)[0];
   save(db);
+  // remove associated image file
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    if (removed && removed.img && removed.img.includes('/uploads/')) {
+      const fname = path.basename(removed.img);
+      const fp = path.join(__dirname, '..', 'uploads', fname);
+      if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    }
+  } catch (e) {}
+
   res.json(removed);
 };

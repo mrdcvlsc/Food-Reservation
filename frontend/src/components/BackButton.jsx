@@ -1,9 +1,10 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
 export default function BackButton({ className = '' }) {
   const nav = useNavigate();
+  const location = useLocation();
   const goBack = () => {
     try {
       // If there is a history entry, go back; otherwise navigate to a safe fallback
@@ -16,6 +17,13 @@ export default function BackButton({ className = '' }) {
       nav('/dashboard');
     }
   };
+
+  // Don't render the back button on auth or landing routes where going back
+  // would return the user into an authenticated area after logout.
+  const hideOn = ["/login", "/register", "/", "/home"];
+  if (hideOn.some((p) => location.pathname === p || location.pathname.startsWith(p + '/'))) {
+    return null;
+  }
 
   return (
     <button
