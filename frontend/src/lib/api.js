@@ -45,16 +45,33 @@ async function request(path, { method = "GET", body, headers } = {}) {
       (isJson && data && (data.error || data.message)) ||
       (typeof data === "string" && data) ||
       `${res.status} ${res.statusText}`;
-    throw new Error(msg);
+    throw new ApiError(msg, res.status, data, res);
   }
+
   return data;
 }
 
+export class ApiError extends Error {
+  static Maintenance = 503;    // service unavailable / maintenance
+  static NotFound = 404;
+  static ServerError = 500;    // generic 5xx server error
+  static Unauthorized = 401;   // not authenticated (login required)
+  static Forbidden = 403;      // authenticated but lacks permission
+
+  constructor(message, status = 0, data = null, response = null) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;     // HTTP status code (e.g., 401, 500)
+    this.data = data;         // parsed JSON or text body if available
+    this.response = response; // original fetch Response object (optional)
+  }
+}
+
 export const api = {
-  get: (p, o) => request(p, { ...(o || {}), method: "GET" }),
-  post: (p, b, o) => request(p, { ...(o || {}), method: "POST", body: b }),
-  put: (p, b, o) => request(p, { ...(o || {}), method: "PUT", body: b }),
-  putForm: (p, form) => request(p, { method: "PUT", body: form }),
-  del: (p, o) => request(p, { ...(o || {}), method: "DELETE" }),
-  patch: (p, b, o) => request(p, { ...(o || {}), method: "PATCH", body: b }),
+  get: async (p, o) => await request(p, { ...(o || {}), method: "GET" }),
+  post: async (p, b, o) => await request(p, { ...(o || {}), method: "POST", body: b }),
+  put: async (p, b, o) => await request(p, { ...(o || {}), method: "PUT", body: b }),
+  putForm: async (p, form) => await request(p, { method: "PUT", body: form }),
+  del: async (p, o) => await request(p, { ...(o || {}), method: "DELETE" }),
+  patch: async (p, b, o) => await request(p, { ...(o || {}), method: "PATCH", body: b }),
 };
