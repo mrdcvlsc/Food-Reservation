@@ -118,8 +118,15 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-  loadActivity();
-  syncWallet();
+    const loadData = async () => {
+      await Promise.all([
+        loadActivity(),
+        syncWallet()
+      ]);
+    };
+    
+    loadData();
+    
     const onStorage = (e) => {
       if (["transactions", "orders", "user"].includes(e.key)) {
         if (e.key === "user") {
