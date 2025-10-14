@@ -1,8 +1,8 @@
 // src/pages/Dashboard.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/avbar";
-import { api } from "../lib/api";
+import Navbar from "../../components/avbar";
+import { api } from "../../lib/api";
 import {
   ShoppingBag,
   Wallet,
@@ -109,8 +109,9 @@ export default function Dashboard() {
         if (merged.balance && typeof merged.balance !== "number") merged.balance = Number(merged.balance) || 0;
         localStorage.setItem("user", JSON.stringify(merged));
         setUser(merged);
-  // reload recent activity after wallet sync (user identity may have changed)
-  loadActivity();
+  
+        // reload recent activity after wallet sync (user identity may have changed)
+        await loadActivity();
       }
     } catch (e) {
       // ignore, keep local state

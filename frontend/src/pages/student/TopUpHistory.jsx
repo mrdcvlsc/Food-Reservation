@@ -1,7 +1,7 @@
 // src/pages/TopUpHistory.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import Navbar from "../components/avbar";
-import { api } from "../lib/api";
+import Navbar from "../../components/avbar";
+import { api } from "../../lib/api";
 import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });

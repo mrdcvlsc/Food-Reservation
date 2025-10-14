@@ -2,19 +2,20 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-/* ---------- Public / student-facing ---------- */
+/* ---------- Public ---------- */
 import Landing      from "./pages/Landing";
-import Loading      from "./pages/Loading";
 import Register     from "./pages/Register";
 import Login        from "./pages/Login";
-import Dashboard    from "./pages/Dashboard";
-import Shop         from "./pages/Shop";
-import TopUp        from "./pages/TopUp";
-import Cart         from "./pages/Cart";
-import Profile      from "./pages/Profile";
-import EditProfile  from "./pages/EditProfile";
-import TxHistory    from "./pages/TxHistory";
-import TopUpHistory from "./pages/TopUpHistory";
+
+/* ---------- student-facing ---------- */
+import Dashboard    from "./pages/student/Dashboard";
+import Shop         from "./pages/student/Shop";
+import TopUp        from "./pages/student/TopUp";
+import Cart         from "./pages/student/Cart";
+import Profile      from "./pages/student/Profile";
+import EditProfile  from "./pages/student/EditProfile";
+import TxHistory    from "./pages/student/TxHistory";
+import TopUpHistory from "./pages/student/TopUpHistory";
 
 /* --------------- Admin screens --------------- */
 import AdminHome           from "./pages/admin/adminhomes";
@@ -30,6 +31,19 @@ import AdminSummary        from "./pages/admin/adminSummary";
 import AdminReservations   from "./pages/admin/adminReservations";
 import AdminApproved       from "./pages/admin/adminApproved";
 import AdminStats          from "./pages/admin/adminStats";
+
+/* --------------- status pages --------------- */
+import { 
+  Maintenance,
+  NotFound,
+  Offline,
+  ServerError,
+  SessionExpired,
+  Unauthorized
+} from "./pages/StatusPages";
+
+/* --------------- Components --------------- */
+import Loading      from "./components/Loading";
 import BackButton from "./components/BackButton";
 
 function App() {
@@ -37,6 +51,14 @@ function App() {
     <BrowserRouter>
   <BackButton />
       <Routes>
+        {/* ---------- status pages ---------- */}
+        <Route path="/status/maintenance"     element={<Maintenance />} />
+        <Route path="/status/not_found"       element={<NotFound />} />
+        <Route path="/status/offline"         element={<Offline />} />
+        <Route path="/status/server_error"    element={<ServerError />} />
+        <Route path="/status/session_expired" element={<SessionExpired />} />
+        <Route path="/status/unauthorized"    element={<Unauthorized />} />
+
         {/* ---------- Public / student routes ---------- */}
         <Route path="/"               element={<Landing />} />
         <Route path="/loading"        element={<Loading />} />
@@ -86,7 +108,7 @@ function App() {
         <Route path="/admin/stats"                    element={<AdminStats />} />
 
         {/* ------------- Fallback / 404 redirect ------------- */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/status/not_found" replace />} />
       </Routes>
     </BrowserRouter>
   );

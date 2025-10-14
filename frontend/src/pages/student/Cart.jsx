@@ -1,8 +1,8 @@
 // src/pages/Cart.jsx
-import { api } from "../lib/api";
+import { api } from "../../lib/api";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "../components/avbar";
+import Navbar from "../../components/avbar";
 import {
   Plus,
   Minus,
@@ -92,7 +92,7 @@ export default function Cart() {
           return p ? { ...p, qty } : null;
             })
         .filter(Boolean),
-    [cart]
+    [cart, products]
   );
 
   const total = useMemo(

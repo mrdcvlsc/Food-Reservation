@@ -1,7 +1,7 @@
 // src/pages/TopUp.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Navbar from "../components/avbar";
-import { api } from "../lib/api";
+import Navbar from "../../components/avbar";
+import { api } from "../../lib/api";
 import {
   Upload,
   Image as ImageIcon,

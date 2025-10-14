@@ -1,8 +1,8 @@
 // src/pages/Shop.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/avbar";
-import { api } from "../lib/api";
+import Navbar from "../../components/avbar";
+import { api } from "../../lib/api";
 import {
   Plus,
   Minus,
