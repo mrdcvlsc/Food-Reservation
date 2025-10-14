@@ -84,7 +84,7 @@ app.use((err, _req, res, _next) => {
   res.status(code).json(body);
 });
  
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log('='.repeat(70));
   console.log(`🚀 FOOD RESERVATION API SERVER STARTED`);
   console.log(`📡 API @ http://localhost:${PORT}`);
@@ -94,6 +94,23 @@ app.listen(PORT, () => {
   console.log('='.repeat(70));
   console.log('📋 Request Log Format: IP - [Date] "METHOD URL HTTP/1.1" Status Size "Referrer" "User-Agent" ResponseTime');
   console.log('-'.repeat(70));
+});
+
+// Graceful shutdown handling
+process.on('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('✅ Server closed');
+    process.exit(0);
+  });
 });
 
 module.exports = app; // (optional) helpful for testing
