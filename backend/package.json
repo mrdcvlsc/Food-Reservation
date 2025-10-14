@@ -10,8 +10,8 @@
   "scripts": {
     "start": "node -r dotenv/config src/index.js",
     "dev": "nodemon -r dotenv/config src/index.js",
-  "seed": "node -r dotenv/config -e \"require('./src/lib/seed').ensureSeed(); console.log('✅ Seed complete');\"",
-  "dev-seed": "node scripts/dev-seed.js"
+    "seed": "node -r dotenv/config -e \"require('./src/lib/seed').ensureSeed(); console.log('✅ Seed complete');\"",
+    "dev-seed": "node scripts/dev-seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -21,7 +21,7 @@
     "fs-extra": "^11.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.0",
-    "morgan": "^1.10.0",
+    "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
