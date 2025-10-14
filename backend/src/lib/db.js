@@ -4,6 +4,10 @@ const fs = require("fs-extra");
 
 const DB_FILE = path.join(__dirname, "..", "data", "db.json");
 
+// Database cache to prevent loading from disk on every request
+let dbCache = null;
+let lastModified = 0;
+
 function ensureFile() {
   fs.ensureFileSync(DB_FILE);
   try {
@@ -44,11 +48,45 @@ function nextId(list = [], prefix = "RES") {
 }
 
 function load() {
-  return ensureFile();
+  try {
+    // Check if file was modified since last load
+    const stats = fs.statSync(DB_FILE);
+    const currentModified = stats.mtime.getTime();
+    
+    // Return cached data if file hasn't changed
+    if (dbCache && currentModified <= lastModified) {
+      console.log('[DB] Using cached database (file unchanged)');
+      return dbCache;
+    }
+    
+    console.log('[DB] Loading database from disk:', DB_FILE);
+    const result = ensureFile();
+    console.log('[DB] Database loaded successfully. Collections:', Object.keys(result));
+    
+    // Update cache
+    dbCache = result;
+    lastModified = currentModified;
+    
+    return result;
+  } catch (error) {
+    console.error('[DB] Error loading database:', error.message);
+    throw error;
+  }
 }
 
 function save(dbObj) {
-  return _saveAsync(dbObj);
+  console.log('[DB] Saving database to:', DB_FILE);
+  try {
+    _saveAsync(dbObj);
+    console.log('[DB] Database saved successfully');
+    
+    // Update cache with new data
+    dbCache = dbObj;
+    lastModified = Date.now();
+  } catch (error) {
+    console.error('[DB] Error saving database:', error.message);
+    throw error;
+  }
 }
 
 module.exports = { load, save, nextId, DB_FILE };
