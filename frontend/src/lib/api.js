@@ -2,39 +2,12 @@
 // Real backend only. Uses CRA proxy to reach Express on :4000.
 // Usage: api.get('/menu'), api.post('/auth/login', {...}), etc.
 
-// Request deduplication cache
-const pendingRequests = new Map();
-
 const toApi = (path) => {
   if (!path) return "/api";
   return path.startsWith("/api") ? path : "/api" + (path.startsWith("/") ? path : `/${path}`);
 };
 
 async function request(path, { method = "GET", body, headers } = {}) {
-  // Create a unique key for this request
-  const requestKey = `${method}:${path}:${JSON.stringify(body || {})}`;
-  
-  // If the same request is already pending, return the existing promise
-  if (pendingRequests.has(requestKey)) {
-    console.log(`[API] Deduplicating request: ${requestKey}`);
-    return pendingRequests.get(requestKey);
-  }
-  
-  // Create the request promise
-  const requestPromise = makeRequest(path, { method, body, headers });
-  
-  // Store the promise in the cache
-  pendingRequests.set(requestKey, requestPromise);
-  
-  // Clean up when the request completes
-  requestPromise.finally(() => {
-    pendingRequests.delete(requestKey);
-  });
-  
-  return requestPromise;
-}
-
-async function makeRequest(path, { method = "GET", body, headers } = {}) {
   const token = localStorage.getItem("token");
 
   // Detect FormData
