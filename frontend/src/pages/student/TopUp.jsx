@@ -119,7 +119,7 @@ export default function TopUp() {
         });
 
         // ---- user (/me) ----
-        const meRes = await api.get("/me").catch(() => null);
+        const meRes = await api.get("/wallets/me").catch(() => null);
         const me = meRes?.data || meRes;
         if (alive && me) {
           setUser((u) => ({
@@ -137,6 +137,8 @@ export default function TopUp() {
         setMeta(nextMeta);
         const first = (nextQr.gcash && "gcash") || (nextQr.maya && "maya") || "gcash";
         setProvider(first);
+      } catch (e) {
+        console.log(e); 
       } finally {
         alive && setLoading(false);
       }
