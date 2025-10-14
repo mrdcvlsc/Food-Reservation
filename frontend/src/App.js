@@ -36,9 +36,7 @@ import AdminStats          from "./pages/admin/adminStats";
 import { 
   Maintenance,
   NotFound,
-  Offline,
   ServerError,
-  SessionExpired,
   Unauthorized
 } from "./pages/StatusPages";
 
@@ -54,9 +52,7 @@ function App() {
         {/* ---------- status pages ---------- */}
         <Route path="/status/maintenance"     element={<Maintenance />} />
         <Route path="/status/not_found"       element={<NotFound />} />
-        <Route path="/status/offline"         element={<Offline />} />
         <Route path="/status/server_error"    element={<ServerError />} />
-        <Route path="/status/session_expired" element={<SessionExpired />} />
         <Route path="/status/unauthorized"    element={<Unauthorized />} />
 
         {/* ---------- Public / student routes ---------- */}
