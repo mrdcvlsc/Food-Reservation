@@ -2,6 +2,7 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const morgan = require("morgan");
 
 // Specific routers
 const transactionsRouter = require("./routes/transactions.routes");
@@ -10,6 +11,18 @@ const routes = require("./routes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+
+app.use(morgan('combined'));
+app.use((req, res, next) => {
+  if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body) {
+    // remove sensitive fields from logging
+    const sanitizedBody = { ...req.body };
+    if (sanitizedBody.password) sanitizedBody.password = '[REDACTED]';
+    if (sanitizedBody.passwordHash) sanitizedBody.passwordHash = '[REDACTED]';
+    console.log(`[REQUEST BODY] ${req.method} ${req.url}:`, JSON.stringify(sanitizedBody, null, 2));
+  }
+  next();
+});
 
 /**
  * Core middleware
@@ -72,7 +85,15 @@ app.use((err, _req, res, _next) => {
 });
  
 app.listen(PORT, () => {
-  console.log(`API @ http://localhost:${PORT}`);
+  console.log('='.repeat(70));
+  console.log(`🚀 FOOD RESERVATION API SERVER STARTED`);
+  console.log(`📡 API @ http://localhost:${PORT}`);
+  console.log(`📊 Health Check: http://localhost:${PORT}/`);
+  console.log(`🔗 Frontend should connect from: http://localhost:3000`);
+  console.log(`📝 Using Morgan HTTP Request Logging`);
+  console.log('='.repeat(70));
+  console.log('📋 Request Log Format: IP - [Date] "METHOD URL HTTP/1.1" Status Size "Referrer" "User-Agent" ResponseTime');
+  console.log('-'.repeat(70));
 });
 
 module.exports = app; // (optional) helpful for testing
