@@ -1,8 +1,7 @@
 ﻿// backend/src/routes/reservations.routes.js
 const express = require("express");
 const R = require("../controllers/reservations.controller");
-// If you want to protect admin endpoints later, import your auth here:
-// const { requireAuth, requireAdmin } = require("../lib/auth");
+const { requireAuth, requireAdmin } = require("../lib/auth");
 
 const router = express.Router();
 
@@ -10,8 +9,8 @@ const router = express.Router();
 router.post("/", R.create);
 
 // Student: fetch own reservations -> GET /api/reservations/mine
-// (uses req.user if available; otherwise supports ?student= query per controller)
-router.get("/mine", R.mine);
+// Protected route - requires authentication
+router.get("/mine", requireAuth, R.mine);
 
 // Admin: list reservations (optional ?status=Pending|Approved|Rejected|Claimed)
 router.get("/admin", R.listAdmin);
