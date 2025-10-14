@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import {
   ShoppingBag,
   Wallet,
@@ -41,7 +41,18 @@ export default function Dashboard() {
       if (Array.isArray(d)) return d;
       if (d && Array.isArray(d.data)) return d.data;
       return [];
-    } catch {
+    } catch(e) {
+      if (e instanceof ApiError) {
+        switch (e.status) {
+          case ApiError.Maintenance:  navigate("/status/maintenance");  break;
+          case ApiError.NotFound:     navigate("/status/not_found");    break;
+          case ApiError.ServerError:  navigate("/status/server_error"); break;
+          case ApiError.Unauthorized: navigate("/status/unauthorized"); break;
+          case ApiError.Forbidden:    navigate("/status/unauthorized"); break;
+          default:
+        }
+      }
+
       return [];
     }
   };
@@ -92,7 +103,6 @@ export default function Dashboard() {
       rows.sort((a, b) => new Date(b.time) - new Date(a.time));
       setActivity(rows.slice(0, 5));
     } catch (e) {
-      console.error('loadActivity error', e);
       setActivity([]);
     }
   };
