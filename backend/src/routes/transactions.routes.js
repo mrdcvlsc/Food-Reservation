@@ -6,8 +6,18 @@ const { requireAuth } = require("../lib/auth");
 const router = express.Router();
 
 /**
- * GET /api/transactions/mine
- * Returns the authenticated user's order transactions (reservations only).
+ * @swagger
+ * /transactions/mine:
+ *   get:
+ *     summary: Get current user's transactions
+ *     tags: [Transactions]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of transactions
+ *       401:
+ *         description: Unauthorized
  */
 router.get("/mine", requireAuth, mine);
 

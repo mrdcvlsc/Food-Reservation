@@ -43,6 +43,13 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
  */
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+
+/**
+ * Swagger API docs
+ */
+const { swaggerSpec, swaggerUi } = require("./swagger");
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 /**
  * API routes
  * Mount specific routers first (more specific prefix),

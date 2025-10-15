@@ -24,7 +24,16 @@ const upload = multer({
 
 const router = express.Router();
 
-// Public list -> mounted at /api/menu
+/**
+ * @swagger
+ * /menu:
+ *   get:
+ *     summary: Get the list of menu items
+ *     tags: [Menu]
+ *     responses:
+ *       200:
+ *         description: List of menu items
+ */
 router.get("/", M.list);
 
 module.exports = router;
