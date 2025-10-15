@@ -37,6 +37,7 @@ import {
   Maintenance,
   NotFound,
   ServerError,
+  SomethingWentWrong,
   Unauthorized
 } from "./pages/StatusPages";
 
@@ -49,25 +50,21 @@ function App() {
     <BrowserRouter>
   <BackButton />
       <Routes>
-        {/* ---------- status pages ---------- */}
-        <Route path="/status/maintenance"     element={<Maintenance />} />
-        <Route path="/status/not_found"       element={<NotFound />} />
-        <Route path="/status/server_error"    element={<ServerError />} />
-        <Route path="/status/unauthorized"    element={<Unauthorized />} />
-
-        {/* ---------- Public / student routes ---------- */}
+        {/* ---------- Public routes ---------- */}
         <Route path="/"               element={<Landing />} />
         <Route path="/loading"        element={<Loading />} />
         <Route path="/register"       element={<Register />} />
         <Route path="/login"          element={<Login />} />
+
+        {/* ---------- student routes ---------- */}
+        <Route path="/cart"           element={<Cart />} />
         <Route path="/dashboard"      element={<Dashboard />} />
+        <Route path="/profile/edit"   element={<EditProfile />} />
+        <Route path="/profile"        element={<Profile />} />
         <Route path="/shop"           element={<Shop />} />
         <Route path="/topup"          element={<TopUp />} />
-        <Route path="/cart"           element={<Cart />} />
-        <Route path="/profile"        element={<Profile />} />
-        <Route path="/profile/edit"   element={<EditProfile />} />
-        <Route path="/transactions"   element={<TxHistory />} />
         <Route path="/topup-history"  element={<TopUpHistory />} />
+        <Route path="/transactions"   element={<TxHistory />} />
         {/* alias for older links */}
         <Route path="/topup/history"  element={<TopUpHistory />} />
 
@@ -102,6 +99,13 @@ function App() {
 
         {/* Stats */}
         <Route path="/admin/stats"                    element={<AdminStats />} />
+
+        {/* ---------- status pages ---------- */}
+        <Route path="/status/maintenance"          element={<Maintenance />} />
+        <Route path="/status/not_found"            element={<NotFound />} />
+        <Route path="/status/server_error"         element={<ServerError />} />
+        <Route path="/status/unauthorized"         element={<Unauthorized />} />
+        <Route path="/status/something_went_wrong" element={<SomethingWentWrong />} />
 
         {/* ------------- Fallback / 404 redirect ------------- */}
         <Route path="*" element={<Navigate to="/status/not_found" replace />} />

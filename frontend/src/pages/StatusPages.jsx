@@ -217,4 +217,30 @@ export function Forbidden() {
     );
 }
 
+export function SomethingWentWrong() {
+    const retry = () => window.location.reload();
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
+            <SiteHeader />
+            <main className="flex-grow flex items-center justify-center px-6 py-20">
+                <div className="max-w-3xl text-center bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
+                    <div className="inline-flex items-center px-3 py-1 bg-rose-50 text-rose-700 rounded-full text-sm font-medium mb-4">Oops</div>
+
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Oops — something went wrong</h2>
+                    <p className="text-gray-600 mb-6">
+                        An unexpected error occurred. Try refreshing the page or contact support if the problem persists.
+                    </p>
+                    <div className="flex gap-3 justify-center mb-4">
+                        <button onClick={retry} className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">Refresh</button>
+                        <Link to="/" className="px-6 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition">Go to Homepage</Link>
+                        <Link to="/contact" className="px-6 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition">Contact Support</Link>
+                    </div>
+                    <div className="text-sm text-gray-500">If this keeps happening, please include steps to reproduce and any screenshots when you contact support.</div>
+                </div>
+            </main>
+            <SiteFooter />
+        </div>
+    );
+}
+
 export default NotFound;
