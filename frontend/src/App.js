@@ -34,6 +34,7 @@ import AdminStats          from "./pages/admin/adminStats";
 
 /* --------------- status pages --------------- */
 import { 
+  Forbidden,
   Maintenance,
   NotFound,
   ServerError,
@@ -105,6 +106,7 @@ function App() {
         <Route path="/status/not_found"            element={<NotFound />} />
         <Route path="/status/server_error"         element={<ServerError />} />
         <Route path="/status/unauthorized"         element={<Unauthorized />} />
+        <Route path="/status/forbidden"            element={<Forbidden />} />
         <Route path="/status/something_went_wrong" element={<SomethingWentWrong />} />
 
         {/* ------------- Fallback / 404 redirect ------------- */}
