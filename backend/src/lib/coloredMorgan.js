@@ -87,16 +87,17 @@ const coloredMorgan = morgan((tokens, req, res) => {
 
   // Build the colored log line
   const logLine = [
-    '\n',
-    `${colors.dim}${remoteAddr}${colors.reset}`,
     `${colors.dim}[${date}]${colors.reset}`,
+    `${colors.dim}${remoteAddr}${colors.reset}`,
+    `${statusColor} ${status} ${colors.reset}`,
     `${methodColor}${method}${colors.reset}`,
     `${colors.white}${url}${colors.reset}`,
-    `${statusColor} ${status} ${colors.reset}`,
+    `${timeColor}${responseTime}ms${colors.reset}`,
     `${colors.dim}${contentLength || '-'}${colors.reset}`,
     `${colors.dim}"${referrer || '-'}"${colors.reset}`,
+    '\n',
     `${colors.dim}"${userAgent}"${colors.reset}`,
-    `${timeColor}${responseTime}ms${colors.reset}`,
+    '\n',
   ].join(' ');
 
   return logLine;
