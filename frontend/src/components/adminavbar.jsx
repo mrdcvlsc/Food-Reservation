@@ -37,6 +37,7 @@ export default function AdminAvbar() {
     const ok = window.confirm("Log out of the admin console?");
     if (!ok) return;
     try {
+      localStorage.removeItem("user");
       localStorage.removeItem("token");
     } catch {}
     navigate("/login");
