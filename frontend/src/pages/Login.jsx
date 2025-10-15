@@ -1,9 +1,9 @@
 // src/pages/Login.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { api } from "../lib/api"; // <-- make sure src/lib/api.js exists (our fetch wrapper)
+import { api, ApiError } from "../lib/api"; // <-- make sure src/lib/api.js exists (our fetch wrapper)
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,6 +24,18 @@ export default function Login() {
     if (!creds.password) errs.password = "Password is required";
     return errs;
   };
+
+  useEffect(() => {
+    // check first if a user is already logged in
+    const existing_token = localStorage.getItem("token");
+    const existing_user  = localStorage.getItem("user");
+
+    if (existing_token && existing_user) {
+    // TODO: login using jwt token instead of username and password
+    navigate('/dashboard');
+    return;
+    }
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -53,7 +65,15 @@ export default function Login() {
         navigate("/dashboard", { replace: true });
       }
     } catch (err) {
-      setErrors({ form: err.message || "Login failed. Please try again." });
+      if (err instanceof ApiError) {
+        setIsLoading(false);
+        switch (err.status) {
+          case ApiError.Maintenance: navigate("/status/maintenance",  { replace: true }); break;
+          case ApiError.ServerError: navigate("/status/server_error", { replace: true }); break;
+          default:
+            setErrors({ form: err.message || "Login failed. Please try again." });
+        }
+      }
     } finally {
       setIsLoading(false);
     }

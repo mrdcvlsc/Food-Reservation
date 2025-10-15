@@ -1,11 +1,24 @@
 // src/pages/Register.jsx
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 
 export default function Register() {
+
+  useEffect(() => {
+    // check first if a user is already logged in
+    const existing_token = localStorage.getItem("token");
+    const existing_user  = localStorage.getItem("user");
+  
+    if (existing_token && existing_user) {
+      // TODO: login using jwt token instead of username and password
+      navigate('/dashboard');
+      return;
+    }
+  }, [])
+
   const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
@@ -71,49 +84,21 @@ export default function Register() {
       navigate("/dashboard", { replace: true });
       return;
     } catch (err) {
-      // If API fails (server down or network), fallback to localStorage registration
-      console.warn("Backend register/login failed, falling back to localStorage:", err.message || err);
-    }
-
-    // --- Fallback local registration (keeps previous behavior) ---
-    try {
-      // Get users array from localStorage or empty array
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-
-      // Check if email already exists
-      if (users.some((u) => u.email === form.email)) {
+      if (err instanceof ApiError) {
         setIsLoading(false);
-        setErrors({ email: "Email already registered. Please log in." });
+        switch (err.status) {
+          case ApiError.Maintenance: navigate("/status/maintenance",  { replace: true }); break;
+          case ApiError.ServerError: navigate("/status/server_error", { replace: true }); break;
+          case ApiError.Conflict: 
+            setErrors({ email: "Email already registered. Please log in instead." });
+            break;
+          default:
+            navigate("/status/something_went_wrong");
+        }
         return;
       }
 
-      // Add new user to users array
-      const newUser = {
-        name: form.name,
-        studentId: form.studentId,
-        email: form.email,
-        password: form.password,
-        balance: 150.0,
-      };
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
-
-      // Set as current user (auto-login after register)
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          name: newUser.name,
-          email: newUser.email,
-          balance: newUser.balance,
-        })
-      );
-
-      setIsLoading(false);
-      navigate("/dashboard", { replace: true });
-    } catch (e) {
-      console.error(e);
-      setIsLoading(false);
-      setErrors({ form: "Failed to register. Try again." });
+      setErrors({ email: "Email already registered. Please log in instead." });
     }
   };
 
