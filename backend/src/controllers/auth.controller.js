@@ -25,7 +25,7 @@ exports.register = (req, res) => {
   
   if (db.users.some(u => u.email === email)) {
     console.log('[AUTH] Registration failed: Email already exists');
-    return res.status(400).json({ error: "Email already used" });
+    return res.status(409).json({ error: "Email already used" });
   }
 
   const newUser = {
