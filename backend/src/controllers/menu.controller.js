@@ -2,6 +2,7 @@
 
 exports.list = (req, res) => {
   const db = load();
+  console.log('[MENU] List: returning', (db.menu || []).length, 'items');
   res.json(db.menu);
 };
 
@@ -17,7 +18,10 @@ exports.create = (req, res) => {
   const price = Number(body.price);
   const stock = Number(body.stock || 0);
 
-  if (!name || !category || isNaN(price)) return res.status(400).json({ error: "Invalid payload" });
+  if (!name || !category || isNaN(price)) {
+    console.log('[MENU] Create: invalid payload');
+    return res.status(400).json({ error: "Invalid payload" });
+  }
 
   // If a file was uploaded via multer, prefer that as the image
   const img = req.file && req.file.filename ? `/uploads/${req.file.filename}` : (body.img || "");
@@ -28,6 +32,7 @@ exports.create = (req, res) => {
   const item = { id, name, category, price, stock, img };
   db.menu.push(item);
   save(db);
+  console.log('[MENU] Create: item created', id);
   res.json({ ...item, _fileUploaded: !!req.file, _fileName: req.file && req.file.filename ? req.file.filename : null });
 };
 
@@ -41,7 +46,10 @@ exports.update = (req, res) => {
   });
   const db = load();
   const i = db.menu.findIndex(m => String(m.id) === String(id));
-  if (i === -1) return res.status(404).json({ error: "Not found" });
+  if (i === -1) {
+    console.log('[MENU] Update: item not found', id);
+    return res.status(404).json({ error: "Not found" });
+  }
   // Build patch from body, and if multer uploaded a file, use it
   const patch = { ...(req.body || {}) };
   const prevImg = db.menu[i] && db.menu[i].img ? db.menu[i].img : null;
@@ -53,7 +61,7 @@ exports.update = (req, res) => {
 
   db.menu[i] = { ...db.menu[i], ...patch };
   save(db);
-
+  console.log('[MENU] Update: item updated', id);
   // If the image changed or was cleared, delete the previous file if it was in uploads/
   try {
     const fs = require('fs');
@@ -74,7 +82,10 @@ exports.remove = (req, res) => {
   const id = req.params.id;
   const db = load();
   const i = db.menu.findIndex(m => String(m.id) === String(id));
-  if (i === -1) return res.status(404).json({ error: "Not found" });
+  if (i === -1) {
+    console.log('[MENU] Delete: item not found', id);
+    return res.status(404).json({ error: "Not found" });
+  }
 
   const removed = db.menu.splice(i, 1)[0];
   save(db);
@@ -89,5 +100,6 @@ exports.remove = (req, res) => {
     }
   } catch (e) {}
 
+  console.log('[MENU] Delete: item deleted', id);
   res.json(removed);
 };

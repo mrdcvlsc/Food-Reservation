@@ -6,12 +6,16 @@ exports.create = (req, res) => {
   // surface here as `req.fileValidationError` or thrown. We'll defensively
   // check for common multer overflow case and return a 413.
   if (req.file && req.file.size && req.file.size > 8 * 1024 * 1024) {
+    console.log('[TOPUP] Create: uploaded file too large');
     return res.status(413).json({ error: 'Uploaded file too large (limit 8MB).' });
   }
   const { amount, reference = "", provider } = req.body || {};
   const method = provider || req.body.method || 'gcash';
   const amt = Number(amount);
-  if (!amt || amt <= 0) return res.status(400).json({ error: "Invalid amount" });
+  if (!amt || amt <= 0) {
+    console.log('[TOPUP] Create: invalid amount');
+    return res.status(400).json({ error: "Invalid amount" });
+  }
 
   const db = load();
   const now = new Date().toISOString();
@@ -35,12 +39,14 @@ exports.create = (req, res) => {
   db.topups = Array.isArray(db.topups) ? db.topups : [];
   db.topups.push(topup);
   save(db);
+  console.log('[TOPUP] Create: topup created', topup.id);
   res.json(topup);
 };
 
 exports.mine = (req, res) => {
   const db = load();
   const rows = db.topups.filter(t => t.userId === req.user.id);
+  console.log('[TOPUP] Mine: returning', rows.length, 'topups for user', req.user && req.user.id);
   res.json(rows);
 };
 
@@ -56,6 +62,7 @@ exports.listAdmin = (req, res) => {
       student: (u && (u.name || u.email)) || t.student || t.userId,
     };
   });
+  console.log('[TOPUP] ListAdmin: returning', topups.length, 'topups');
   res.json(topups);
 };
 

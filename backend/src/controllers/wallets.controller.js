@@ -16,21 +16,27 @@ exports.list = async (req, res) => {
   const wallets = Array.isArray(db.wallets)
     ? db.wallets.filter(w => w.active !== false)
     : [];
+  console.log('[WALLET] List: returning', wallets.length, 'wallets');
   res.json(wallets);
 };
 
 // Public: get one by provider (e.g., "gcash", "maya")
 exports.getOne = async (req, res) => {
   const provider = String(req.params.provider || '').trim().toLowerCase();
-  if (!provider) return res.status(400).json({ error: 'Missing provider' });
+  if (!provider) {
+    console.log('[WALLET] GetOne: missing provider');
+    return res.status(400).json({ error: 'Missing provider' });
+  }
 
   const db = await load();
   const list = Array.isArray(db.wallets) ? db.wallets : [];
   const found = list.find(w => String(w.provider).toLowerCase() === provider);
 
   if (!found || found.active === false) {
+    console.log('[WALLET] GetOne: wallet not found', provider);
     return res.status(404).json({ error: 'Wallet not found' });
   }
+  console.log('[WALLET] GetOne: wallet found', provider);
   res.json(found);
 };
 
@@ -39,13 +45,21 @@ exports.me = async (req, res) => {
   try {
     const db = await load();
     const uid = req.user && req.user.id;
-    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+    if (!uid) {
+      console.log('[WALLET] Me: unauthorized');
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     const user = (db.users || []).find((u) => String(u.id) === String(uid));
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) {
+      console.log('[WALLET] Me: user not found', uid);
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log('[WALLET] Me: returning wallet for user', uid);
     return res.json({ balance: Number(user.balance) || 0, id: user.id, name: user.name, email: user.email });
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'Failed to load wallet' });
+  console.log('[WALLET] Me: failed to load wallet', e.message);
+  res.status(500).json({ error: 'Failed to load wallet' });
   }
 };
 

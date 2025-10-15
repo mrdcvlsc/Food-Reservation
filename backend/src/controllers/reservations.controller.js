@@ -19,9 +19,13 @@ exports.create = async (req, res) => {
     } = req.body || {};
 
     if (!Array.isArray(items) || items.length === 0) {
+      console.log('[RESERVATION] Create: no items');
       return res.status(400).json({ error: "No items" });
     }
-    if (!slot) return res.status(400).json({ error: "Missing pickup slot" });
+    if (!slot) {
+      console.log('[RESERVATION] Create: missing pickup slot');
+      return res.status(400).json({ error: "Missing pickup slot" });
+    }
 
     // Validate and normalize items (no stock changes here)
     const normalized = [];
@@ -39,12 +43,19 @@ exports.create = async (req, res) => {
           return (sfx && incomingSuffix && sfx === incomingSuffix) || sid === incoming;
         });
       }
-      if (!m) return res.status(400).json({ error: `Item ${id} not found` });
+      if (!m) {
+        console.log('[RESERVATION] Create: item not found', id);
+        return res.status(400).json({ error: `Item ${id} not found` });
+      }
 
       const q = Number(qty) || 0;
-      if (q <= 0) return res.status(400).json({ error: "Invalid quantity" });
+      if (q <= 0) {
+        console.log('[RESERVATION] Create: invalid quantity', id);
+        return res.status(400).json({ error: "Invalid quantity" });
+      }
 
       if (typeof m.stock === "number" && m.stock < 0) {
+        console.log('[RESERVATION] Create: invalid stock', m.name);
         return res.status(400).json({ error: `Invalid stock for ${m.name}` });
       }
 

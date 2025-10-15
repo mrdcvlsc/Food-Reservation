@@ -62,10 +62,12 @@ exports.getMyTransactions = (req, res) => {
   const userId = req.user?.id || req.user?._id || req.user;
 
   if (!userId) {
-    return res.status(401).json({ error: "Unauthorized" });
+      console.log('[TRANSACTION] GetMyTransactions: unauthorized');
+      return res.status(401).json({ error: "Unauthorized" });
   }
 
   const db = readDB();
+    console.log('[TRANSACTION] GetMyTransactions: userId', userId);
 
   // Try to find the user record so we can also match by student name/email
   const me = (db.users || []).find((u) => String(u.id) === String(userId));
@@ -135,6 +137,7 @@ exports.getMyTransactions = (req, res) => {
 
   const merged = [...persisted, ...resRows];
   merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    console.log('[TRANSACTION] GetMyTransactions: returning', merged.length, 'transactions for user', userId);
   return res.json(merged);
 };
 

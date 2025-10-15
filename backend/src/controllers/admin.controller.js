@@ -59,7 +59,10 @@ exports.updateMenu = async (req, res) => {
   const id = req.params.id;
   const db = await load();
   const idx = db.menu.findIndex(m => String(m.id) === String(id));
-  if (idx === -1) return res.status(404).json({ error: "Item not found" });
+  if (idx === -1) {
+    console.log('[ADMIN] Update menu: item not found', id);
+    return res.status(404).json({ error: "Item not found" });
+  }
 
   const patch = { ...req.body };
   if ("price" in patch) patch.price = Number(patch.price);
@@ -76,6 +79,7 @@ exports.updateMenu = async (req, res) => {
 
   db.menu[idx] = { ...db.menu[idx], ...patch };
   await save(db);
+  console.log('[ADMIN] Update menu: item updated', id);
   res.json(db.menu[idx]);
 };
 
@@ -84,8 +88,12 @@ exports.deleteMenu = async (req, res) => {
   const db = await load();
   const before = db.menu.length;
   db.menu = db.menu.filter(m => String(m.id) !== String(id));
-  if (db.menu.length === before) return res.status(404).json({ error: "Item not found" });
+  if (db.menu.length === before) {
+    console.log('[ADMIN] Delete menu: item not found', id);
+    return res.status(404).json({ error: "Item not found" });
+  }
   await save(db);
+  console.log('[ADMIN] Delete menu: item deleted', id);
   res.json({ ok: true });
 };
 
@@ -121,9 +129,10 @@ exports.dashboard = async (req, res) => {
         status: r.status || 'Pending'
       }));
 
+    console.log('[ADMIN] Dashboard: success');
     res.json({ totalSales, ordersToday, newUsers, pending, recentOrders: recent });
   } catch (e) {
-    console.error(e);
+    console.log('[ADMIN] Dashboard: error', e.message);
     res.status(500).json({ error: 'Failed to compute dashboard' });
   }
 };
