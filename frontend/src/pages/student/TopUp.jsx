@@ -1,7 +1,7 @@
 // src/pages/TopUp.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "../../components/avbar";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import {
   Upload,
   Image as ImageIcon,
@@ -11,6 +11,7 @@ import {
   Info,
   ShieldCheck,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
@@ -58,6 +59,8 @@ function readLocalUser() {
 
 // ---------- component ----------
 export default function TopUp() {
+  const navigate = useNavigate();
+
   // wallet QR + meta
   const [provider, setProvider] = useState("gcash"); // 'gcash' | 'maya'
   const [qr, setQr] = useState({ gcash: null, maya: null });
@@ -105,7 +108,20 @@ export default function TopUp() {
         setLoading(true);
 
         // ---- wallets ----
-        const list = await api.get("/wallets").catch(() => []);
+        const list = await api.get("/wallets").catch((e) => {
+          if (e instanceof ApiError) {
+            switch (e.status) {
+              case ApiError.Maintenance:  navigate("/status/maintenance");  break;
+              case ApiError.NotFound:     navigate("/status/not_found");    break;
+              case ApiError.ServerError:  navigate("/status/server_error"); break;
+              case ApiError.Unauthorized: navigate("/status/unauthorized"); break;
+              case ApiError.Forbidden:    navigate("/status/unauthorized"); break;
+              default:
+            }
+          }    
+          
+          return []
+        });
         const nextQr = { gcash: null, maya: null };
         const nextMeta = { gcash: { accountName: "", mobile: "" }, maya: { accountName: "", mobile: "" } };
         (list || []).forEach((w) => {
@@ -119,7 +135,21 @@ export default function TopUp() {
         });
 
         // ---- user (/me) ----
-        const meRes = await api.get("/wallets/me").catch(() => null);
+        const meRes = await api.get("/wallets/me").catch((e) => {
+          if (e instanceof ApiError) {
+            switch (e.status) {
+              case ApiError.Maintenance:  navigate("/status/maintenance");  break;
+              case ApiError.NotFound:     navigate("/status/not_found");    break;
+              case ApiError.ServerError:  navigate("/status/server_error"); break;
+              case ApiError.Unauthorized: navigate("/status/unauthorized"); break;
+              case ApiError.Forbidden:    navigate("/status/unauthorized"); break;
+              default:
+            }
+          }
+
+          return null
+        });
+        
         const me = meRes?.data || meRes;
         if (alive && me) {
           setUser((u) => ({
@@ -138,7 +168,7 @@ export default function TopUp() {
         const first = (nextQr.gcash && "gcash") || (nextQr.maya && "maya") || "gcash";
         setProvider(first);
       } catch (e) {
-        console.log(e); 
+        console.log(e);
       } finally {
         alive && setLoading(false);
       }
