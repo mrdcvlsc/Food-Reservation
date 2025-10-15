@@ -6,6 +6,7 @@ import {
   Check, X, Wallet, Clock4, RefreshCw, ExternalLink
 } from "lucide-react";
 import { api } from "../../lib/api";
+import { useNavigate } from "react-router-dom";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 const fmtDT = (v) => {
@@ -19,6 +20,15 @@ const badge = (p) =>
     : "inline-flex px-2 py-0.5 text-xs rounded-full bg-blue-100 text-blue-700";
 
 export default function AdminTopUp() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
+
   const [tab, setTab] = useState("verify"); // default to verify
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,6 +63,15 @@ export default function AdminTopUp() {
 
 /* ---------------- Wallet Setup (QR upload + meta) ---------------- */
 function TopUpManager() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!authToken || !storedUser) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
+
   const [provider, setProvider] = useState("gcash"); // 'gcash' | 'maya'
   const [qrPreview, setQrPreview] = useState({ gcash: null, maya: null });
   const [meta, setMeta] = useState({

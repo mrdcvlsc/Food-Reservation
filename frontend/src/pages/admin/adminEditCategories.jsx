@@ -1,7 +1,17 @@
-﻿import React from 'react'
+﻿import React, { useEffect } from 'react'
 import Navbar from '../../components/adminavbar'
+import { useNavigate } from 'react-router-dom';
 
 export default function AdminEditCategories() {
+  const navigate = useNavigate();
+    useEffect(() => {
+      const authToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      if (!authToken || !storedUser) {
+        navigate('/status/unauthorized');
+      }
+    }, [navigate]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

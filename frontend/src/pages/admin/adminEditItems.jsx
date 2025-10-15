@@ -1,5 +1,6 @@
 ﻿// src/pages/admin/adminEditItems.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
 import {
@@ -19,6 +20,14 @@ const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP"
 const CATEGORIES = ["Meals", "Snacks", "Beverages"];
 
 export default function AdminEditItems() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState("");

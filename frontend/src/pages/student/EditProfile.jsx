@@ -5,6 +5,13 @@ import Navbar from "../../components/avbar";
 
 export default function EditProfile() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
 
   // Load current user info from localStorage
   const [form, setForm] = useState({

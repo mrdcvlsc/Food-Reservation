@@ -6,20 +6,17 @@ import Button from "../components/Button";
 import { api, ApiError } from "../lib/api";
 
 export default function Register() {
+  const navigate = useNavigate();
 
   useEffect(() => {
     // check first if a user is already logged in
     const existing_token = localStorage.getItem("token");
     const existing_user  = localStorage.getItem("user");
-  
     if (existing_token && existing_user) {
-      // TODO: login using jwt token instead of username and password
       navigate('/dashboard');
-      return;
     }
-  }, [])
+  }, [navigate]);
 
-  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     studentId: "",

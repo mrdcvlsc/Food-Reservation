@@ -7,6 +7,7 @@ import { api, ApiError } from "../lib/api"; // <-- make sure src/lib/api.js exis
 
 export default function Login() {
   const navigate = useNavigate();
+  
   const [creds, setCreds] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -29,13 +30,10 @@ export default function Login() {
     // check first if a user is already logged in
     const existing_token = localStorage.getItem("token");
     const existing_user  = localStorage.getItem("user");
-
     if (existing_token && existing_user) {
-    // TODO: login using jwt token instead of username and password
-    navigate('/dashboard');
-    return;
+      navigate('/dashboard');
     }
-  })
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

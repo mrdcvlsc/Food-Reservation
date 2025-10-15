@@ -102,6 +102,13 @@ export default function TopUp() {
 
   // Load wallets (QR + meta) and refresh user from /me if token is present
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user_auth = localStorage.getItem('user');
+    if (!token || !user_auth) {
+      navigate('/status/unauthorized');
+      return;
+    }
+
     let alive = true;
     (async () => {
       try {
@@ -176,7 +183,7 @@ export default function TopUp() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [navigate]);
 
   // initialize form defaults once user is known
   useEffect(() => {

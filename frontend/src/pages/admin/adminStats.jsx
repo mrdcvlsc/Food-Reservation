@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
 import { TrendingUp, ClipboardList, Clock, Wallet, RefreshCw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 const USE_FAKE = process.env.REACT_APP_FAKE_API === "1";
@@ -47,6 +48,14 @@ function isInThisMonth(iso, now = new Date()) {
 }
 
 export default function AdminStats() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!authToken || !storedUser) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [loading, setLoading] = useState(true);
   const [menu, setMenu] = useState([]);
   const [reservations, setReservations] = useState([]);

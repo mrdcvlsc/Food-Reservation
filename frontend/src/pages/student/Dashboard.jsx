@@ -20,6 +20,14 @@ const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP"
 export default function Dashboard() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user_auth = localStorage.getItem('user');
+    if (!token || !user_auth) {
+      navigate('/status/unauthorized');
+    }
+  });
+
   // --- user & balance ---
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("user") || "{}"); }

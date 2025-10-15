@@ -11,6 +11,7 @@ import {
   Loader2,
   ShieldCheck,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -46,6 +47,14 @@ const Pill = ({ status }) => {
 
 // ---- component -------------------------------------------------------------
 export default function AdminReservations() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!authToken || !storedUser) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);

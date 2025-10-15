@@ -1,5 +1,6 @@
 // src/pages/TopUpHistory.jsx
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye } from "lucide-react";
@@ -29,6 +30,14 @@ function fmtDateTime(v) {
 }
 
 export default function TopUpHistory() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

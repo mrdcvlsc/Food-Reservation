@@ -29,6 +29,13 @@ const SLOTS = [
 
 export default function Shop() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
 
   // data
   const [items, setItems] = useState([]);

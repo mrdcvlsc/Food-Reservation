@@ -32,6 +32,13 @@ const SLOTS = [
 
 export default function Cart() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!authToken || !storedUser) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const { state } = useLocation();
 
   const [cart, setCart] = useState({}); // { [id]: qty }

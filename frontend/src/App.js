@@ -72,7 +72,7 @@ function App() {
         <Route path="/admin"                          element={<AdminHome />} />
 
         {/* Inventory list (support both /shop and /shops for compatibility) */}
-        <Route path="/admin/shop"                     element={<AdminShop />} />
+        {/* <Route path="/admin/shop"                     element={<AdminShop />} /> */}
         <Route path="/admin/shops"                    element={<AdminShop />} />
 
         {/* Add forms */}

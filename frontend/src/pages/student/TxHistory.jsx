@@ -1,5 +1,6 @@
 // src/pages/TxHistory.jsx
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
@@ -119,6 +120,14 @@ function mapFoodToRow(raw) {
 }
 
 export default function TxHistory() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

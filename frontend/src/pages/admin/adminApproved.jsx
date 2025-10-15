@@ -1,5 +1,6 @@
 ﻿// src/pages/admin/adminApproved.jsx
 import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import Navbar from "../../components/adminavbar";
 import { CheckCircle2, PackageCheck, Search } from "lucide-react";
@@ -21,6 +22,14 @@ function Pill({ status }) {
 }
 
 export default function AdminApproved() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 

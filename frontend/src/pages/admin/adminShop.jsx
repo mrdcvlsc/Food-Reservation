@@ -9,6 +9,13 @@ const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP"
 
 export default function AdminShop() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!authToken || !storedUser) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);

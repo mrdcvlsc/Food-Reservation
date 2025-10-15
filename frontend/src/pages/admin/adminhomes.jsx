@@ -24,7 +24,7 @@ const peso = new Intl.NumberFormat("en-PH", {
 // ---- single source of truth for admin routes
 const ADMIN_ROUTES = {
   home: "/admin",
-  shop: "/admin/shop", // file: adminShop.jsx
+  shop: "/admin/shops", // file: adminShop.jsx
   topup: "/admin/topup", // file: adminTopUp.jsx
   orders: "/admin/orders", // file: adminOrders.jsx
   reservations: "/admin/reservations", // file: adminReservations.jsx
@@ -34,6 +34,13 @@ const ADMIN_ROUTES = {
 
 export default function AdminHome() {
   const navigate = useNavigate();
+  useEffect(() => {
+    const authToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (!authToken || !storedUser) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
 
   // Quick links
   const [directories] = useState([

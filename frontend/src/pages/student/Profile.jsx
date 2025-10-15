@@ -1,6 +1,6 @@
 // src/pages/Profile.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { Pencil, Wallet } from "lucide-react";
@@ -51,6 +51,14 @@ function readLocalUser() {
 
 // ---- component -------------------------------------------------------------
 export default function Profile() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (!token || !user) {
+      navigate('/status/unauthorized');
+    }
+  }, [navigate]);
   const [user, setUser] = useState(() => {
     const u = readLocalUser();
     return {
