@@ -55,8 +55,10 @@ export class ApiError extends Error {
   static Maintenance = 503;    // service unavailable / maintenance
   static NotFound = 404;
   static ServerError = 500;    // generic 5xx server error
+  static BadRequest = 400;
   static Unauthorized = 401;   // not authenticated (login required)
   static Forbidden = 403;      // authenticated but lacks permission
+  static Conflict = 409;
 
   constructor(message, status = 0, data = null, response = null) {
     super(message);
