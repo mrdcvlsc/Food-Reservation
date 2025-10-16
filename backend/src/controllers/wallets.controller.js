@@ -55,7 +55,7 @@ exports.me = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     console.log('[WALLET] Me: returning wallet for user', uid);
-    return res.json({ balance: Number(user.balance) || 0, id: user.id, name: user.name, email: user.email });
+    return res.json({ balance: Number(user.balance) || 0, id: user.id, name: user.name, email: user.email, role: user.role });
   } catch (e) {
     console.error(e);
   console.log('[WALLET] Me: failed to load wallet', e.message);
