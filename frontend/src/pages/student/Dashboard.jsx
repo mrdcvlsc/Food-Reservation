@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api, ApiError } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import {
   ShoppingBag,
   Wallet,
@@ -19,14 +20,11 @@ const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP"
 
 export default function Dashboard() {
   const navigate = useNavigate();
-
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user_auth = localStorage.getItem('user');
-    if (!token || !user_auth) {
-      navigate('/status/unauthorized');
-    }
-  });
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'student', setUser });
+    })();
+  }, [navigate]);
 
   // --- user & balance ---
   const [user, setUser] = useState(() => {

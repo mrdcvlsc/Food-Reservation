@@ -4,10 +4,11 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { api, ApiError } from "../lib/api"; // <-- make sure src/lib/api.js exists (our fetch wrapper)
+import { refreshSessionForPublic } from "../lib/auth";
 
 export default function Login() {
   const navigate = useNavigate();
-  
+
   const [creds, setCreds] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -27,12 +28,9 @@ export default function Login() {
   };
 
   useEffect(() => {
-    // check first if a user is already logged in
-    const existing_token = localStorage.getItem("token");
-    const existing_user  = localStorage.getItem("user");
-    if (existing_token && existing_user) {
-      navigate('/dashboard');
-    }
+    (async () => {
+      await refreshSessionForPublic({ navigate });
+    })();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
@@ -59,7 +57,7 @@ export default function Login() {
       // Route by role
       if (user?.role === "admin") {
         navigate("/admin", { replace: true });
-      } else {
+      } else if (user?.role === "student") {
         navigate("/dashboard", { replace: true });
       }
     } catch (err) {

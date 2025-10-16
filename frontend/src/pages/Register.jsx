@@ -4,17 +4,15 @@ import { Link, useNavigate } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
 import { api, ApiError } from "../lib/api";
+import { refreshSessionForPublic } from "../lib/auth";
 
 export default function Register() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // check first if a user is already logged in
-    const existing_token = localStorage.getItem("token");
-    const existing_user  = localStorage.getItem("user");
-    if (existing_token && existing_user) {
-      navigate('/dashboard');
-    }
+    (async () => {
+      await refreshSessionForPublic({ navigate });
+    })();
   }, [navigate]);
 
   const [form, setForm] = useState({

@@ -2,32 +2,23 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
+import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 
 export default function EditProfile() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'student' });
+    })();
   }, [navigate]);
 
   // Load current user info from localStorage
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: JSON.parse(localStorage.getItem("user") || "{}")?.name,
+    email: JSON.parse(localStorage.getItem("user") || "{}")?.email,
     password: ""
   });
-
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("user") || "{}");
-    setForm({
-      name: stored.name || "",
-      email: stored.email || "",
-      password: ""
-    });
-  }, []);
 
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));

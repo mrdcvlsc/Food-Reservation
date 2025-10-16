@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import { Search, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
@@ -122,12 +123,11 @@ function mapFoodToRow(raw) {
 export default function TxHistory() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'student' });
+    })();
   }, [navigate]);
+
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

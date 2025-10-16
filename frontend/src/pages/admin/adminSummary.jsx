@@ -1,8 +1,9 @@
-﻿// src/pages/admin/adminSummary.jsx
+// src/pages/admin/adminSummary.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import {
   RefreshCw,
   Search,
@@ -24,12 +25,11 @@ const SLOT_LABELS = {
 export default function AdminSummary() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
+
   const [loading, setLoading] = useState(true);
   const [menu, setMenu] = useState([]);
   const [reservations, setReservations] = useState([]);

@@ -1,7 +1,8 @@
-﻿// src/pages/admin/adminReservations.jsx
+// src/pages/admin/adminReservations.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import {
   CalendarClock,
   Check,
@@ -49,12 +50,11 @@ const Pill = ({ status }) => {
 export default function AdminReservations() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
+
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -115,7 +115,7 @@ export default function AdminReservations() {
 
   // counts for tabs
   const counts = useMemo(() => {
-    const acc = CANON.reduce((m, k) => ((m[k] = 0), m), {});
+    const acc = CANON.reduce((m, k) => { m[k] = 0; return m; }, {});
     for (const r of normalized) acc[r.status] = (acc[r.status] || 0) + 1;
     acc["All"] = normalized.length;
     return acc;

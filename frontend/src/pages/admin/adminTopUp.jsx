@@ -1,4 +1,4 @@
-﻿// src/pages/admin/adminTopUp.jsx
+// src/pages/admin/adminTopUp.jsx
 import React, { useRef, useState, useEffect } from "react";
 import Navbar from "../../components/adminavbar";
 import {
@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
+import { refreshSessionForProtected } from "../../lib/auth";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 const fmtDT = (v) => {
@@ -22,11 +23,9 @@ const badge = (p) =>
 export default function AdminTopUp() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
 
   const [tab, setTab] = useState("verify"); // default to verify
@@ -65,11 +64,9 @@ export default function AdminTopUp() {
 function TopUpManager() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
 
   const [provider, setProvider] = useState("gcash"); // 'gcash' | 'maya'

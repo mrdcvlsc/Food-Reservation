@@ -1,4 +1,4 @@
-﻿// src/pages/admin/adminOrders.jsx
+// src/pages/admin/adminOrders.jsx
 import React, { useMemo, useState, useEffect } from "react";
 import { api } from "../../lib/api";
 import Navbar from "../../components/adminavbar";
@@ -11,6 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { refreshSessionForProtected } from "../../lib/auth";
 
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -49,12 +50,11 @@ const Pill = ({ status }) => {
 export default function AdminOrders() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);

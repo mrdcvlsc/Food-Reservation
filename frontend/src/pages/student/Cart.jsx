@@ -2,6 +2,7 @@
 import { api } from "../../lib/api";
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
 import {
   Plus,
@@ -33,11 +34,9 @@ const SLOTS = [
 export default function Cart() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'student' });
+    })();
   }, [navigate]);
   const { state } = useLocation();
 

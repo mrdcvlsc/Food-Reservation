@@ -1,6 +1,7 @@
 // src/pages/Shop.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import {
@@ -30,11 +31,9 @@ const SLOTS = [
 export default function Shop() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'student' });
+    })();
   }, [navigate]);
 
   // data

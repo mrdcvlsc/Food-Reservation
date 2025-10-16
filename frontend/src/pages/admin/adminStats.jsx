@@ -1,7 +1,8 @@
-﻿// src/pages/admin/adminStats.jsx
+// src/pages/admin/adminStats.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import { TrendingUp, ClipboardList, Clock, Wallet, RefreshCw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -50,12 +51,11 @@ function isInThisMonth(iso, now = new Date()) {
 export default function AdminStats() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
+
   const [loading, setLoading] = useState(true);
   const [menu, setMenu] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -134,7 +134,7 @@ export default function AdminStats() {
   }, [menu]);
 
   // Filter reservations/topups to this month
-  const now = new Date();
+  const now = useMemo(() => new Date(), []);
   const resMonth = useMemo(
     () => (reservations || []).filter((r) => isInThisMonth(getCreated(r), now)),
     [reservations, now]
@@ -150,7 +150,10 @@ export default function AdminStats() {
     let revenue = 0;
 
     // initialize counts with all keys so UI never shows undefined
-    const counts = CANONICAL_STATUSES.reduce((acc, k) => ((acc[k] = 0), acc), {});
+    const counts = CANONICAL_STATUSES.reduce((acc, k) => {
+      acc[k] = 0;
+      return acc;
+    }, {});
     const byCategory = {};
     const byItem = {};
 

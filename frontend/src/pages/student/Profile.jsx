@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import { Pencil, Wallet } from "lucide-react";
 
 // Peso formatter
@@ -31,79 +32,40 @@ function safeDateLabel(isoLike) {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
 }
 
-function readLocalUser() {
-  // Common places your app may have saved a user object
-  const candKeys = ["user", "auth", "profile", "account"];
-  for (const k of candKeys) {
-    try {
-      const raw = localStorage.getItem(k);
-      if (!raw) continue;
-      const obj = JSON.parse(raw);
-      // Some apps store { user: {...} }
-      const u = obj?.user && typeof obj.user === "object" ? obj.user : obj;
-      if (u && (u.email || u.name)) return u;
-    } catch {
-      // ignore bad JSON
-    }
-  }
-  return {};
-}
+// (removed unused readLocalUser helper)
 
 // ---- component -------------------------------------------------------------
 export default function Profile() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
-  }, [navigate]);
-  const [user, setUser] = useState(() => {
-    const u = readLocalUser();
-    return {
-      name: firstDefined(u.name, u.fullName, "Guest User"),
-      email: firstDefined(u.email, u.username, "guest@example.com"),
-      balance: coerceNumber(firstDefined(u.balance, u.wallet, u.amount), 0),
-      createdAt: firstDefined(u.createdAt, u.memberSince, u.registeredAt),
-    };
-  });
-  const [loading, setLoading] = useState(false);
-
-  // Try to refresh from API (/me) if token/session exists
-  useEffect(() => {
-    let alive = true;
     (async () => {
-      setLoading(true);
-      try {
-        // Try wallet endpoint first (returns { balance, id, name, email })
-        let me = await api.get("/wallets/me").catch(() => null);
-        if (!me) {
-          // Fallback to auth/me
-          me = await api.get("/auth/me").catch(() => null);
-        }
-        if (!alive || !me) return;
-        const m = me?.data || me;
-        const next = {
-          name: firstDefined(m.name, m.fullName, user.name),
-          email: firstDefined(m.email, user.email),
-          balance: coerceNumber(firstDefined(m.balance, m.walletBalance, user.balance), 0),
-          createdAt: firstDefined(m.createdAt, m.memberSince, user.createdAt),
-        };
-        setUser(next);
-
-        try {
-          localStorage.setItem("user", JSON.stringify(next));
-        } catch {}
-      } finally {
-        alive && setLoading(false);
-      }
+      await refreshSessionForProtected({ navigate, requiredRole: 'student', setUser });
     })();
-    return () => {
-      alive = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [navigate]);
+
+  // Initialize user with a stable shape using localStorage as fallback.
+  const initialLocalUser = (() => {
+    try {
+      const raw = localStorage.getItem('user') || '{}';
+      const u = JSON.parse(raw) || {};
+      return {
+        name: firstDefined(u.name, u.fullName, 'Guest User'),
+        email: firstDefined(u.email, u.username, 'guest@example.com'),
+        balance: coerceNumber(firstDefined(u.balance, u.wallet, u.amount), 0),
+        createdAt: firstDefined(u.createdAt, u.memberSince, u.registeredAt),
+      };
+    } catch (err) {
+      return {
+        name: 'Guest User',
+        email: 'guest@example.com',
+        balance: 0,
+        createdAt: null,
+      };
+    }
+  })();
+
+  const [user, setUser] = useState(initialLocalUser);
+  const [loading, setLoading] = useState(false);
 
   // initials (fallback to email first letters if name missing)
   const initials = useMemo(() => {

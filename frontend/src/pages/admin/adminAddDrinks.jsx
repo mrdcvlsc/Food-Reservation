@@ -1,8 +1,9 @@
-﻿// src/pages/admin/adminAddDrinks.jsx
+// src/pages/admin/adminAddDrinks.jsx
 import React, { useRef, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import {
   Upload,
   Image as ImageIcon,
@@ -17,12 +18,11 @@ const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP"
 export default function AdminAddDrinks() {
   const navigate = useNavigate();
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (!token || !user) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
+
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({

@@ -1,4 +1,4 @@
-﻿// src/pages/admin/adminhomes.jsx
+// src/pages/admin/adminhomes.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
@@ -14,6 +14,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 
 // ---- currency (PHP)
 const peso = new Intl.NumberFormat("en-PH", {
@@ -35,11 +36,9 @@ const ADMIN_ROUTES = {
 export default function AdminHome() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
 
   // Quick links

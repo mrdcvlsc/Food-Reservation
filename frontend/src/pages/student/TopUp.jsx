@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "../../components/avbar";
 import { api, ApiError } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 import {
   Upload,
   Image as ImageIcon,
@@ -102,12 +103,9 @@ export default function TopUp() {
 
   // Load wallets (QR + meta) and refresh user from /me if token is present
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user_auth = localStorage.getItem('user');
-    if (!token || !user_auth) {
-      navigate('/status/unauthorized');
-      return;
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'student', setUser });
+    })();
 
     let alive = true;
     (async () => {

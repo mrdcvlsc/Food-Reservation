@@ -1,20 +1,19 @@
-﻿// src/pages/admin/adminShops.jsx
+// src/pages/admin/adminShops.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { Edit, Trash2, PlusCircle, Search, Filter, RefreshCw } from "lucide-react";
 import { api } from "../../lib/api";
+import { refreshSessionForProtected } from "../../lib/auth";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
 export default function AdminShop() {
   const navigate = useNavigate();
   useEffect(() => {
-    const authToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
-    if (!authToken || !storedUser) {
-      navigate('/status/unauthorized');
-    }
+    (async () => {
+      await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
+    })();
   }, [navigate]);
 
   const [items, setItems] = useState([]);
