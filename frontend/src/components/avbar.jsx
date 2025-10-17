@@ -9,7 +9,7 @@ import { Menu, X, ShoppingCart, User } from "lucide-react";
  * - BRAND_NAME: full academy name; automatically truncates on smaller screens
  */
 const LOGO_SRC =
-  "https://scontent.fmnl25-7.fna.fbcdn.net/v/t39.30808-6/295448277_434258098714663_5827895983845196948_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=2BWhuSY_hwwQ7kNvwFOkysI&_nc_oc=Adn7MIdUfCU8Kzlpxhv7460CNx5X_pe6DhN2npquOWCgS4Gfh4MAlK-_ZpA2wHkue0hvB8QGA1nu87c4UOh-UV82&_nc_zt=23&_nc_ht=scontent.fmnl25-7.fna&_nc_gid=BHRyGEQebpDHKoNJQ6RpLQ&oh=00_AfWIYi8IsgZiqq9sg3IrWIerGudGgTFONAdvcV1CNIovTw&oe=68B5F016";
+  "jckl-192.png";
 
 const BRAND_NAME =
   "Jesus Christ King of Kings and Lord of Lords Academy Inc.";

@@ -54,12 +54,12 @@ export default function AdminAvbar() {
         >
           <div className="relative h-8 w-8 rounded-xl overflow-hidden ring-1 ring-gray-200 bg-white">
             <img
-              src="/logo192.png"
+              src="/jckl-192.png"
               alt=""
               className="h-full w-full object-cover"
               onError={(e) => {
                 e.currentTarget.onerror = null;
-                e.currentTarget.src = "/logo192.png";
+                e.currentTarget.src = "/jckl-192.png";
               }}
             />
           </div>
