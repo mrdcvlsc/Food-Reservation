@@ -546,6 +546,48 @@
       "status": "Rejected",
       "createdAt": "2025-10-23T06:38:54.037Z",
       "updatedAt": "2025-10-23T06:39:25.258Z"
+    },
+    {
+      "id": "RES-22",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-1",
+          "name": "Rice Meal A",
+          "price": 75,
+          "qty": 1
+        }
+      ],
+      "total": 75,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T08:01:53.325Z",
+      "updatedAt": "2025-10-23T08:02:26.089Z"
+    },
+    {
+      "id": "RES-23",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-1",
+          "name": "Rice Meal A",
+          "price": 75,
+          "qty": 1
+        }
+      ],
+      "total": 75,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T08:11:13.242Z",
+      "updatedAt": "2025-10-23T08:11:37.159Z"
     }
   ],
   "topups": [
@@ -714,7 +756,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 584
+      "balance": 509
     }
   ],
   "transactions": [
@@ -897,6 +939,34 @@
       "ref": "RES-21",
       "createdAt": "2025-10-23T06:38:54.301Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mh34vv1m",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 75,
+      "ref": "RES-22",
+      "createdAt": "2025-10-23T08:01:53.386Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh357v8g",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 75,
+      "ref": "RES-23",
+      "createdAt": "2025-10-23T08:11:13.504Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-1",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-23",
+      "amount": 75,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-23T08:11:37.159Z"
     }
   ],
   "wallets": [
@@ -912,6 +982,61 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mh358dhk",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-23 Rejected",
+      "body": "Your order has been cancelled. Refund processed.",
+      "data": {
+        "reservationId": "RES-23",
+        "status": "Rejected",
+        "amount": 75
+      },
+      "read": true,
+      "createdAt": "2025-10-23T08:11:37.160Z"
+    },
+    {
+      "id": "notif_mh357v17",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-23"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T08:11:13.242Z"
+    },
+    {
+      "id": "notif_mh34wka2",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-22 Rejected",
+      "body": "Your reservation RES-22 has been rejected.",
+      "data": {
+        "reservationId": "RES-22",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T08:02:26.090Z"
+    },
+    {
+      "id": "notif_mh34vv00",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-22"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T08:01:53.325Z"
+    },
     {
       "id": "notif_mh32035b",
       "for": "usr_mh0h1va7",
