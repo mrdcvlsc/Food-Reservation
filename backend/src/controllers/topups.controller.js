@@ -1,4 +1,5 @@
 const { load, save } = require("../lib/db");
+const Notifications = require("./notifications.controller");
 
 exports.create = (req, res) => {
   // multer may attach a file and may also raise a MulterError which is handled
@@ -39,7 +40,24 @@ exports.create = (req, res) => {
   db.topups = Array.isArray(db.topups) ? db.topups : [];
   db.topups.push(topup);
   save(db);
-  console.log('[TOPUP] Create: topup created', topup.id);
+
+  // Notify admins about new top-up
+  try {
+    Notifications.addNotification({
+      id: "notif_" + Date.now().toString(36),
+      for: "admin",
+      actor: req.user && req.user.id,
+      type: "topup:created",
+      title: "New top-up submitted",
+      body: `${topup.student || req.user?.name || req.user?.email || req.user?.id} requested ₱${topup.amount}`,
+      data: { topupId: topup.id },
+      read: false,
+      createdAt: topup.createdAt || new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error("Notification publish failed", e && e.message);
+  }
+
   res.json(topup);
 };
 
@@ -120,5 +138,24 @@ exports.setStatus = (req, res) => {
   }
 
   save(db);
+  // Notify student of topup status change
+  try {
+    const target = db.topups[i];
+    if (target && target.userId) {
+      Notifications.addNotification({
+        id: "notif_" + Date.now().toString(36),
+        for: target.userId,
+        actor: req.user && req.user.id,
+        type: "topup:status",
+        title: `Top-up ${target.id} ${target.status}`,
+        body: `Your top-up ${target.id} was ${target.status}`,
+        data: { topupId: target.id, status: target.status },
+        read: false,
+        createdAt: new Date().toISOString(),
+      });
+    }
+  } catch (e) {
+    console.error("Notification publish failed", e && e.message);
+  }
   res.json(db.topups[i]);
 };

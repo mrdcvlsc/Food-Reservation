@@ -1,5 +1,6 @@
 ﻿// backend/src/controllers/reservations.controller.js
 const { load, save, nextId } = require("../lib/db");
+const Notifications = require("./notifications.controller");
 
 /**
  * POST /api/reservations
@@ -99,6 +100,24 @@ exports.create = async (req, res) => {
     db.reservations = db.reservations || [];
     db.reservations.push(reservation);
     await save(db);
+
+    // Notify admins about new reservation (best-effort)
+    try {
+      Notifications.addNotification({
+        id: "notif_" + Date.now().toString(36),
+        for: "admin",
+        actor: req.user && req.user.id,
+        type: "reservation:created",
+        title: "New reservation submitted",
+        body: `${reservation.student || req.user?.name || req.user?.email || req.user?.id} submitted a reservation`,
+        data: { reservationId: reservation.id },
+        read: false,
+        createdAt: reservation.createdAt || new Date().toISOString(),
+      });
+    } catch (e) {
+      console.error("Notification publish failed", e && e.message);
+    }
+
     res.json(reservation);
   } catch (e) {
     console.error(e);
@@ -238,6 +257,27 @@ exports.setStatus = async (req, res) => {
         row.status = "Approved";
         row.updatedAt = new Date().toISOString();
         await save(db);
+
+        // notify user about approval (best-effort)
+        try {
+          const targetUser = row.userId || existingTx.userId;
+          if (targetUser) {
+            Notifications.addNotification({
+              id: "notif_" + Date.now().toString(36),
+              for: targetUser,
+              actor: req.user && req.user.id,
+              type: "reservation:status",
+              title: `Reservation ${row.id} Approved`,
+              body: `Your reservation ${row.id} has been approved.`,
+              data: { reservationId: row.id, status: "Approved" },
+              read: false,
+              createdAt: new Date().toISOString(),
+            });
+          }
+        } catch (e) {
+          console.error("Notification publish failed", e && e.message);
+        }
+
         const user = (db.users || []).find((u) => String(u.id) === String(existingTx.userId));
         return res.json({ reservation: row, transaction: existingTx, user });
       }
@@ -306,6 +346,27 @@ exports.setStatus = async (req, res) => {
       row.updatedAt = new Date().toISOString();
 
       await save(db);
+
+      // notify user about approval (best-effort)
+      try {
+        const targetUser = row.userId;
+        if (targetUser) {
+          Notifications.addNotification({
+            id: "notif_" + Date.now().toString(36),
+            for: targetUser,
+            actor: req.user && req.user.id,
+            type: "reservation:status",
+            title: `Reservation ${row.id} Approved`,
+            body: `Your reservation ${row.id} has been approved.`,
+            data: { reservationId: row.id, status: "Approved", transactionId: tx.id },
+            read: false,
+            createdAt: new Date().toISOString(),
+          });
+        }
+      } catch (e) {
+        console.error("Notification publish failed", e && e.message);
+      }
+
       return res.json({ reservation: row, transaction: tx, user });
     }
 
@@ -315,9 +376,58 @@ exports.setStatus = async (req, res) => {
           .status(400)
           .json({ error: "Only pending reservations can be rejected" });
       }
+
+      // mark rejected and update timestamp
       row.status = "Rejected";
       row.updatedAt = new Date().toISOString();
+
+      // Best-effort: attach userId from existing transaction if present
+      try {
+        const existingTx = (db.transactions || []).find((t) => String(t.ref || "") === String(row.id));
+        if (existingTx && !row.userId) row.userId = existingTx.userId;
+      } catch (e) {
+        /* ignore */
+      }
+
+      // Best-effort: resolve user from the reservation 'student' field if still missing (legacy/guest)
+      if (!row.userId) {
+        const studentNorm = String(row.student || "").trim().toLowerCase();
+        if (studentNorm) {
+          const found = (db.users || []).find((u) => {
+            const name = String(u.name || "").trim().toLowerCase();
+            const email = String(u.email || "").trim().toLowerCase();
+            const uid = String(u.id || "").trim().toLowerCase();
+            return studentNorm === name || studentNorm === email || studentNorm === uid;
+          });
+          if (found) row.userId = found.id;
+        }
+      }
+
+      // Persist reservation change
       await save(db);
+
+      // notify user about rejection (best-effort)
+      try {
+        const targetUser = row.userId;
+        if (targetUser) {
+          Notifications.addNotification({
+            id: "notif_" + Date.now().toString(36),
+            for: targetUser,
+            actor: req.user && req.user.id,
+            type: "reservation:status",
+            title: `Reservation ${row.id} Rejected`,
+            body: `Your reservation ${row.id} has been rejected.`,
+            data: { reservationId: row.id, status: "Rejected" },
+            read: false,
+            createdAt: new Date().toISOString(),
+          });
+        } else {
+          console.warn("[RESERVATION] Rejected: no userId found for", row.id);
+        }
+      } catch (e) {
+        console.error("Notification publish failed", e && e.message);
+      }
+
       return res.json(row);
     }
 
@@ -325,6 +435,27 @@ exports.setStatus = async (req, res) => {
     row.status = status;
     row.updatedAt = new Date().toISOString();
     await save(db);
+
+    // notify user about reservation status change (best-effort)
+    try {
+      const targetUser = row.userId;
+      if (targetUser) {
+        Notifications.addNotification({
+          id: "notif_" + Date.now().toString(36),
+          for: targetUser,
+          actor: req.user && req.user.id,
+          type: "reservation:status",
+          title: `Reservation ${row.id} ${row.status}`,
+          body: `Your reservation ${row.id} is now ${row.status}`,
+          data: { reservationId: row.id, status: row.status },
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
+    } catch (e) {
+      console.error("Notification publish failed", e && e.message);
+    }
+
     return res.json(row);
   } catch (e) {
     console.error(e);

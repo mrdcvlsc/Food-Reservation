@@ -363,6 +363,189 @@
       "charged": true,
       "chargedAt": "2025-08-30T06:48:00.918Z",
       "updatedAt": "2025-08-30T06:49:07.725Z"
+    },
+    {
+      "id": "RES-14",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Claimed",
+      "createdAt": "2025-10-21T11:20:56.501Z",
+      "transactionId": "txn_mh0h45a8",
+      "charged": true,
+      "chargedAt": "2025-10-21T11:20:56.768Z",
+      "updatedAt": "2025-10-23T06:18:44.675Z"
+    },
+    {
+      "id": "RES-15",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 101,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T06:03:57.471Z",
+      "updatedAt": "2025-10-23T06:04:50.927Z"
+    },
+    {
+      "id": "RES-16",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Claimed",
+      "createdAt": "2025-10-23T06:18:05.184Z",
+      "transactionId": "txn_mh316de7",
+      "charged": true,
+      "chargedAt": "2025-10-23T06:18:05.263Z",
+      "updatedAt": "2025-10-23T06:18:43.746Z"
+    },
+    {
+      "id": "RES-17",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Claimed",
+      "createdAt": "2025-10-23T06:25:18.757Z",
+      "transactionId": "txn_mh31fnwj",
+      "charged": true,
+      "chargedAt": "2025-10-23T06:25:18.787Z",
+      "updatedAt": "2025-10-23T06:26:00.101Z"
+    },
+    {
+      "id": "RES-18",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 12,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T06:26:24.934Z",
+      "updatedAt": "2025-10-23T06:26:58.887Z"
+    },
+    {
+      "id": "RES-19",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 12,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T06:32:05.411Z",
+      "updatedAt": "2025-10-23T06:32:43.752Z"
+    },
+    {
+      "id": "RES-20",
+      "userId": null,
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 12,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T06:33:27.725Z",
+      "updatedAt": "2025-10-23T06:33:55.541Z"
+    },
+    {
+      "id": "RES-21",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 12,
+      "status": "Rejected",
+      "createdAt": "2025-10-23T06:38:54.037Z",
+      "updatedAt": "2025-10-23T06:39:25.258Z"
     }
   ],
   "topups": [
@@ -464,6 +647,34 @@
       "updatedAt": "2025-08-29T04:14:11.927Z",
       "credited": true,
       "creditedAt": "2025-08-29T04:14:11.927Z"
+    },
+    {
+      "id": "top_mh0h2qf3",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "324234242342",
+      "status": "Approved",
+      "proofUrl": "/uploads/mh0h2qey_70bb9404-7ab4-4c11-a92d-5ad39bd2987a.jpg",
+      "submittedAt": "2025-10-21T11:19:50.847Z",
+      "createdAt": "2025-10-21T11:19:50.847Z",
+      "updatedAt": "2025-10-21T11:20:20.596Z",
+      "credited": true,
+      "creditedAt": "2025-10-21T11:20:20.596Z"
+    },
+    {
+      "id": "top_mh31yoym",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "provider": "gcash",
+      "amount": 2000,
+      "reference": "74239749327482",
+      "status": "Rejected",
+      "proofUrl": "/uploads/mh31yoyh_70bb9404-7ab4-4c11-a92d-5ad39bd2987a.jpg",
+      "submittedAt": "2025-10-23T06:40:06.622Z",
+      "createdAt": "2025-10-23T06:40:06.622Z",
+      "updatedAt": "2025-10-23T06:41:11.662Z"
     }
   ],
   "users": [
@@ -494,6 +705,16 @@
       "grade": "",
       "section": "",
       "balance": 760
+    },
+    {
+      "id": "usr_mh0h1va7",
+      "name": "Anmol David Das",
+      "email": "spadymold@gmail.com",
+      "passwordHash": "$2a$10$rXXX5I4D6/MoE5ipVTOt/etGAut1FHtb3SJYakIhHMMxOlGbu3oj2",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 584
     }
   ],
   "transactions": [
@@ -595,6 +816,87 @@
       "ref": "RES-13",
       "createdAt": "2025-08-30T06:48:00.918Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mh0h3ddi",
+      "userId": "usr_mh0h1va7",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": "324234242342",
+      "topupId": "top_mh0h2qf3",
+      "createdAt": "2025-10-21T11:20:20.596Z"
+    },
+    {
+      "id": "txn_mh0h45a8",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 89,
+      "ref": "RES-14",
+      "createdAt": "2025-10-21T11:20:56.768Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh30o7fs",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 101,
+      "ref": "RES-15",
+      "createdAt": "2025-10-23T06:03:57.736Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh316de7",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 89,
+      "ref": "RES-16",
+      "createdAt": "2025-10-23T06:18:05.263Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh31fnwj",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 89,
+      "ref": "RES-17",
+      "createdAt": "2025-10-23T06:25:18.787Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh31h35a",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 12,
+      "ref": "RES-18",
+      "createdAt": "2025-10-23T06:26:25.198Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh31odv1",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 12,
+      "ref": "RES-19",
+      "createdAt": "2025-10-23T06:32:05.677Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh31q5d3",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 12,
+      "ref": "RES-20",
+      "createdAt": "2025-10-23T06:33:27.975Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh31x55p",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 12,
+      "ref": "RES-21",
+      "createdAt": "2025-10-23T06:38:54.301Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -607,6 +909,154 @@
       "active": true,
       "updatedAt": "2025-08-28T05:01:53.234Z",
       "createdAt": "2025-08-28T02:07:30.818Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif_mh32035b",
+      "for": "usr_mh0h1va7",
+      "actor": "u_admin",
+      "type": "topup:status",
+      "title": "Top-up top_mh31yoym Rejected",
+      "body": "Your top-up top_mh31yoym was Rejected",
+      "data": {
+        "topupId": "top_mh31yoym",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:41:11.663Z"
+    },
+    {
+      "id": "notif_mh31yoyo",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "topup:created",
+      "title": "New top-up submitted",
+      "body": "Anmol David Das requested ₱2000",
+      "data": {
+        "topupId": "top_mh31yoym"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:40:06.622Z"
+    },
+    {
+      "id": "notif_mh31xt1n",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-21 Rejected",
+      "body": "Your reservation RES-21 has been rejected.",
+      "data": {
+        "reservationId": "RES-21",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:39:25.259Z"
+    },
+    {
+      "id": "notif_mh31x4yf",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-21"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:38:54.037Z"
+    },
+    {
+      "id": "notif_mh31q567",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-20"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:33:27.725Z"
+    },
+    {
+      "id": "notif_mh31odnp",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-19"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:32:05.411Z"
+    },
+    {
+      "id": "notif_mh31h2xz",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-18"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:26:24.934Z"
+    },
+    {
+      "id": "notif_mh31gglq",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-17 Approved",
+      "body": "Your reservation RES-17 has been approved.",
+      "data": {
+        "reservationId": "RES-17",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:25:55.982Z"
+    },
+    {
+      "id": "notif_mh31fnvq",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-17"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:25:18.757Z"
+    },
+    {
+      "id": "notif_mh316dc1",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-16"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:18:05.184Z"
+    },
+    {
+      "id": "notif_mh30o78g",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-15"
+      },
+      "read": true,
+      "createdAt": "2025-10-23T06:03:57.471Z"
     }
   ]
 }

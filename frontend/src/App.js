@@ -31,6 +31,7 @@ import AdminSummary        from "./pages/admin/adminSummary";
 import AdminReservations   from "./pages/admin/adminReservations";
 import AdminApproved       from "./pages/admin/adminApproved";
 import AdminStats          from "./pages/admin/adminStats";
+import AdminInventory      from "./pages/admin/adminInventory";
 
 /* --------------- status pages --------------- */
 import { 
@@ -100,6 +101,7 @@ function App() {
 
         {/* Stats */}
         <Route path="/admin/stats"                    element={<AdminStats />} />
+        <Route path="/admin/inventory"                element={<AdminInventory />} />
 
         {/* ---------- status pages ---------- */}
         <Route path="/status/maintenance"          element={<Maintenance />} />
