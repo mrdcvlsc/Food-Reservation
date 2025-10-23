@@ -21,10 +21,14 @@ async function request(path, { method = "GET", body, headers } = {}) {
   if (!isFormData) {
     h["Content-Type"] = h["Content-Type"] || "application/json";
   }
+  // prefer JSON responses
+  h["Accept"] = h["Accept"] || "application/json";
 
   const res = await fetch(toApi(path), {
     method,
     headers: h,
+    // important: send cookies when server uses session cookie auth
+    credentials: "include",
     body: isFormData ? body : (body != null ? JSON.stringify(body) : undefined),
   });
 

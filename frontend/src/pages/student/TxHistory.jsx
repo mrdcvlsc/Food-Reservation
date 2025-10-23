@@ -165,7 +165,14 @@ export default function TxHistory() {
       let pool = [];
 
       // Prefer direct reservations/orders from your API
-      const resMine = await fetchArr("/reservations/mine");
+      const resMine = await fetch('/api/reservations/mine', {
+        credentials: 'include',
+        headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
+      })
+        .then(r => r.json())
+        .then(d => { console.log('RES_MINE:', d); return d; })
+        .catch(e => console.error('RES_MINE_ERR', e));
+
       const ordMine = await fetchArr("/orders/mine");   // in case your API uses /orders
       const resAlt  = await fetchArr("/reservations");  // some backends return the user's own here
       pool.push(...resMine, ...ordMine, ...resAlt);

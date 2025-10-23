@@ -309,6 +309,38 @@ export default function Shop() {
     }
   };
 
+  // optimistic local update (keep same "cart" key Cart.jsx reads)
+  async function handleAddFromShop(item, qty = 1) {
+    try {
+      const key = String(item.id);
+      const saved = JSON.parse(localStorage.getItem("cart") || "{}");
+      const next = { ...(saved || {}) };
+      next[key] = (Number(next[key]) || 0) + Number(qty || 1);
+      localStorage.setItem("cart", JSON.stringify(next));
+      // update any local state you have in Shop (optional)
+      setCart(next); // replace with your local state updater if present
+    } catch (e) {
+      console.warn("Failed local cart write", e);
+    }
+
+    // persist to server when logged in
+    if (localStorage.getItem("token")) {
+      try {
+        await api.post("/cart/add", { itemId: item.id, qty, name: item.name, price: item.price });
+        // optionally refresh server cart and sync localStorage
+        const data = await api.get("/cart");
+        if (data && Array.isArray(data.items)) {
+          const synced = {};
+          for (const it of data.items) synced[String(it.itemId)] = Number(it.qty || 0);
+          localStorage.setItem("cart", JSON.stringify(synced));
+          setCart(synced);
+        }
+      } catch (err) {
+        console.error("Server cart add failed", err);
+      }
+    }
+  }
+
   // ==== RENDER ===============================================================
   return (
     <div className="min-h-screen bg-gray-50">
@@ -519,7 +551,7 @@ export default function Shop() {
                         </div>
 
                         <button
-                          onClick={() => inc(it.id)}
+                          onClick={() => handleAddFromShop(it, 1)}
                           disabled={soldOut}
                           className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
                         >

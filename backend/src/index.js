@@ -7,6 +7,7 @@ const { coloredMorgan, printColorLegend } = require("./lib/coloredMorgan");
 
 // Specific routers
 const transactionsRouter = require("./routes/transactions.routes");
+const cartRouter = require("./routes/cart.routes");
 // Aggregated app routes (auth, menu, reservations, etc.)
 const routes = require("./routes");
 // Added: notifications router
@@ -60,6 +61,8 @@ app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/transactions", transactionsRouter);
 // Mount notifications under /api/notifications
 app.use("/api/notifications", notificationsRouter);
+// Mount cart under /api/cart
+app.use("/api/cart", cartRouter);
 // then aggregated routes
 app.use("/api", routes);
 

@@ -7,8 +7,6 @@ import Navbar from "../../components/avbar";
 import {
   Plus,
   Minus,
-  Trash2,
-  ShoppingCart,
   ArrowLeft,
   Clock,
   X,
@@ -21,9 +19,6 @@ const peso = new Intl.NumberFormat("en-PH", {
 });
 
 // menu will be fetched from backend (/api/menu)
-// menu will be fetched from backend (/api/menu)
-
-const MENU = null; // placeholder to keep references
 
 const SLOTS = [
   { id: "recess", label: "Recess • 9:45–10:00 AM" },
@@ -50,16 +45,6 @@ export default function Cart() {
   });
   const [submitting, setSubmitting] = useState(false);
 
-  // hydrate cart from localStorage
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("cart") || "{}");
-      setCart(saved && typeof saved === "object" ? saved : {});
-    } catch {
-      setCart({});
-    }
-  }, []);
-
   const [products, setProducts] = useState([]);
   const [menuLoading, setMenuLoading] = useState(true);
 
@@ -73,15 +58,128 @@ export default function Cart() {
     return () => (m = false);
   }, []);
 
+  // On mount: hydrate from localStorage immediately, then try to sync with server
+  useEffect(() => {
+    let mounted = true;
+
+    // read local storage immediately so UI is never empty
+    const localSaved = (() => {
+      try {
+        const v = JSON.parse(localStorage.getItem("cart") || "{}");
+        return v && typeof v === "object" ? v : {};
+      } catch {
+        return {};
+      }
+    })();
+    if (mounted) {
+      setCart(localSaved);
+    }
+
+    (async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          // not logged in — nothing to sync
+          console.debug("[CART] no token; using local cart", localSaved);
+          return;
+        }
+
+        // Try fetch server cart
+        console.debug("[CART] fetching server cart");
+        const res = await api.get("/cart").catch((err) => {
+          console.warn("[CART] GET /cart failed", err && err.message);
+          return null;
+        });
+
+        if (!mounted) return;
+
+        // Normalize possible server shapes:
+        // - array ([])
+        // - { items: [...] }
+        // - { cart: { itemId: qty, ... } }
+        // - { data: { items: [...] } } (axios-like)
+        let serverItems = null;
+        let serverCartMap = null;
+        if (!res) {
+          serverItems = null;
+        } else if (Array.isArray(res)) {
+          serverItems = res;
+        } else if (Array.isArray(res.items)) {
+          serverItems = res.items;
+        } else if (res.data && Array.isArray(res.data.items)) {
+          serverItems = res.data.items;
+        } else if (res.cart && typeof res.cart === "object") {
+          serverCartMap = res.cart;
+        } else if (res.data && res.data.cart && typeof res.data.cart === "object") {
+          serverCartMap = res.data.cart;
+        }
+
+        // If server returned items -> use server authoritative view (but merge missing local keys)
+        if (serverItems && serverItems.length > 0) {
+          const next = {};
+          for (const it of serverItems) if (it && (it.itemId || it.id)) next[String(it.itemId || it.id)] = Number(it.qty || it.quantity || 0);
+          console.debug("[CART] server has items, using server cart", next);
+          setCart(next);
+          localStorage.setItem("cart", JSON.stringify(next));
+          return;
+        }
+        
+        // support server-side cart mapping shapes
+        if (!serverItems && serverCartMap && Object.keys(serverCartMap).length > 0) {
+          const next = {};
+          for (const [k, v] of Object.entries(serverCartMap)) next[String(k)] = Number(v || 0);
+          console.debug("[CART] server returned cart map, using it", next);
+          setCart(next);
+          localStorage.setItem("cart", JSON.stringify(next));
+          return;
+        }
+
+        // If server empty but we have local items -> push local items to server
+        if ((!serverItems || serverItems.length === 0) && localSaved && Object.keys(localSaved).length > 0) {
+          console.debug("[CART] server empty, syncing local -> server", localSaved);
+          // push each local entry
+          for (const [id, qty] of Object.entries(localSaved)) {
+            try {
+              await api.post("/cart/add", { itemId: id, qty }).catch(() => null);
+            } catch (e) {
+              /* ignore per-item failure */
+            }
+          }
+          // refresh server cart after sync
+          const refreshed = await api.get("/cart").catch(() => null);
+          const refreshedItems = refreshed && (Array.isArray(refreshed.items) ? refreshed.items : Array.isArray(refreshed) ? refreshed : (refreshed.data && Array.isArray(refreshed.data.items) ? refreshed.data.items : null));
+          if (refreshedItems && refreshedItems.length > 0) {
+            const next = {};
+            for (const it of refreshedItems) if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
+            setCart(next);
+            localStorage.setItem("cart", JSON.stringify(next));
+            console.debug("[CART] sync complete, server now has:", next);
+            return;
+          }
+          // server still empty -> keep local view
+          console.debug("[CART] sync finished but server still empty; keeping local cart");
+          setCart(localSaved);
+          return;
+        }
+
+        // No server data; keep localSaved (already applied)
+        console.debug("[CART] no server data; using local cart");
+      } catch (err) {
+        console.error("[CART] sync error", err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   // support navigation from Shop with { state: { itemId } }
   useEffect(() => {
     const id = state?.itemId;
     if (!id) return;
-    setCart((c) => {
-      const next = { ...c, [id]: (c[id] || 0) + 1 };
-      localStorage.setItem("cart", JSON.stringify(next));
-      return next;
-    });
+    // reuse add logic below — simulate single click add
+    handleAdd(String(id), 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.itemId]);
 
@@ -96,7 +194,7 @@ export default function Cart() {
         .map(([id, qty]) => {
           const p = products.find((x) => String(x.id) === String(id));
           return p ? { ...p, qty } : null;
-            })
+        })
         .filter(Boolean),
     [cart, products]
   );
@@ -106,42 +204,118 @@ export default function Cart() {
     [list]
   );
 
-  const inc = (id) => {
-    const prod = products.find((x) => String(x.id) === String(id));
+  // helper: is user logged in (quick)
+  const isAuth = () => !!localStorage.getItem("token");
+
+  // Centralized add handler (calls backend when authenticated)
+  async function handleAdd(itemId, qty = 1) {
+    const key = String(itemId);
+    const prod = products.find((x) => String(x.id) === String(itemId));
     if (!prod) return;
-    const key = String(id);
+    const nextLocal = (c) => {
+      const nextQty = (c[key] || 0) + qty;
+      if (prod.stock > 0 && nextQty > prod.stock) return c; // clamp
+      return { ...c, [key]: nextQty };
+    };
+
+    // optimistic update locally first
     setCart((c) => {
-      const nextQty = (c[key] || 0) + 1;
-      if (prod.stock > 0 && nextQty > prod.stock) return c; // clamp to stock
-      const next = { ...c, [key]: nextQty };
+      const next = nextLocal(c);
       localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
+
+    if (!isAuth()) return;
+
+    try {
+      await api.post('/cart/add', { itemId: key, qty, name: prod.name, price: prod.price });
+      // refresh server cart to be safe
+      const data = await api.get('/cart');
+      if (data && Array.isArray(data.items)) {
+        const next = {};
+        for (const it of data.items) {
+          if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
+        }
+        setCart(next);
+        localStorage.setItem("cart", JSON.stringify(next));
+      }
+    } catch (e) {
+      console.error("Cart add failed", e);
+      // keep optimistic local state; optionally show user message
+    }
+  }
+
+  const inc = (id) => {
+    handleAdd(id, 1);
   };
 
-  const dec = (id) =>
+  async function handleSetQty(itemId, qty) {
+    const key = String(itemId);
+    const prod = products.find((x) => String(x.id) === String(itemId));
+    if (!prod) return;
+
+    // local update
     setCart((c) => {
-      const key = String(id);
-      const nextQty = Math.max((c[key] || 0) - 1, 0);
-      const next = { ...c, [key]: nextQty };
-      if (nextQty === 0) delete next[key];
+      const next = { ...c };
+      if (qty <= 0) delete next[key];
+      else {
+        if (prod.stock > 0 && qty > prod.stock) return c; // clamp
+        next[key] = qty;
+      }
       localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
 
-  const removeLine = (id) =>
+    if (!isAuth()) return;
+
+    try {
+      await api.post('/cart/update', { itemId: key, qty });
+      // refresh
+      const data = await api.get('/cart');
+      if (data && Array.isArray(data.items)) {
+        const next = {};
+        for (const it of data.items) {
+          if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
+        }
+        setCart(next);
+        localStorage.setItem("cart", JSON.stringify(next));
+      }
+    } catch (e) {
+      console.error("Cart update failed", e);
+    }
+  }
+
+  const dec = (id) => {
+    const current = cart[String(id)] || 0;
+    const newQty = Math.max(current - 1, 0);
+    handleSetQty(id, newQty);
+  };
+
+  const removeLine = (id) => {
+    const key = String(id);
+    // local update
     setCart((c) => {
-      const key = String(id);
       const next = { ...c };
       delete next[key];
       localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
+    if (!isAuth()) return;
+    api.post('/cart/remove', { itemId: key }).catch((e) => console.error("Cart remove failed", e));
+  };
 
   const clearCart = () => {
     setCart({});
     localStorage.setItem("cart", "{}");
+    if (!isAuth()) return;
+    api.post('/cart/clear').catch((e) => console.error("Cart clear failed", e));
   };
+
+  // Compatibility aliases used by the JSX (sync* names expected by UI)
+  const syncAdd = (itemId, qty = 1) => handleAdd(itemId, qty);
+  const syncSet = (itemId, qty) => handleSetQty(itemId, qty);
+  const syncRemove = (itemId) => removeLine(itemId);
+  const syncClear = () => clearCart();
 
   const openReserve = () => setOpen(true);
   const closeReserve = () => setOpen(false);
@@ -193,163 +367,123 @@ export default function Cart() {
     }
   };
 
+  if (menuLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto p-6">Loading cart…</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your Cart</h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/shop")}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm hover:bg-gray-50"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Continue Shopping
-            </button>
-            {list.length > 0 && (
-              <button
-                onClick={clearCart}
-                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm hover:bg-gray-50"
-              >
-                <Trash2 className="w-4 h-4" />
-                Clear Cart
-              </button>
-            )}
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Your Cart</h1>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 text-sm"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Lines */}
-          <section className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
+          <section className="lg:col-span-2 bg-white rounded-lg p-4 border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-600">
+                  <th className="py-2">ITEM</th>
+                  <th className="py-2">PRICE</th>
+                  <th className="py-2">QTY</th>
+                  <th className="py-2">SUBTOTAL</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {list.length === 0 ? (
                   <tr>
-                    <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Item
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Qty
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Subtotal
-                    </th>
-                    <th className="px-3 py-3"></th>
+                    <td colSpan={5} className="py-10 text-center text-gray-500">
+                      Your cart is empty.
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {list.map((it) => (
-                    <tr key={it.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-14 h-14 rounded bg-gray-100 overflow-hidden">
-                            <img
-                              src={it.img}
-                              alt={it.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {it.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {it.category}
-                            </div>
-                          </div>
+                ) : (
+                  list.map((it) => (
+                    <tr key={it.id} className="border-t">
+                      <td className="py-3">{it.name}</td>
+                      <td className="py-3">{peso.format(Number(it.price) || 0)}</td>
+                      <td className="py-3">
+                        <div className="inline-flex items-center border rounded">
+                          <button
+                            onClick={() => syncSet(it.id, Math.max((cart[it.id] || 0) - 1, 0))}
+                            className="px-2"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-3">{cart[it.id] || 0}</span>
+                          <button
+                            onClick={() => syncAdd(it.id, 1)}
+                            className="px-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900 font-medium">
-                        {peso.format(it.price)}
+                      <td className="py-3">
+                        {peso.format((Number(it.price) || 0) * (it.qty || 0))}
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-center">
-                          <div className="inline-flex items-center border rounded-lg">
-                            <button
-                              onClick={() => dec(it.id)}
-                              className="px-2.5 py-1.5 hover:bg-gray-50"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </button>
-                            <span className="px-3 text-sm">{it.qty}</span>
-                            <button
-                              onClick={() => inc(it.id)}
-                              className="px-2.5 py-1.5 hover:bg-gray-50"
-                              disabled={it.stock === 0}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right text-sm font-medium text-gray-900">
-                        {peso.format(it.qty * it.price)}
-                      </td>
-                      <td className="px-3 py-4 text-right">
+                      <td className="py-3">
                         <button
-                          onClick={() => removeLine(it.id)}
-                          className="p-2 rounded-lg text-gray-400 hover:text-red-600"
-                          aria-label="Remove"
+                          onClick={() => syncRemove(it.id)}
+                          className="text-xs text-red-600"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          Remove
                         </button>
                       </td>
                     </tr>
-                  ))}
-                  {list.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-10 text-center text-sm text-gray-500"
-                      >
-                        Your cart is empty.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </section>
 
           {/* Summary */}
-          <aside className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-fit">
-            <h2 className="font-semibold text-gray-900">Summary</h2>
-            <div className="mt-3 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Items</span>
-                <span className="font-medium">{list.length}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Total</span>
-                <span className="text-lg font-semibold">{peso.format(total)}</span>
-              </div>
+          <aside className="bg-white rounded-lg p-4 border">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-sm text-gray-600">Items</div>
+              <div className="font-medium">{list.reduce((a, b) => a + b.qty, 0)}</div>
+            </div>
+            <div className="flex items-center justify-between text-lg font-semibold mb-4">
+              <div>Total</div>
+              <div>{peso.format(total)}</div>
             </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-2">
+            <div className="space-y-2">
               <button
                 onClick={() => navigate("/shop")}
-                className="w-full inline-flex items-center justify-center gap-2 border px-4 py-3 rounded-lg text-sm hover:bg-gray-50"
+                className="w-full border rounded px-4 py-2 text-sm"
               >
-                <ArrowLeft className="w-4 h-4" />
                 Continue Shopping
               </button>
               <button
-                onClick={openReserve}
                 disabled={!list.length}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black text-sm disabled:opacity-60"
+                className="w-full bg-blue-600 text-white rounded px-4 py-2 text-sm"
               >
-                <Clock className="w-4 h-4" />
                 Reserve for Pickup
               </button>
+              {list.length > 0 && (
+                <button
+                  onClick={syncClear}
+                  className="w-full text-sm text-gray-600 hover:underline"
+                >
+                  Clear cart
+                </button>
+              )}
             </div>
           </aside>
         </div>

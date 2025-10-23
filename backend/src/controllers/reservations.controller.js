@@ -91,9 +91,12 @@ exports.create = async (req, res) => {
         const found = (db.users || []).find((u) => {
           const name = String(u.name || "").trim().toLowerCase();
           const email = String(u.email || "").trim().toLowerCase();
-          return studentNorm === name || studentNorm === email;
+          const uid = String(u.id || "").trim().toLowerCase();
+          return studentNorm === name || studentNorm === email || studentNorm === uid;
         });
-        if (found) reservation.userId = found.id;
+        if (found) {
+          reservation.userId = found.id; // <-- ensure we attach resolved userId
+        }
       }
     }
 
@@ -133,25 +136,23 @@ exports.mine = async (req, res) => {
     const db = await load();
     const uid = req.user?.id;
 
-    // If authenticated, try to return reservations belonging to the user.
-    // Also include legacy/guest reservations where `userId` is missing but the
-    // reservation.student matches the user's name/email/id.
     let rows = [];
     if (uid) {
       const users = Array.isArray(db.users) ? db.users : [];
       const me = users.find((u) => String(u.id) === String(uid));
 
       rows = (db.reservations || []).filter((r) => {
-        const rid = r.userId || r.user || r.ownerId || r.uid;
-        if (String(rid) === String(uid)) return true;
-        // no explicit user id: try matching by student name/email/uid
-        if (!rid && me) {
+        // primary: explicit userId match
+        if (String(r.userId || "") === String(uid)) return true;
+
+        // legacy fallback: match by student name/email/id when reservation has no userId
+        if (!r.userId && me) {
           const student = String(r.student || "").trim().toLowerCase();
           if (!student) return false;
           const name = String(me.name || "").trim().toLowerCase();
           const email = String(me.email || "").trim().toLowerCase();
-          const meId = String(me.id || "").trim().toLowerCase();
-          if (student === name || student === email || student === meId) return true;
+          const id = String(me.id || "").trim().toLowerCase();
+          if (student === name || student === email || student === id) return true;
         }
         return false;
       });
@@ -212,35 +213,19 @@ exports.setStatus = async (req, res) => {
     const db = await load();
     db.reservations = db.reservations || [];
 
-    // Robust id compare (case-insensitive)
-    const row = db.reservations.find(
-      (r) => String(r.id || "").toLowerCase() === String(id).toLowerCase()
-    );
+    const row = db.reservations.find((r) => String(r.id || "").toLowerCase() === String(id).toLowerCase());
     if (!row) return res.status(404).json({ error: "Not found" });
 
     const prev = row.status;
 
-    // ---------- Mongo path for atomic refund flow ----------
-    // If rejecting/cancelling, attempt to perform refund using Mongo/Mongoose
-    if (newStatus === "Rejected") {
-      // Only allow refund/cancel if previous state was Pending or Approved
-      const allowedPrev = ["Pending", "Approved"];
-      if (!allowedPrev.includes(prev)) {
-        return res.status(400).json({ error: "Refund/cancellation not allowed for current order state" });
+    // Approve flow (ensure userId is attached if resolved)
+    if (newStatus === "Approved") {
+      if (prev !== "Pending") {
+        return res.status(400).json({ error: "Only pending reservations can be approved" });
       }
 
-      // Resolve userId (prefer reservation.userId, then transaction, then student best-effort)
-      let targetUserId = row.userId || null;
-      const total = Number(row.total || 0);
-
-      // Try resolve from existing transaction
-      if (!targetUserId) {
-        const existingTx = (db.transactions || []).find((t) => String(t.ref || "") === String(row.id));
-        if (existingTx && existingTx.userId) targetUserId = existingTx.userId;
-      }
-
-      // Best-effort resolve from student field
-      if (!targetUserId && row.student) {
+      // Resolve user from reservation.userId or student (legacy)
+      if (!row.userId) {
         const studentNorm = String(row.student || "").trim().toLowerCase();
         if (studentNorm) {
           const found = (db.users || []).find((u) => {
@@ -249,82 +234,13 @@ exports.setStatus = async (req, res) => {
             const uid = String(u.id || "").trim().toLowerCase();
             return studentNorm === name || studentNorm === email || studentNorm === uid;
           });
-          if (found) targetUserId = found.id;
+          if (found) {
+            row.userId = found.id; // <-- attach userId so /reservations/mine will include it
+          }
         }
       }
 
-      // Prevent duplicate refunds: check for any existing credit/refund txn referencing this reservation
-      const alreadyRefunded = (db.transactions || []).some((t) => {
-        const refMatch = String(t.ref || "") === String(row.id);
-        const isCredit = t.direction === "credit" || t.type === "Refund" || String(t.title || "").toLowerCase().includes("refund");
-        return refMatch && isCredit;
-      });
-
-      let refundTx = null;
-      // If we have a user and amount > 0 and not already refunded => apply refund
-      if (!alreadyRefunded && targetUserId && total > 0) {
-        db.users = db.users || [];
-        const user = db.users.find((u) => String(u.id) === String(targetUserId));
-        if (user) {
-          user.balance = Number(user.balance || 0) + total;
-
-          // record refund transaction
-          db.transactions = db.transactions || [];
-          const txId = nextId(db.transactions, "TX");
-          refundTx = {
-            id: txId,
-            userId: user.id,
-            title: "Refund",
-            ref: row.id,
-            amount: total,
-            direction: "credit",
-            status: "Success",
-            createdAt: new Date().toISOString(),
-          };
-          db.transactions.push(refundTx);
-        }
-      }
-
-      // Update reservation status and timestamp
-      row.status = "Rejected";
-      row.updatedAt = new Date().toISOString();
-      // attach resolved userId if we found one
-      if (targetUserId && !row.userId) row.userId = targetUserId;
-
-      await save(db);
-
-      // Send notification (best-effort)
-      try {
-        if (row.userId) {
-          Notifications.addNotification({
-            id: "notif_" + Date.now().toString(36),
-            for: row.userId,
-            actor: req.user && req.user.id,
-            type: "reservation:status",
-            title: `Reservation ${row.id} Rejected`,
-            body: `Your order has been cancelled. Refund processed.`,
-            data: { reservationId: row.id, status: "Rejected", amount: total },
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-        }
-      } catch (e) {
-        console.error("Notification publish failed", e && e.message);
-      }
-
-      return res.json({ reservation: row, refundTransaction: refundTx });
-    }
-
-    // ---------- Existing file-based logic follows (unchanged) ----------
-    // (prev already declared above; removed duplicate)
-
-    if (status === "Approved") {
-      if (prev !== "Pending") {
-        return res
-          .status(400)
-          .json({ error: "Only pending reservations can be approved" });
-      }
-
+      // (do not require user here — existing transaction or later student-resolution can supply user)
       // Stock check
       for (const it of row.items || []) {
         const menuItem = (db.menu || []).find(
@@ -354,6 +270,8 @@ exports.setStatus = async (req, res) => {
       if (existingTx) {
         // attach transaction and mark reservation as approved/charged
         if (!row.transactionId) row.transactionId = existingTx.id;
+        // ensure reservation is linked to the user from the existing transaction
+        if (!row.userId && existingTx.userId) row.userId = existingTx.userId;
         row.charged = true;
         row.chargedAt = row.chargedAt || existingTx.createdAt || new Date().toISOString();
         row.status = "Approved";
@@ -411,7 +329,7 @@ exports.setStatus = async (req, res) => {
       user.balance = Number(user.balance) || 0;
       const total = Number(row.total || 0);
       if (user.balance < total) {
-        return res.status(400).json({ error: "Insufficient wallet balance" });
+        return res.status(400).json({ error: "Insufficient balance" });
       }
 
       // Deduct wallet & stock
@@ -581,9 +499,9 @@ exports.setStatus = async (req, res) => {
           for: targetUser,
           actor: req.user && req.user.id,
           type: "reservation:status",
-          title: `Reservation ${row.id} ${row.status}`,
-          body: `Your reservation ${row.id} is now ${row.status}`,
-          data: { reservationId: row.id, status: row.status },
+          title: `Reservation ${row.id} ${status}`,
+          body: `Your reservation ${row.id} is now ${status}.`,
+          data: { reservationId: row.id, status },
           read: false,
           createdAt: new Date().toISOString(),
         });
@@ -592,7 +510,7 @@ exports.setStatus = async (req, res) => {
       console.error("Notification publish failed", e && e.message);
     }
 
-    return res.json(row);
+    res.json(row);
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to update reservation" });
