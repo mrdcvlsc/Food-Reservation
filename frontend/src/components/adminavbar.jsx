@@ -1,7 +1,7 @@
 // src/components/adminavbar.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
-import { NavLink, Link, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Menu,
   X,
@@ -22,6 +22,28 @@ import { api } from "../lib/api";
 export default function AdminAvbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const [topupsOpen, setTopupsOpen] = useState(false);
+  const topupsRef = useRef(null);
+  // close dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!topupsOpen) return;
+      if (topupsRef.current && !topupsRef.current.contains(e.target)) {
+        setTopupsOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setTopupsOpen(false);
+    };
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [topupsOpen]);
+
   // Notifications state + panel (temporarily disabled)
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -33,7 +55,6 @@ export default function AdminAvbar() {
     { name: "Users",        to: "/admin/users",      Icon: FileText }, // <-- added
     { name: "Reports",      to: "/admin/reports",    Icon: FileText },
     { name: "Shops",        to: "/admin/shops",      Icon: ShoppingBag },
-    { name: "Top-Up Verify",to: "/admin/topup",      Icon: Wallet },
     { name: "Orders",       to: "/admin/orders",     Icon: ClipboardList },
     { name: "Reservations", to: "/admin/reservations", Icon: CalendarClock },
   ];
@@ -159,6 +180,41 @@ export default function AdminAvbar() {
             </NavLink>
           ))}
 
+          {/* Top-ups dropdown (click to open; stays open until outside click / Esc) */}
+          <div className="relative" ref={topupsRef}>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setTopupsOpen((s) => !s); }}
+              className={`${base} ${String(location.pathname).startsWith("/admin/topup") ? active : idle}`}
+              aria-haspopup="true"
+              aria-expanded={topupsOpen}
+            >
+              <Wallet className="w-4 h-4" />
+              <span>Top-ups</span>
+            </button>
+            {topupsOpen && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50">
+                <NavLink
+                  to="/admin/topup"
+                  className={`${base} ${idle} w-full justify-start`}
+                  onClick={() => setTopupsOpen(false)}
+                >
+                  <Wallet className="w-4 h-4" />
+                  <span>Top-Up Management</span>
+                </NavLink>
+                {/* Ensure this link navigates to the admin Top-Up History page */}
+                <NavLink
+                  to="/admin/topup/history"
+                  className={`${base} ${idle} w-full justify-start`}
+                  onClick={() => setTopupsOpen(false)}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Top-Up History</span>
+                </NavLink>
+              </div>
+            )}
+          </div>
+
           <div className="mx-2 h-6 w-px bg-gray-200" />
 
           {/* Admin notifications bell */}
@@ -236,6 +292,18 @@ export default function AdminAvbar() {
                   <span>{name}</span>
                 </NavLink>
               ))}
+              {/* Mobile Top-ups submenu */}
+              <div className="border-t pt-2">
+                <div className="text-[11px] font-medium uppercase text-gray-500 px-1 mb-1">Top-ups</div>
+                <NavLink to="/admin/topup" onClick={() => setOpen(false)} className={`${base} ${idle}`}>
+                  <Wallet className="w-4 h-4" />
+                  <span>Top-Up Management</span>
+                </NavLink>
+                <NavLink to="/admin/topup/history" onClick={() => setOpen(false)} className={`${base} ${idle}`}>
+                  <FileText className="w-4 h-4" />
+                  <span>Top-Up History</span>
+                </NavLink>
+              </div>
             </div>
 
             <div className="my-3 h-px bg-gray-200" />

@@ -1831,13 +1831,13 @@
         }
       ],
       "total": 30,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-10-30T03:00:42.762Z",
       "transactionId": "txn_mhcu7ij5",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-10-30T03:00:43.025Z",
-      "updatedAt": "2025-10-30T03:01:09.546Z"
+      "updatedAt": "2025-10-30T07:35:00.216Z"
     }
   ],
   "topups": [
@@ -2060,6 +2060,16 @@
       "name": "Sean",
       "email": "syantut0617@gmail.com",
       "passwordHash": "$2a$10$DlDlzKdXLaHjR8xPM51EtORMIGgVozeLoPv9odDi10l0hNo6NTbhu",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0
+    },
+    {
+      "id": "usr_mhd5ixwi",
+      "name": "Aaron Salapar Palgan",
+      "email": "aaron@gmail.com",
+      "passwordHash": "$2a$10$Q3vWvLT08dsk1mBpwGdZEO/Nd1n1Vtm0AV.yfj441SB/lQgvb0.u2",
       "role": "student",
       "grade": "",
       "section": "",
@@ -2821,6 +2831,48 @@
   ],
   "notifications": [
     {
+      "id": "notif_mhd408zg",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-69 Claimed",
+      "body": "Your reservation RES-69 is now Claimed.",
+      "data": {
+        "reservationId": "RES-69",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T07:35:00.220Z"
+    },
+    {
+      "id": "notif_mhd408dk",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-69 Ready",
+      "body": "Your reservation RES-69 is now Ready.",
+      "data": {
+        "reservationId": "RES-69",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T07:34:59.432Z"
+    },
+    {
+      "id": "notif_mhd40826",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-69 Preparing",
+      "body": "Your reservation RES-69 is now Preparing.",
+      "data": {
+        "reservationId": "RES-69",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T07:34:59.022Z"
+    },
+    {
       "id": "notif_mhcu82zx",
       "for": "usr_mh0h1va7",
       "actor": null,
@@ -2831,7 +2883,7 @@
         "reservationId": "RES-69",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-10-30T03:01:09.549Z"
     },
     {

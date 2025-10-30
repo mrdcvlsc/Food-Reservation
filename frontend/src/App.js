@@ -26,6 +26,7 @@ import AdminAddDrinks      from "./pages/admin/adminAddDrinks";
 import AdminEditCategories from "./pages/admin/adminEditCategories";
 import AdminEditItems      from "./pages/admin/adminEditItems";
 import AdminTopUp          from "./pages/admin/adminTopUp";
+import AdminTopUpHistory   from "./pages/admin/adminTopUpHistory";
 import AdminOrders         from "./pages/admin/adminOrders";
 import AdminSummary        from "./pages/admin/adminSummary";
 import AdminReservations   from "./pages/admin/adminReservations";
@@ -94,6 +95,7 @@ function App() {
 
         {/* Wallet top-ups & orders */}
         <Route path="/admin/topup"                    element={<AdminTopUp />} />
+        <Route path="/admin/topup/history"           element={<AdminTopUpHistory />} />
         <Route path="/admin/orders"                   element={<AdminOrders />} />
         <Route path="/admin/orders/summary"           element={<AdminSummary />} />
 
