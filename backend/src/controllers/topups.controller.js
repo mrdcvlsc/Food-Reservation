@@ -23,12 +23,15 @@ exports.create = (req, res) => {
   // Derive a human-friendly student name from the users table when possible
   const users = Array.isArray(db.users) ? db.users : [];
   const owner = users.find((u) => String(u.id) === String(req.user.id)) || {};
-  const studentName = owner.name || owner.email || req.user.name || req.user.email || req.user.id;
+  const studentName = req.body.payerName;
 
   const topup = {
     id: "top_" + Date.now().toString(36),
     userId: req.user.id,
     student: studentName,
+    studentId: (req?.body?.studentId) ? req.body.studentId : 'N/A',
+    contact: (req?.body?.contact) ? req.body.contact : 'N/A',
+    email: (req?.body?.email) ? req.body.email : 'N/A',
     provider: method,
     amount: amt,
     reference,

@@ -71,7 +71,7 @@ export default function AdminTopUpHistory() {
       const mapped = raw.map((t) => ({
         id: t.id || t._id,
         createdAt: t.createdAt || t.date || t.submittedAt || new Date().toISOString(),
-        name: t.name || t.userName || t.email || t.user?.name || "—",
+        name: t.student || t.name || t.userName || t.email || t.user?.name || "—",
         studentId: t.studentId || t.sid || t.student || t.user?.studentId || "—",
         contact: t.contact || t.phone || t.mobile || t.user?.phone || "—",
         provider: (t.provider || "").toLowerCase(),
