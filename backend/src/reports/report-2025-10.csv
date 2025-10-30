@@ -1,0 +1,19 @@
+Month,2025-10
+Total Earnings,1546
+Total Orders,18
+
+Top Products: itemId,name,category,qty,revenue
+ITM-3,"Oishi Pillows",Snacks,6,72
+ITM-6,"hotdog",Meals,4,356
+ITM-4,"Fried Chicken",Meals,4,378
+1761632268631799,"Rebisco Sandwich (10PCS)",Snacks,3,30
+ITM-1,"Rice Meal A",Meals,2,150
+ITM-5,"fried lumpia",Meals,2,440
+ITM-11,"Yakult",Beverages,2,20
+ITM-8,"Rice Meal B",Meals,1,80
+ITM-10,"Bottled Water",Beverages,1,20
+
+Top Categories: category,qty,revenue
+"Meals",13,1404
+"Snacks",9,102
+"Beverages",3,40

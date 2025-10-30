@@ -161,6 +161,13 @@ export default function AdminReservations() {
       } else {
         await fetchReservations();
       }
+
+      // notify other UI parts to reload data
+      try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
+      // if the reservation just became Approved, menu stock likely changed -> notify menu listeners
+      if (String(status).toLowerCase() === "approved") {
+        try { window.dispatchEvent(new Event("menu:updated")); } catch {}
+      }
     } catch (e) {
       console.error(`Set status ${status} failed:`, e);
       alert(e?.message || `Failed to mark as ${status}.`);
@@ -188,6 +195,12 @@ export default function AdminReservations() {
       } finally {
         setBusyId(null);
       }
+    }
+
+    // notify other UI parts once
+    try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
+    if (String(nextStatus).toLowerCase() === "approved") {
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
     }
   };
 

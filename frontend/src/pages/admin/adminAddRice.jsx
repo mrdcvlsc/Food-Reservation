@@ -180,7 +180,7 @@ export default function AdminAddRice() {
       await api.post("/admin/menu", fd);
 
       if (goToList) {
-        navigate("/admin/shop", { replace: true });
+        navigate("/admin/shops", { replace: true });
       } else {
         setForm((f) => ({
           name: "",
@@ -221,7 +221,7 @@ export default function AdminAddRice() {
             <p className="text-gray-600">Create a new meal for the canteen menu.</p>
           </div>
           <Link
-            to="/admin/shop"
+            to="/admin/shops"
             className="inline-flex items-center gap-2 text-sm px-3 py-2 rounded-lg border hover:bg-gray-50"
           >
             <ArrowLeft className="w-4 h-4" />

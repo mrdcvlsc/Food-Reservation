@@ -31,6 +31,8 @@ export default function AdminShop() {
     try {
       const data = await api.get("/menu");
       setItems(Array.isArray(data) ? data : []);
+      // notify other tabs/pages (public shop) to refresh
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
     } catch (e) {
       console.error(e);
       alert("Failed to load menu.");
@@ -75,6 +77,7 @@ export default function AdminShop() {
     try {
       await api.put(`/menu/${id}`, { stock: 0 });
       await load();
+      // load() already dispatches menu:updated
     } catch (e) {
       console.error(e);
       alert("Failed to update item.");
@@ -83,9 +86,18 @@ export default function AdminShop() {
     }
   };
 
-  const goEdit = (id) => {
-    // Send the id to the edit page (your edit page can read search param)
-    navigate(`/admin/shop/edit-items?id=${id}`);
+  const toggleVisibility = async (id, nextVisible) => {
+    setBusyId(id);
+    try {
+      await api.put(`/menu/${id}`, { visible: !!nextVisible });
+      setItems((prev) => prev.map((it) => (String(it.id) === String(id) ? { ...it, visible: !!nextVisible } : it)));
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
+    } catch (e) {
+      console.error("toggle visibility failed", e);
+      alert("Failed to update visibility.");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   return (
@@ -122,6 +134,16 @@ export default function AdminShop() {
               <PlusCircle className="w-4 h-4" />
               Add Drink
             </Link>
+
+            {/* New global Edit Items button (green) */}
+            <Link
+              to="/admin/shop/edit-items"
+              className="inline-flex items-center gap-2 bg-green-600 text-white px-3 py-2 rounded-lg hover:bg-green-700 text-sm"
+            >
+              <Edit className="w-4 h-4" />
+              Edit Items
+            </Link>
+
             <button
               onClick={load}
               className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
@@ -237,13 +259,21 @@ export default function AdminShop() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
+                          {/* visibility slider toggle (user friendly + labeled) */}
                           <button
-                            onClick={() => goEdit(p.id)}
-                            className="p-2 rounded-lg text-blue-600 hover:bg-blue-50"
-                            title="Edit item"
+                            onClick={() => toggleVisibility(p.id, !p.visible)}
+                            disabled={busyId === p.id}
+                            className="inline-flex items-center gap-3 px-2 py-1 rounded-md focus:outline-none"
+                            aria-pressed={p.visible ? "true" : "false"}
+                            title={p.visible ? "Hide from menu" : "Show on menu"}
                           >
-                            <Edit className="w-4 h-4" />
+                            <span className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors ${p.visible ? "bg-emerald-500" : "bg-gray-300"}`}>
+                              <span className={`absolute left-0 top-0.5 inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${p.visible ? "translate-x-5" : "translate-x-0"}`} />
+                            </span>
+                            <span className="text-sm text-gray-700">{p.visible ? "Visible" : "Hidden"}</span>
                           </button>
+
+                          {/* mark out of stock */}
                           <button
                             onClick={() => markOutOfStock(p.id)}
                             disabled={busyId === p.id}

@@ -1,28 +1,15 @@
 ﻿const express = require("express");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs-extra");
-const M = require("../controllers/menu.controller");
+const router = express.Router();
+const C = require("../controllers/menu.controller");
 const { requireAuth, requireAdmin } = require("../lib/auth");
 
-// Limit menu images to 4MB to avoid very large uploads from the admin UI
+// simple disk storage (adjust path if your app stores elsewhere)
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      const dir = path.join(__dirname, "..", "uploads");
-      fs.ensureDirSync(dir);
-      cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-      const ext = path.extname(file.originalname || "");
-      cb(null, Date.now() + "_" + Math.round(Math.random() * 1e6) + ext);
-    }
-  })
+  dest: path.join(__dirname, "..", "..", "uploads"),
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
-
-// If you later add endpoint handlers that accept files here, use `upload.single('image')`
-
-const router = express.Router();
 
 /**
  * @swagger
@@ -34,6 +21,9 @@ const router = express.Router();
  *       200:
  *         description: List of menu items
  */
-router.get("/", M.list);
+router.get("/", C.list);
+
+// ensure update route accepts single image field named "image"
+router.put("/:id", requireAuth, requireAdmin, upload.single("image"), C.update);
 
 module.exports = router;

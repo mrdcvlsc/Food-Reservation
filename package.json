@@ -1,8 +1,11 @@
-
 {
 	"name": "food-reservation-workspace",
 	"private": true,
 	"version": "1.0.0",
 	"description": "Workspace wrapper package.json to avoid invalid JSON errors",
-	"license": "MIT"
+	"license": "MIT",
+	"dependencies": {
+		"chart.js": "^4.5.1",
+		"react-chartjs-2": "^5.3.0"
+	}
 }

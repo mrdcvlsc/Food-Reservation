@@ -7,49 +7,61 @@
       "price": 75,
       "stock": 16,
       "img": "/uploads/1761207640037_976937.jpg",
-      "isActive": true
+      "isActive": true,
+      "visible": true,
+      "updatedAt": "2025-10-28T11:16:07.174Z"
     },
     {
       "id": "ITM-2",
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 2,
+      "stock": 21,
       "img": "/uploads/1761207750288_944553.jpg",
-      "isActive": true
+      "isActive": true,
+      "visible": true,
+      "updatedAt": "2025-10-29T23:59:52.301Z"
     },
     {
       "id": "ITM-3",
       "name": "Oishi Pillows",
       "category": "Snacks",
       "price": 12,
-      "stock": 14,
+      "stock": 20,
       "img": "/uploads/1761207651939_889101.jpg",
-      "isActive": true
+      "isActive": true,
+      "visible": true,
+      "updatedAt": "2025-10-28T13:14:57.559Z"
     },
     {
       "id": "ITM-4",
       "name": "Fried Chicken",
       "category": "Meals",
-      "price": 120,
+      "price": 69,
       "stock": 394,
-      "img": "/uploads/1761207668381_89123.jpg"
+      "img": "/uploads/1761207668381_89123.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-28T13:19:12.490Z"
     },
     {
       "id": "ITM-5",
-      "name": "fried lumpia",
+      "name": "Fried Lumpia",
       "category": "Meals",
-      "price": 400,
+      "price": 40,
       "stock": 39,
-      "img": "/uploads/1761207680082_825374.jpg"
+      "img": "/uploads/1761207680082_825374.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-28T13:19:12.903Z"
     },
     {
       "id": "ITM-6",
-      "name": "hotdog",
+      "name": "Hot Dog",
       "category": "Meals",
-      "price": 89,
+      "price": 60,
       "stock": 48,
-      "img": "/uploads/1761207807087_197232.jpg"
+      "img": "/uploads/1761631662153_847269.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-28T13:19:13.874Z"
     },
     {
       "id": "ITM-7",
@@ -57,7 +69,8 @@
       "category": "Meals",
       "price": 170,
       "stock": 23,
-      "img": "/uploads/1761207705197_937291.jpg"
+      "img": "/uploads/1761207705197_937291.jpg",
+      "visible": true
     },
     {
       "id": "ITM-8",
@@ -65,7 +78,50 @@
       "category": "Meals",
       "price": 80,
       "stock": 10,
-      "img": "/uploads/1761212149686_300413.jpg"
+      "img": "/uploads/1761212149686_300413.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-28T08:49:54.143Z"
+    },
+    {
+      "id": "ITM-9",
+      "name": "Iced Tea",
+      "category": "Beverages",
+      "price": 30,
+      "stock": 6,
+      "img": "/uploads/1761538665555_396901.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-30T00:14:53.125Z"
+    },
+    {
+      "id": "ITM-10",
+      "name": "Bottled Water",
+      "category": "Beverages",
+      "price": 20,
+      "stock": 50,
+      "img": "/uploads/1761538656602_927934.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-29T23:59:51.306Z"
+    },
+    {
+      "id": "ITM-11",
+      "name": "Yakult",
+      "category": "Beverages",
+      "price": 10,
+      "stock": 20,
+      "img": "/uploads/1761538643677_574382.jpg",
+      "visible": true,
+      "updatedAt": "2025-10-28T08:49:55.029Z"
+    },
+    {
+      "id": "1761632268631799",
+      "name": "Rebisco Sandwich (10PCS)",
+      "category": "Snacks",
+      "price": 10,
+      "stock": 20,
+      "img": "/uploads/1761632660060_61033.jpg",
+      "createdAt": "2025-10-28T06:17:48.631Z",
+      "updatedAt": "2025-10-28T12:42:06.788Z",
+      "visible": true
     }
   ],
   "reservations": [
@@ -815,6 +871,894 @@
       "status": "Rejected",
       "createdAt": "2025-10-23T14:26:47.966Z",
       "updatedAt": "2025-10-23T14:27:45.422Z"
+    },
+    {
+      "id": "RES-33",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "hotdog",
+          "price": 89,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Claimed",
+      "createdAt": "2025-10-27T01:58:03.793Z",
+      "transactionId": "txn_mh8hne3e",
+      "charged": true,
+      "chargedAt": "2025-10-27T01:58:04.058Z",
+      "updatedAt": "2025-10-27T02:02:23.088Z"
+    },
+    {
+      "id": "RES-34",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-1",
+          "name": "Rice Meal A",
+          "price": 75,
+          "qty": 1
+        },
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 167,
+      "status": "Rejected",
+      "createdAt": "2025-10-27T02:19:57.149Z",
+      "updatedAt": "2025-10-27T02:20:50.314Z"
+    },
+    {
+      "id": "RES-35",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Claimed",
+      "createdAt": "2025-10-27T02:54:22.495Z",
+      "transactionId": "txn_mh8jnt47",
+      "charged": true,
+      "chargedAt": "2025-10-27T02:54:22.759Z",
+      "updatedAt": "2025-10-27T02:55:11.081Z"
+    },
+    {
+      "id": "RES-36",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 2
+        }
+      ],
+      "total": 24,
+      "status": "Claimed",
+      "createdAt": "2025-10-27T03:55:09.691Z",
+      "transactionId": "txn_mh8ltz5c",
+      "charged": true,
+      "chargedAt": "2025-10-27T03:55:09.744Z",
+      "updatedAt": "2025-10-27T03:55:40.855Z"
+    },
+    {
+      "id": "RES-37",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 120,
+          "qty": 2
+        }
+      ],
+      "total": 240,
+      "status": "Claimed",
+      "createdAt": "2025-10-27T03:57:18.076Z",
+      "transactionId": "txn_mh8lwqdj",
+      "charged": true,
+      "chargedAt": "2025-10-27T03:57:18.343Z",
+      "updatedAt": "2025-10-27T03:57:48.578Z"
+    },
+    {
+      "id": "RES-38",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G11",
+      "section": "tite",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "fried lumpia",
+          "price": 400,
+          "qty": 1
+        },
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 2
+        }
+      ],
+      "total": 420,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T03:27:30.388Z",
+      "transactionId": "txn_mha0a9hh",
+      "charged": true,
+      "chargedAt": "2025-10-28T03:27:30.437Z",
+      "updatedAt": "2025-10-28T03:28:28.131Z"
+    },
+    {
+      "id": "RES-39",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        }
+      ],
+      "total": 40,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T03:43:33.123Z",
+      "transactionId": "txn_mha0uwc5",
+      "charged": true,
+      "chargedAt": "2025-10-28T03:43:33.173Z",
+      "updatedAt": "2025-10-28T03:44:06.827Z"
+    },
+    {
+      "id": "RES-40",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 3
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T06:19:07.127Z",
+      "transactionId": "txn_mha6eyo0",
+      "charged": true,
+      "chargedAt": "2025-10-28T06:19:07.392Z",
+      "updatedAt": "2025-10-28T06:19:48.515Z"
+    },
+    {
+      "id": "RES-41",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 69,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T08:53:24.001Z",
+      "transactionId": "txn_mhabxdbe",
+      "charged": true,
+      "chargedAt": "2025-10-28T08:53:24.266Z",
+      "updatedAt": "2025-10-28T08:56:14.012Z"
+    },
+    {
+      "id": "RES-42",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 69,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T09:23:06.745Z",
+      "transactionId": "txn_mhaczkw0",
+      "charged": true,
+      "chargedAt": "2025-10-28T09:23:07.008Z",
+      "updatedAt": "2025-10-28T09:44:26.311Z"
+    },
+    {
+      "id": "RES-43",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 69,
+      "status": "Rejected",
+      "createdAt": "2025-10-28T11:51:15.633Z",
+      "updatedAt": "2025-10-28T11:52:12.233Z"
+    },
+    {
+      "id": "RES-44",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G9",
+      "section": "A",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 69,
+      "status": "Rejected",
+      "createdAt": "2025-10-28T11:57:34.904Z",
+      "updatedAt": "2025-10-28T11:59:38.440Z"
+    },
+    {
+      "id": "RES-45",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 10,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T12:09:24.352Z",
+      "transactionId": "txn_mhaixfnd",
+      "charged": true,
+      "chargedAt": "2025-10-28T12:09:24.601Z",
+      "updatedAt": "2025-10-28T12:11:00.229Z"
+    },
+    {
+      "id": "RES-46",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "A",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 5
+        }
+      ],
+      "total": 345,
+      "status": "Rejected",
+      "createdAt": "2025-10-28T12:11:32.051Z",
+      "updatedAt": "2025-10-28T12:42:23.351Z"
+    },
+    {
+      "id": "RES-47",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 5
+        }
+      ],
+      "total": 50,
+      "status": "Rejected",
+      "createdAt": "2025-10-28T12:51:50.816Z",
+      "updatedAt": "2025-10-28T12:52:34.654Z"
+    },
+    {
+      "id": "RES-48",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "after",
+      "note": "Less sauce",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        },
+        {
+          "id": "ITM-7",
+          "name": "chicken masala",
+          "price": 170,
+          "qty": 1
+        },
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 279,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T13:00:22.995Z",
+      "transactionId": "txn_mhakqzk1",
+      "charged": true,
+      "chargedAt": "2025-10-28T13:00:23.041Z",
+      "updatedAt": "2025-10-28T13:03:02.251Z"
+    },
+    {
+      "id": "RES-49",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-1",
+          "name": "Rice Meal A",
+          "price": 75,
+          "qty": 3
+        }
+      ],
+      "total": 225,
+      "status": "Claimed",
+      "createdAt": "2025-10-28T13:12:40.090Z",
+      "transactionId": "txn_mhal6sgu",
+      "charged": true,
+      "chargedAt": "2025-10-28T13:12:40.350Z",
+      "updatedAt": "2025-10-28T13:14:39.803Z"
+    },
+    {
+      "id": "RES-50",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-7",
+          "name": "chicken masala",
+          "price": 170,
+          "qty": 3
+        }
+      ],
+      "total": 510,
+      "status": "Rejected",
+      "createdAt": "2025-10-28T13:17:57.507Z",
+      "updatedAt": "2025-10-28T13:18:19.275Z"
+    },
+    {
+      "id": "RES-51",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        },
+        {
+          "id": "ITM-6",
+          "name": "Hot Dog",
+          "price": 60,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Claimed",
+      "createdAt": "2025-10-29T02:35:02.681Z",
+      "transactionId": "txn_mhbdund2",
+      "charged": true,
+      "chargedAt": "2025-10-29T02:35:02.726Z",
+      "updatedAt": "2025-10-29T02:37:57.046Z"
+    },
+    {
+      "id": "RES-52",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G8",
+      "section": "Tite",
+      "when": "recess",
+      "note": "GUSTO KO NG TITE",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 2
+        },
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 70,
+      "status": "Claimed",
+      "createdAt": "2025-10-29T23:58:39.850Z",
+      "transactionId": "txn_mhcnped2",
+      "charged": true,
+      "chargedAt": "2025-10-29T23:58:40.118Z",
+      "updatedAt": "2025-10-30T00:00:10.960Z"
+    },
+    {
+      "id": "RES-53",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G11",
+      "section": "Emerson",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        },
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 2
+        }
+      ],
+      "total": 100,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:00:41.996Z",
+      "transactionId": "txn_mhcns0lw",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:00:42.260Z",
+      "updatedAt": "2025-10-30T00:01:14.672Z"
+    },
+    {
+      "id": "RES-54",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G9",
+      "section": "Emerson",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 2
+        },
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 5
+        }
+      ],
+      "total": 190,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:02:31.448Z",
+      "transactionId": "txn_mhcnucwo",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:02:31.512Z",
+      "updatedAt": "2025-10-30T00:06:56.499Z"
+    },
+    {
+      "id": "RES-55",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G8",
+      "section": "Rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 4
+        }
+      ],
+      "total": 40,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:04:03.103Z",
+      "transactionId": "txn_mhcnwbm6",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:04:03.150Z",
+      "updatedAt": "2025-10-30T00:06:54.284Z"
+    },
+    {
+      "id": "RES-56",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G8",
+      "section": "a",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:05:25.637Z",
+      "transactionId": "txn_mhcny3b9",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:05:25.701Z",
+      "updatedAt": "2025-10-30T00:06:52.815Z"
+    },
+    {
+      "id": "RES-57",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:15:18.477Z",
+      "transactionId": "txn_mhcoaswk",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:15:18.740Z",
+      "updatedAt": "2025-10-30T00:15:59.867Z"
+    },
+    {
+      "id": "RES-58",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        },
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 52,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:26:53.006Z",
+      "transactionId": "txn_mhcopot6",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:26:53.274Z",
+      "updatedAt": "2025-10-30T00:34:01.261Z"
+    },
+    {
+      "id": "RES-59",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        },
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 52,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:33:36.806Z",
+      "transactionId": "txn_mhcoycdm",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:33:37.066Z",
+      "updatedAt": "2025-10-30T00:47:56.855Z"
+    },
+    {
+      "id": "RES-60",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:47:24.177Z",
+      "transactionId": "txn_mhcpg2sc",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:47:24.444Z",
+      "updatedAt": "2025-10-30T00:47:58.696Z"
+    },
+    {
+      "id": "RES-61",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T00:56:10.942Z",
+      "transactionId": "txn_mhcprd8l",
+      "charged": true,
+      "chargedAt": "2025-10-30T00:56:11.205Z",
+      "updatedAt": "2025-10-30T00:56:51.099Z"
+    },
+    {
+      "id": "RES-62",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T01:08:34.110Z",
+      "transactionId": "txn_mhcq7ao8",
+      "charged": true,
+      "chargedAt": "2025-10-30T01:08:34.376Z",
+      "updatedAt": "2025-10-30T01:23:34.386Z"
+    },
+    {
+      "id": "RES-63",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "Rizal",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T01:23:01.169Z",
+      "transactionId": "txn_mhcqpvjm",
+      "charged": true,
+      "chargedAt": "2025-10-30T01:23:01.234Z",
+      "updatedAt": "2025-10-30T01:23:36.727Z"
+    },
+    {
+      "id": "RES-64",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T01:29:05.796Z",
+      "transactionId": "txn_mhcqxp1s",
+      "charged": true,
+      "chargedAt": "2025-10-30T01:29:06.064Z",
+      "updatedAt": "2025-10-30T01:38:05.606Z"
+    },
+    {
+      "id": "RES-65",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T01:37:33.725Z",
+      "transactionId": "txn_mhcr8kto",
+      "charged": true,
+      "chargedAt": "2025-10-30T01:37:33.804Z",
+      "updatedAt": "2025-10-30T01:42:39.231Z"
+    },
+    {
+      "id": "RES-66",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G9",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        },
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 52,
+      "status": "Claimed",
+      "createdAt": "2025-10-30T01:42:00.115Z",
+      "transactionId": "txn_mhcreaii",
+      "charged": true,
+      "chargedAt": "2025-10-30T01:42:00.378Z",
+      "updatedAt": "2025-10-30T01:42:40.913Z"
     }
   ],
   "topups": [
@@ -959,6 +1903,36 @@
       "updatedAt": "2025-10-23T12:12:34.810Z",
       "credited": true,
       "creditedAt": "2025-10-23T12:12:34.810Z"
+    },
+    {
+      "id": "top_mha75rhr",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "242342525",
+      "status": "Approved",
+      "proofUrl": "/uploads/mha75rho_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-10-28T06:39:57.807Z",
+      "createdAt": "2025-10-28T06:39:57.807Z",
+      "updatedAt": "2025-10-28T08:23:09.488Z",
+      "credited": true,
+      "creditedAt": "2025-10-28T08:23:09.488Z"
+    },
+    {
+      "id": "top_mhcpq74p",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "645654625345",
+      "status": "Approved",
+      "proofUrl": "/uploads/mhcpq74i_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-10-30T00:55:16.633Z",
+      "createdAt": "2025-10-30T00:55:16.633Z",
+      "updatedAt": "2025-10-30T00:55:44.072Z",
+      "credited": true,
+      "creditedAt": "2025-10-30T00:55:44.072Z"
     }
   ],
   "users": [
@@ -998,7 +1972,19 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 1231
+      "balance": 820,
+      "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
+      "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z"
+    },
+    {
+      "id": "usr_mhbem19p",
+      "name": "Sean",
+      "email": "syantut0617@gmail.com",
+      "passwordHash": "$2a$10$DlDlzKdXLaHjR8xPM51EtORMIGgVozeLoPv9odDi10l0hNo6NTbhu",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0
     }
   ],
   "transactions": [
@@ -1329,6 +2315,390 @@
       "direction": "credit",
       "status": "Success",
       "createdAt": "2025-10-23T14:27:45.422Z"
+    },
+    {
+      "id": "txn_mh8hne3e",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 89,
+      "ref": "RES-33",
+      "createdAt": "2025-10-27T01:58:04.058Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh8ifjhf",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 167,
+      "ref": "RES-34",
+      "createdAt": "2025-10-27T02:19:57.411Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-5",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-34",
+      "amount": 167,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-27T02:20:50.314Z"
+    },
+    {
+      "id": "txn_mh8jnt47",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES-35",
+      "createdAt": "2025-10-27T02:54:22.759Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh8ltz5c",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 24,
+      "ref": "RES-36",
+      "createdAt": "2025-10-27T03:55:09.744Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mh8lwqdj",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 240,
+      "ref": "RES-37",
+      "createdAt": "2025-10-27T03:57:18.343Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mha0a9hh",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 420,
+      "ref": "RES-38",
+      "createdAt": "2025-10-28T03:27:30.437Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mha0uwc5",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 40,
+      "ref": "RES-39",
+      "createdAt": "2025-10-28T03:43:33.173Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mha6eyo0",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-40",
+      "createdAt": "2025-10-28T06:19:07.392Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhaauh0w",
+      "userId": "usr_mh0h1va7",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": "242342525",
+      "topupId": "top_mha75rhr",
+      "createdAt": "2025-10-28T08:23:09.488Z"
+    },
+    {
+      "id": "txn_mhabxdbe",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 69,
+      "ref": "RES-41",
+      "createdAt": "2025-10-28T08:53:24.266Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhaczkw0",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 69,
+      "ref": "RES-42",
+      "createdAt": "2025-10-28T09:23:07.008Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhaia3fl",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 69,
+      "ref": "RES-43",
+      "createdAt": "2025-10-28T11:51:15.681Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-6",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-43",
+      "amount": 69,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-28T11:52:12.233Z"
+    },
+    {
+      "id": "txn_mhaii88u",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 69,
+      "ref": "RES-44",
+      "createdAt": "2025-10-28T11:57:35.166Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-7",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-44",
+      "amount": 69,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-28T11:59:38.440Z"
+    },
+    {
+      "id": "txn_mhaixfnd",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 10,
+      "ref": "RES-45",
+      "createdAt": "2025-10-28T12:09:24.601Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhaj066y",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 345,
+      "ref": "RES-46",
+      "createdAt": "2025-10-28T12:11:32.314Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-8",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-46",
+      "amount": 345,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-28T12:42:23.351Z"
+    },
+    {
+      "id": "txn_mhakg0it",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 50,
+      "ref": "RES-47",
+      "createdAt": "2025-10-28T12:51:51.077Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-9",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-47",
+      "amount": 50,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-28T12:52:34.654Z"
+    },
+    {
+      "id": "txn_mhakqzk1",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 279,
+      "ref": "RES-48",
+      "createdAt": "2025-10-28T13:00:23.041Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhal6sgu",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 225,
+      "ref": "RES-49",
+      "createdAt": "2025-10-28T13:12:40.350Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhaldle1",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 510,
+      "ref": "RES-50",
+      "createdAt": "2025-10-28T13:17:57.769Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX-10",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES-50",
+      "amount": 510,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-10-28T13:18:19.275Z"
+    },
+    {
+      "id": "txn_mhbdund2",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 100,
+      "ref": "RES-51",
+      "createdAt": "2025-10-29T02:35:02.726Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcnped2",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 70,
+      "ref": "RES-52",
+      "createdAt": "2025-10-29T23:58:40.118Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcns0lw",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 100,
+      "ref": "RES-53",
+      "createdAt": "2025-10-30T00:00:42.260Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcnucwo",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 190,
+      "ref": "RES-54",
+      "createdAt": "2025-10-30T00:02:31.512Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcnwbm6",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 40,
+      "ref": "RES-55",
+      "createdAt": "2025-10-30T00:04:03.150Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcny3b9",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-56",
+      "createdAt": "2025-10-30T00:05:25.701Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcoaswk",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-57",
+      "createdAt": "2025-10-30T00:15:18.740Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcopot6",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 52,
+      "ref": "RES-58",
+      "createdAt": "2025-10-30T00:26:53.274Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcoycdm",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 52,
+      "ref": "RES-59",
+      "createdAt": "2025-10-30T00:33:37.066Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcpg2sc",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-60",
+      "createdAt": "2025-10-30T00:47:24.444Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcpqsaw",
+      "userId": "usr_mh0h1va7",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": "645654625345",
+      "topupId": "top_mhcpq74p",
+      "createdAt": "2025-10-30T00:55:44.072Z"
+    },
+    {
+      "id": "txn_mhcprd8l",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-61",
+      "createdAt": "2025-10-30T00:56:11.205Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcq7ao8",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-62",
+      "createdAt": "2025-10-30T01:08:34.376Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcqpvjm",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-63",
+      "createdAt": "2025-10-30T01:23:01.234Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcqxp1s",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-64",
+      "createdAt": "2025-10-30T01:29:06.064Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcr8kto",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES-65",
+      "createdAt": "2025-10-30T01:37:33.804Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhcreaii",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 52,
+      "ref": "RES-66",
+      "createdAt": "2025-10-30T01:42:00.378Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -1344,6 +2714,2098 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhcrf5sk",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-66 Claimed",
+      "body": "Your reservation RES-66 is now Claimed.",
+      "data": {
+        "reservationId": "RES-66",
+        "status": "Claimed"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:40.916Z"
+    },
+    {
+      "id": "notif_mhcrf5dz",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-66 Ready",
+      "body": "Your reservation RES-66 is now Ready.",
+      "data": {
+        "reservationId": "RES-66",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:40.391Z"
+    },
+    {
+      "id": "notif_mhcrf54e",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-66 Preparing",
+      "body": "Your reservation RES-66 is now Preparing.",
+      "data": {
+        "reservationId": "RES-66",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:40.046Z"
+    },
+    {
+      "id": "notif_mhcrf4hw",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-65 Claimed",
+      "body": "Your reservation RES-65 is now Claimed.",
+      "data": {
+        "reservationId": "RES-65",
+        "status": "Claimed"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:39.236Z"
+    },
+    {
+      "id": "notif_mhcrf41p",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-65 Ready",
+      "body": "Your reservation RES-65 is now Ready.",
+      "data": {
+        "reservationId": "RES-65",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:38.653Z"
+    },
+    {
+      "id": "notif_mhcrf3jw",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-65 Preparing",
+      "body": "Your reservation RES-65 is now Preparing.",
+      "data": {
+        "reservationId": "RES-65",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:38.012Z"
+    },
+    {
+      "id": "notif_mhcrepxv",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-66 Approved",
+      "body": "Your reservation RES-66 has been approved.",
+      "data": {
+        "reservationId": "RES-66",
+        "status": "Approved"
+      },
+      "read": false,
+      "createdAt": "2025-10-30T01:42:20.371Z"
+    },
+    {
+      "id": "notif_mhcreabb",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-66"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:42:00.115Z"
+    },
+    {
+      "id": "notif_mhcr9b4p",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-65 Approved",
+      "body": "Your reservation RES-65 has been approved.",
+      "data": {
+        "reservationId": "RES-65",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:38:07.897Z"
+    },
+    {
+      "id": "notif_mhcr99d5",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-64 Claimed",
+      "body": "Your reservation RES-64 is now Claimed.",
+      "data": {
+        "reservationId": "RES-64",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:38:05.609Z"
+    },
+    {
+      "id": "notif_mhcr98w0",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-64 Ready",
+      "body": "Your reservation RES-64 is now Ready.",
+      "data": {
+        "reservationId": "RES-64",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:38:04.992Z"
+    },
+    {
+      "id": "notif_mhcr98bs",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-64 Preparing",
+      "body": "Your reservation RES-64 is now Preparing.",
+      "data": {
+        "reservationId": "RES-64",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:38:04.264Z"
+    },
+    {
+      "id": "notif_mhcr8krk",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-65"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:37:33.725Z"
+    },
+    {
+      "id": "notif_mhcqylp8",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-64 Approved",
+      "body": "Your reservation RES-64 has been approved.",
+      "data": {
+        "reservationId": "RES-64",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:29:48.380Z"
+    },
+    {
+      "id": "notif_mhcqxouf",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-64"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:29:05.796Z"
+    },
+    {
+      "id": "notif_mhcqqmxl",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-63 Claimed",
+      "body": "Your reservation RES-63 is now Claimed.",
+      "data": {
+        "reservationId": "RES-63",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:36.729Z"
+    },
+    {
+      "id": "notif_mhcqqml4",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-63 Ready",
+      "body": "Your reservation RES-63 is now Ready.",
+      "data": {
+        "reservationId": "RES-63",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:36.280Z"
+    },
+    {
+      "id": "notif_mhcqqm7q",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-63 Preparing",
+      "body": "Your reservation RES-63 is now Preparing.",
+      "data": {
+        "reservationId": "RES-63",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:35.798Z"
+    },
+    {
+      "id": "notif_mhcqql4l",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-62 Claimed",
+      "body": "Your reservation RES-62 is now Claimed.",
+      "data": {
+        "reservationId": "RES-62",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:34.389Z"
+    },
+    {
+      "id": "notif_mhcqqkqk",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-62 Ready",
+      "body": "Your reservation RES-62 is now Ready.",
+      "data": {
+        "reservationId": "RES-62",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:33.884Z"
+    },
+    {
+      "id": "notif_mhcqqkip",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-62 Preparing",
+      "body": "Your reservation RES-62 is now Preparing.",
+      "data": {
+        "reservationId": "RES-62",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:33.601Z"
+    },
+    {
+      "id": "notif_mhcqqeuj",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-63 Approved",
+      "body": "Your reservation RES-63 has been approved.",
+      "data": {
+        "reservationId": "RES-63",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:26.251Z"
+    },
+    {
+      "id": "notif_mhcqpvhv",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-63"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:23:01.169Z"
+    },
+    {
+      "id": "notif_mhcq8m60",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-62 Approved",
+      "body": "Your reservation RES-62 has been approved.",
+      "data": {
+        "reservationId": "RES-62",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:09:35.928Z"
+    },
+    {
+      "id": "notif_mhcq7agx",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-62"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T01:08:34.110Z"
+    },
+    {
+      "id": "notif_mhcps80u",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-61 Claimed",
+      "body": "Your reservation RES-61 is now Claimed.",
+      "data": {
+        "reservationId": "RES-61",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:56:51.102Z"
+    },
+    {
+      "id": "notif_mhcps7lw",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-61 Ready",
+      "body": "Your reservation RES-61 is now Ready.",
+      "data": {
+        "reservationId": "RES-61",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:56:50.564Z"
+    },
+    {
+      "id": "notif_mhcps71u",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-61 Preparing",
+      "body": "Your reservation RES-61 is now Preparing.",
+      "data": {
+        "reservationId": "RES-61",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:56:49.842Z"
+    },
+    {
+      "id": "notif_mhcprssh",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-61 Approved",
+      "body": "Your reservation RES-61 has been approved.",
+      "data": {
+        "reservationId": "RES-61",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:56:31.361Z"
+    },
+    {
+      "id": "notif_mhcprd1d",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-61"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:56:10.942Z"
+    },
+    {
+      "id": "notif_mhcpqsay",
+      "for": "usr_mh0h1va7",
+      "actor": "u_admin",
+      "type": "topup:status",
+      "title": "Top-up top_mhcpq74p Approved",
+      "body": "Your top-up top_mhcpq74p was Approved",
+      "data": {
+        "topupId": "top_mhcpq74p",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:55:44.074Z"
+    },
+    {
+      "id": "notif_mhcpq74s",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "topup:created",
+      "title": "New top-up submitted",
+      "body": "Anmol David Das requested ₱1000",
+      "data": {
+        "topupId": "top_mhcpq74p"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:55:16.633Z"
+    },
+    {
+      "id": "notif_mhcpgt7u",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-60 Claimed",
+      "body": "Your reservation RES-60 is now Claimed.",
+      "data": {
+        "reservationId": "RES-60",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:58.698Z"
+    },
+    {
+      "id": "notif_mhcpgsse",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-60 Ready",
+      "body": "Your reservation RES-60 is now Ready.",
+      "data": {
+        "reservationId": "RES-60",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:58.142Z"
+    },
+    {
+      "id": "notif_mhcpgs8k",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-60 Preparing",
+      "body": "Your reservation RES-60 is now Preparing.",
+      "data": {
+        "reservationId": "RES-60",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:57.428Z"
+    },
+    {
+      "id": "notif_mhcpgrsr",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-59 Claimed",
+      "body": "Your reservation RES-59 is now Claimed.",
+      "data": {
+        "reservationId": "RES-59",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:56.859Z"
+    },
+    {
+      "id": "notif_mhcpgr2p",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-59 Ready",
+      "body": "Your reservation RES-59 is now Ready.",
+      "data": {
+        "reservationId": "RES-59",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:55.921Z"
+    },
+    {
+      "id": "notif_mhcpgqsi",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-59 Preparing",
+      "body": "Your reservation RES-59 is now Preparing.",
+      "data": {
+        "reservationId": "RES-59",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:55.554Z"
+    },
+    {
+      "id": "notif_mhcpgkxn",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-60 Approved",
+      "body": "Your reservation RES-60 has been approved.",
+      "data": {
+        "reservationId": "RES-60",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:47.963Z"
+    },
+    {
+      "id": "notif_mhcpg2kz",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-60"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:47:24.177Z"
+    },
+    {
+      "id": "notif_mhcoywwq",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-59 Approved",
+      "body": "Your reservation RES-59 has been approved.",
+      "data": {
+        "reservationId": "RES-59",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:34:03.674Z"
+    },
+    {
+      "id": "notif_mhcoyv1r",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-58 Claimed",
+      "body": "Your reservation RES-58 is now Claimed.",
+      "data": {
+        "reservationId": "RES-58",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:34:01.263Z"
+    },
+    {
+      "id": "notif_mhcoyuhb",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-58 Ready",
+      "body": "Your reservation RES-58 is now Ready.",
+      "data": {
+        "reservationId": "RES-58",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:34:00.527Z"
+    },
+    {
+      "id": "notif_mhcoyu0q",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-58 Preparing",
+      "body": "Your reservation RES-58 is now Preparing.",
+      "data": {
+        "reservationId": "RES-58",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:33:59.930Z"
+    },
+    {
+      "id": "notif_mhcoyc6h",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-59"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:33:36.806Z"
+    },
+    {
+      "id": "notif_mhcoqf8q",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-58 Approved",
+      "body": "Your reservation RES-58 has been approved.",
+      "data": {
+        "reservationId": "RES-58",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:27:27.530Z"
+    },
+    {
+      "id": "notif_mhcopolt",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-58"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:26:53.006Z"
+    },
+    {
+      "id": "notif_mhcobon1",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-57 Claimed",
+      "body": "Your reservation RES-57 is now Claimed.",
+      "data": {
+        "reservationId": "RES-57",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:15:59.869Z"
+    },
+    {
+      "id": "notif_mhcobobt",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-57 Ready",
+      "body": "Your reservation RES-57 is now Ready.",
+      "data": {
+        "reservationId": "RES-57",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:15:59.465Z"
+    },
+    {
+      "id": "notif_mhcobnkb",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-57 Preparing",
+      "body": "Your reservation RES-57 is now Preparing.",
+      "data": {
+        "reservationId": "RES-57",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:15:58.475Z"
+    },
+    {
+      "id": "notif_mhcobdxy",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-57 Approved",
+      "body": "Your reservation RES-57 has been approved.",
+      "data": {
+        "reservationId": "RES-57",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:15:46.006Z"
+    },
+    {
+      "id": "notif_mhcoaspb",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-57"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:15:18.477Z"
+    },
+    {
+      "id": "notif_mhco01dh",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-54 Claimed",
+      "body": "Your reservation RES-54 is now Claimed.",
+      "data": {
+        "reservationId": "RES-54",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:56.501Z"
+    },
+    {
+      "id": "notif_mhco00v0",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-54 Ready",
+      "body": "Your reservation RES-54 is now Ready.",
+      "data": {
+        "reservationId": "RES-54",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:55.836Z"
+    },
+    {
+      "id": "notif_mhco00lf",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-54 Preparing",
+      "body": "Your reservation RES-54 is now Preparing.",
+      "data": {
+        "reservationId": "RES-54",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:55.491Z"
+    },
+    {
+      "id": "notif_mhcnzzny",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-55 Claimed",
+      "body": "Your reservation RES-55 is now Claimed.",
+      "data": {
+        "reservationId": "RES-55",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:54.286Z"
+    },
+    {
+      "id": "notif_mhcnzzen",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-55 Ready",
+      "body": "Your reservation RES-55 is now Ready.",
+      "data": {
+        "reservationId": "RES-55",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:53.951Z"
+    },
+    {
+      "id": "notif_mhcnzyxc",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-55 Preparing",
+      "body": "Your reservation RES-55 is now Preparing.",
+      "data": {
+        "reservationId": "RES-55",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:53.328Z"
+    },
+    {
+      "id": "notif_mhcnzyj5",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-56 Claimed",
+      "body": "Your reservation RES-56 is now Claimed.",
+      "data": {
+        "reservationId": "RES-56",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:52.817Z"
+    },
+    {
+      "id": "notif_mhcnzxye",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-56 Ready",
+      "body": "Your reservation RES-56 is now Ready.",
+      "data": {
+        "reservationId": "RES-56",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:52.070Z"
+    },
+    {
+      "id": "notif_mhcnzxn7",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-56 Preparing",
+      "body": "Your reservation RES-56 is now Preparing.",
+      "data": {
+        "reservationId": "RES-56",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:06:51.667Z"
+    },
+    {
+      "id": "notif_mhcnyde5",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-56 Approved",
+      "body": "Your reservation RES-56 has been approved.",
+      "data": {
+        "reservationId": "RES-56",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:05:38.765Z"
+    },
+    {
+      "id": "notif_mhcny39j",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-56"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:05:25.637Z"
+    },
+    {
+      "id": "notif_mhcnwp4t",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-55 Approved",
+      "body": "Your reservation RES-55 has been approved.",
+      "data": {
+        "reservationId": "RES-55",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:04:20.669Z"
+    },
+    {
+      "id": "notif_mhcnwbky",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-55"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:04:03.103Z"
+    },
+    {
+      "id": "notif_mhcnuva1",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-54 Approved",
+      "body": "Your reservation RES-54 has been approved.",
+      "data": {
+        "reservationId": "RES-54",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:02:55.321Z"
+    },
+    {
+      "id": "notif_mhcnucuy",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-54"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:02:31.448Z"
+    },
+    {
+      "id": "notif_mhcnspma",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-53 Claimed",
+      "body": "Your reservation RES-53 is now Claimed.",
+      "data": {
+        "reservationId": "RES-53",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:01:14.674Z"
+    },
+    {
+      "id": "notif_mhcnsp0k",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-53 Ready",
+      "body": "Your reservation RES-53 is now Ready.",
+      "data": {
+        "reservationId": "RES-53",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:01:13.892Z"
+    },
+    {
+      "id": "notif_mhcnsone",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-53 Preparing",
+      "body": "Your reservation RES-53 is now Preparing.",
+      "data": {
+        "reservationId": "RES-53",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:01:13.418Z"
+    },
+    {
+      "id": "notif_mhcnsd43",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-53 Approved",
+      "body": "Your reservation RES-53 has been approved.",
+      "data": {
+        "reservationId": "RES-53",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:00:58.467Z"
+    },
+    {
+      "id": "notif_mhcns0em",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-53"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:00:41.996Z"
+    },
+    {
+      "id": "notif_mhcnrcgi",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-52 Claimed",
+      "body": "Your reservation RES-52 is now Claimed.",
+      "data": {
+        "reservationId": "RES-52",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:00:10.962Z"
+    },
+    {
+      "id": "notif_mhcnrb8a",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-52 Ready",
+      "body": "Your reservation RES-52 is now Ready.",
+      "data": {
+        "reservationId": "RES-52",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:00:09.370Z"
+    },
+    {
+      "id": "notif_mhcnranr",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-52 Preparing",
+      "body": "Your reservation RES-52 is now Preparing.",
+      "data": {
+        "reservationId": "RES-52",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-30T00:00:08.631Z"
+    },
+    {
+      "id": "notif_mhcnqa9u",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-52 Approved",
+      "body": "Your reservation RES-52 has been approved.",
+      "data": {
+        "reservationId": "RES-52",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T23:59:21.474Z"
+    },
+    {
+      "id": "notif_mhcnpe5p",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-52"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T23:58:39.850Z"
+    },
+    {
+      "id": "notif_mhbdydve",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-51 Claimed",
+      "body": "Your reservation RES-51 is now Claimed.",
+      "data": {
+        "reservationId": "RES-51",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T02:37:57.050Z"
+    },
+    {
+      "id": "notif_mhbdwugj",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-51 Ready",
+      "body": "Your reservation RES-51 is now Ready.",
+      "data": {
+        "reservationId": "RES-51",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T02:36:45.235Z"
+    },
+    {
+      "id": "notif_mhbdwryp",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-51 Preparing",
+      "body": "Your reservation RES-51 is now Preparing.",
+      "data": {
+        "reservationId": "RES-51",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T02:36:42.001Z"
+    },
+    {
+      "id": "notif_mhbdvgvb",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-51 Approved",
+      "body": "Your reservation RES-51 has been approved.",
+      "data": {
+        "reservationId": "RES-51",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T02:35:40.967Z"
+    },
+    {
+      "id": "notif_mhbdunbv",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-51"
+      },
+      "read": true,
+      "createdAt": "2025-10-29T02:35:02.681Z"
+    },
+    {
+      "id": "notif_mhale1zk",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-50 Rejected",
+      "body": "Your reservation RES-50 has been rejected.",
+      "data": {
+        "reservationId": "RES-50",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:18:19.280Z"
+    },
+    {
+      "id": "notif_mhaldl6t",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-50"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:17:57.507Z"
+    },
+    {
+      "id": "notif_mhal9cn2",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-49 Claimed",
+      "body": "Your reservation RES-49 is now Claimed.",
+      "data": {
+        "reservationId": "RES-49",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:14:39.806Z"
+    },
+    {
+      "id": "notif_mhal9c2e",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-49 Ready",
+      "body": "Your reservation RES-49 is now Ready.",
+      "data": {
+        "reservationId": "RES-49",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:14:39.062Z"
+    },
+    {
+      "id": "notif_mhal9b7t",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-49 Preparing",
+      "body": "Your reservation RES-49 is now Preparing.",
+      "data": {
+        "reservationId": "RES-49",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:14:37.961Z"
+    },
+    {
+      "id": "notif_mhal8204",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-49 Approved",
+      "body": "Your reservation RES-49 has been approved.",
+      "data": {
+        "reservationId": "RES-49",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:13:39.364Z"
+    },
+    {
+      "id": "notif_mhal6s9p",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-49"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:12:40.090Z"
+    },
+    {
+      "id": "notif_mhakueeu",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-48 Claimed",
+      "body": "Your reservation RES-48 is now Claimed.",
+      "data": {
+        "reservationId": "RES-48",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:03:02.262Z"
+    },
+    {
+      "id": "notif_mhakudzr",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-48 Ready",
+      "body": "Your reservation RES-48 is now Ready.",
+      "data": {
+        "reservationId": "RES-48",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:03:01.719Z"
+    },
+    {
+      "id": "notif_mhakudfg",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-48 Preparing",
+      "body": "Your reservation RES-48 is now Preparing.",
+      "data": {
+        "reservationId": "RES-48",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:03:00.988Z"
+    },
+    {
+      "id": "notif_mhaktk82",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-48 Approved",
+      "body": "Your reservation RES-48 has been approved.",
+      "data": {
+        "reservationId": "RES-48",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:02:23.138Z"
+    },
+    {
+      "id": "notif_mhakqziu",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-48"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T13:00:22.995Z"
+    },
+    {
+      "id": "notif_mhakgy5d",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-47 Rejected",
+      "body": "Your reservation RES-47 has been rejected.",
+      "data": {
+        "reservationId": "RES-47",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:52:34.657Z"
+    },
+    {
+      "id": "notif_mhakg0bn",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-47"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:51:50.816Z"
+    },
+    {
+      "id": "notif_mhak3ugp",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-46 Rejected",
+      "body": "Your reservation RES-46 has been rejected.",
+      "data": {
+        "reservationId": "RES-46",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:42:23.353Z"
+    },
+    {
+      "id": "notif_mhaj05zp",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-46"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:11:32.051Z"
+    },
+    {
+      "id": "notif_mhaizhfr",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-45 Claimed",
+      "body": "Your reservation RES-45 is now Claimed.",
+      "data": {
+        "reservationId": "RES-45",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:11:00.231Z"
+    },
+    {
+      "id": "notif_mhaizh2d",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-45 Ready",
+      "body": "Your reservation RES-45 is now Ready.",
+      "data": {
+        "reservationId": "RES-45",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:10:59.749Z"
+    },
+    {
+      "id": "notif_mhaizgsy",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-45 Preparing",
+      "body": "Your reservation RES-45 is now Preparing.",
+      "data": {
+        "reservationId": "RES-45",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:10:59.410Z"
+    },
+    {
+      "id": "notif_mhaiz1j0",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-45 Approved",
+      "body": "Your reservation RES-45 has been approved.",
+      "data": {
+        "reservationId": "RES-45",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:10:39.612Z"
+    },
+    {
+      "id": "notif_mhaixfgj",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-45"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T12:09:24.352Z"
+    },
+    {
+      "id": "notif_mhaikvd6",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-44 Rejected",
+      "body": "Your reservation RES-44 has been rejected.",
+      "data": {
+        "reservationId": "RES-44",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T11:59:38.442Z"
+    },
+    {
+      "id": "notif_mhaii81n",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-44"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T11:57:34.904Z"
+    },
+    {
+      "id": "notif_mhaibb2j",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-43 Rejected",
+      "body": "Your reservation RES-43 has been rejected.",
+      "data": {
+        "reservationId": "RES-43",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T11:52:12.235Z"
+    },
+    {
+      "id": "notif_mhaia3eb",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-43"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T11:51:15.633Z"
+    },
+    {
+      "id": "notif_mhadr00a",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-42 Claimed",
+      "body": "Your reservation RES-42 is now Claimed.",
+      "data": {
+        "reservationId": "RES-42",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T09:44:26.314Z"
+    },
+    {
+      "id": "notif_mhadqz7e",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-42 Ready",
+      "body": "Your reservation RES-42 is now Ready.",
+      "data": {
+        "reservationId": "RES-42",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T09:44:25.274Z"
+    },
+    {
+      "id": "notif_mhadqy0i",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-42 Preparing",
+      "body": "Your reservation RES-42 is now Preparing.",
+      "data": {
+        "reservationId": "RES-42",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T09:44:23.730Z"
+    },
+    {
+      "id": "notif_mhad02u0",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-42 Approved",
+      "body": "Your reservation RES-42 has been approved.",
+      "data": {
+        "reservationId": "RES-42",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T09:23:30.264Z"
+    },
+    {
+      "id": "notif_mhaczkor",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-42"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T09:23:06.745Z"
+    },
+    {
+      "id": "notif_mhac10an",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-41 Claimed",
+      "body": "Your reservation RES-41 is now Claimed.",
+      "data": {
+        "reservationId": "RES-41",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T08:56:14.015Z"
+    },
+    {
+      "id": "notif_mhac0zpp",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-41 Ready",
+      "body": "Your reservation RES-41 is now Ready.",
+      "data": {
+        "reservationId": "RES-41",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T08:56:13.261Z"
+    },
+    {
+      "id": "notif_mhac0www",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-41 Preparing",
+      "body": "Your reservation RES-41 is now Preparing.",
+      "data": {
+        "reservationId": "RES-41",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T08:56:09.632Z"
+    },
+    {
+      "id": "notif_mhabxd44",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-41"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T08:53:24.001Z"
+    },
+    {
+      "id": "notif_mha75rhu",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "topup:created",
+      "title": "New top-up submitted",
+      "body": "Anmol David Das requested ₱1000",
+      "data": {
+        "topupId": "top_mha75rhr"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T06:39:57.807Z"
+    },
+    {
+      "id": "notif_mha6fuer",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-40 Claimed",
+      "body": "Your reservation RES-40 is now Claimed.",
+      "data": {
+        "reservationId": "RES-40",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T06:19:48.531Z"
+    },
+    {
+      "id": "notif_mha6frra",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-40 Ready",
+      "body": "Your reservation RES-40 is now Ready.",
+      "data": {
+        "reservationId": "RES-40",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T06:19:45.094Z"
+    },
+    {
+      "id": "notif_mha6frfg",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-40 Preparing",
+      "body": "Your reservation RES-40 is now Preparing.",
+      "data": {
+        "reservationId": "RES-40",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T06:19:44.668Z"
+    },
+    {
+      "id": "notif_mha6fov2",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-40 Approved",
+      "body": "Your reservation RES-40 has been approved.",
+      "data": {
+        "reservationId": "RES-40",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T06:19:41.342Z"
+    },
+    {
+      "id": "notif_mha6eygs",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-40"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T06:19:07.127Z"
+    },
+    {
+      "id": "notif_mha0vmb1",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-39 Claimed",
+      "body": "Your reservation RES-39 is now Claimed.",
+      "data": {
+        "reservationId": "RES-39",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:44:06.829Z"
+    },
+    {
+      "id": "notif_mha0vlwe",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-39 Ready",
+      "body": "Your reservation RES-39 is now Ready.",
+      "data": {
+        "reservationId": "RES-39",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:44:06.302Z"
+    },
+    {
+      "id": "notif_mha0vlau",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-39 Preparing",
+      "body": "Your reservation RES-39 is now Preparing.",
+      "data": {
+        "reservationId": "RES-39",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:44:05.526Z"
+    },
+    {
+      "id": "notif_mha0vj19",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-39 Approved",
+      "body": "Your reservation RES-39 has been approved.",
+      "data": {
+        "reservationId": "RES-39",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:44:02.589Z"
+    },
+    {
+      "id": "notif_mha0uwat",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-39"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:43:33.123Z"
+    },
+    {
+      "id": "notif_mha0bi06",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-38 Claimed",
+      "body": "Your reservation RES-38 is now Claimed.",
+      "data": {
+        "reservationId": "RES-38",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:28:28.134Z"
+    },
+    {
+      "id": "notif_mha0bff0",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-38 Ready",
+      "body": "Your reservation RES-38 is now Ready.",
+      "data": {
+        "reservationId": "RES-38",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:28:24.780Z"
+    },
+    {
+      "id": "notif_mha0bc0y",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-38 Preparing",
+      "body": "Your reservation RES-38 is now Preparing.",
+      "data": {
+        "reservationId": "RES-38",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:28:20.386Z"
+    },
+    {
+      "id": "notif_mha0b1jp",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-38 Approved",
+      "body": "Your reservation RES-38 has been approved.",
+      "data": {
+        "reservationId": "RES-38",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:28:06.805Z"
+    },
+    {
+      "id": "notif_mha0a9g6",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-38"
+      },
+      "read": true,
+      "createdAt": "2025-10-28T03:27:30.388Z"
+    },
+    {
+      "id": "notif_mh8lxdpg",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-37 Claimed",
+      "body": "Your reservation RES-37 is now Claimed.",
+      "data": {
+        "reservationId": "RES-37",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:57:48.580Z"
+    },
+    {
+      "id": "notif_mh8lxdcw",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-37 Ready",
+      "body": "Your reservation RES-37 is now Ready.",
+      "data": {
+        "reservationId": "RES-37",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:57:48.128Z"
+    },
+    {
+      "id": "notif_mh8lxco8",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-37 Preparing",
+      "body": "Your reservation RES-37 is now Preparing.",
+      "data": {
+        "reservationId": "RES-37",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:57:47.240Z"
+    },
+    {
+      "id": "notif_mh8lxb1p",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-37 Approved",
+      "body": "Your reservation RES-37 has been approved.",
+      "data": {
+        "reservationId": "RES-37",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:57:45.133Z"
+    },
+    {
+      "id": "notif_mh8lwq67",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-37"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:57:18.076Z"
+    },
+    {
+      "id": "notif_mh8lun5l",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-36 Claimed",
+      "body": "Your reservation RES-36 is now Claimed.",
+      "data": {
+        "reservationId": "RES-36",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:55:40.857Z"
+    },
+    {
+      "id": "notif_mh8lumr0",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-36 Ready",
+      "body": "Your reservation RES-36 is now Ready.",
+      "data": {
+        "reservationId": "RES-36",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:55:40.332Z"
+    },
+    {
+      "id": "notif_mh8lum8h",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-36 Preparing",
+      "body": "Your reservation RES-36 is now Preparing.",
+      "data": {
+        "reservationId": "RES-36",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:55:39.665Z"
+    },
+    {
+      "id": "notif_mh8luk4z",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-36 Approved",
+      "body": "Your reservation RES-36 has been approved.",
+      "data": {
+        "reservationId": "RES-36",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:55:36.947Z"
+    },
+    {
+      "id": "notif_mh8ltz3y",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-36"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T03:55:09.691Z"
+    },
+    {
+      "id": "notif_mh8jouej",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-35 Claimed",
+      "body": "Your reservation RES-35 is now Claimed.",
+      "data": {
+        "reservationId": "RES-35",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:55:11.083Z"
+    },
+    {
+      "id": "notif_mh8jotsv",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-35 Ready",
+      "body": "Your reservation RES-35 is now Ready.",
+      "data": {
+        "reservationId": "RES-35",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:55:10.303Z"
+    },
+    {
+      "id": "notif_mh8jotdf",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-35 Preparing",
+      "body": "Your reservation RES-35 is now Preparing.",
+      "data": {
+        "reservationId": "RES-35",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:55:09.747Z"
+    },
+    {
+      "id": "notif_mh8jnswy",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-35"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:54:22.495Z"
+    },
+    {
+      "id": "notif_mh8ifja6",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-34"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:19:57.149Z"
+    },
+    {
+      "id": "notif_mh8hsxyq",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-33 Claimed",
+      "body": "Your reservation RES-33 is now Claimed.",
+      "data": {
+        "reservationId": "RES-33",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:02:23.090Z"
+    },
+    {
+      "id": "notif_mh8hsxgi",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-33 Ready",
+      "body": "Your reservation RES-33 is now Ready.",
+      "data": {
+        "reservationId": "RES-33",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:02:22.434Z"
+    },
+    {
+      "id": "notif_mh8hqgil",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-33 Preparing",
+      "body": "Your reservation RES-33 is now Preparing.",
+      "data": {
+        "reservationId": "RES-33",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T02:00:27.165Z"
+    },
+    {
+      "id": "notif_mh8hoq7d",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES-33 Approved",
+      "body": "Your reservation RES-33 has been approved.",
+      "data": {
+        "reservationId": "RES-33",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T01:59:06.409Z"
+    },
+    {
+      "id": "notif_mh8hndw3",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES-33"
+      },
+      "read": true,
+      "createdAt": "2025-10-27T01:58:03.793Z"
+    },
     {
       "id": "notif_mh3io39s",
       "for": "usr_mh0h1va7",
@@ -1384,48 +4846,6 @@
       },
       "read": true,
       "createdAt": "2025-10-23T12:49:08.296Z"
-    },
-    {
-      "id": "notif_mh3f3qt2",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-31 Ready",
-      "body": "Your reservation RES-31 is now Ready.",
-      "data": {
-        "reservationId": "RES-31",
-        "status": "Ready"
-      },
-      "read": true,
-      "createdAt": "2025-10-23T12:47:57.302Z"
-    },
-    {
-      "id": "notif_mh3f2m9v",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-31 Preparing",
-      "body": "Your reservation RES-31 is now Preparing.",
-      "data": {
-        "reservationId": "RES-31",
-        "status": "Preparing"
-      },
-      "read": true,
-      "createdAt": "2025-10-23T12:47:04.771Z"
-    },
-    {
-      "id": "notif_mh3f1f59",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-31 Approved",
-      "body": "Your reservation RES-31 has been approved.",
-      "data": {
-        "reservationId": "RES-31",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-10-23T12:46:08.877Z"
     },
     {
       "id": "notif_mh3f0kwj",
@@ -1914,33 +5334,21 @@
       },
       "read": true,
       "createdAt": "2025-10-23T06:25:18.757Z"
-    },
-    {
-      "id": "notif_mh316dc1",
-      "for": "admin",
-      "actor": null,
-      "type": "reservation:created",
-      "title": "New reservation submitted",
-      "body": "Student submitted a reservation",
-      "data": {
-        "reservationId": "RES-16"
-      },
-      "read": true,
-      "createdAt": "2025-10-23T06:18:05.184Z"
-    },
-    {
-      "id": "notif_mh30o78g",
-      "for": "admin",
-      "actor": null,
-      "type": "reservation:created",
-      "title": "New reservation submitted",
-      "body": "Student submitted a reservation",
-      "data": {
-        "reservationId": "RES-15"
-      },
-      "read": true,
-      "createdAt": "2025-10-23T06:03:57.471Z"
     }
   ],
-  "carts": []
+  "carts": [
+    {
+      "id": "cart_user_usr_mh0h1va7",
+      "userId": "usr_mh0h1va7",
+      "items": [
+        {
+          "itemId": "ITM-9",
+          "qty": 1,
+          "name": "Iced Tea",
+          "price": 30
+        }
+      ],
+      "updatedAt": "2025-10-30T01:22:51.018Z"
+    }
+  ]
 }

@@ -165,13 +165,13 @@ export default function TxHistory() {
       let pool = [];
 
       // Prefer direct reservations/orders from your API
-      const resMine = await fetch('/api/reservations/mine', {
-        credentials: 'include',
-        headers: { Authorization: 'Bearer ' + localStorage.getItem('token') }
-      })
-        .then(r => r.json())
-        .then(d => { console.log('RES_MINE:', d); return d; })
-        .catch(e => console.error('RES_MINE_ERR', e));
+      // Normalize reservations/mine to an array using fetchArr helper (handles various response shapes)
+      let resMine = await fetchArr("/reservations/mine");
+      if ((!resMine || !Array.isArray(resMine) || resMine.length === 0)) {
+        // try alternate path if backend uses /api prefix
+        resMine = await fetchArr("/api/reservations/mine");
+      }
+      console.debug("RES_MINE (normalized):", resMine);
 
       const ordMine = await fetchArr("/orders/mine");   // in case your API uses /orders
       const resAlt  = await fetchArr("/reservations");  // some backends return the user's own here

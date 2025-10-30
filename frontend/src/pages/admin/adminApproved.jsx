@@ -62,16 +62,23 @@ export default function AdminApproved() {
   const toPreparing = async (id) => {
     await api.patch(`/reservations/admin/${id}`, { status: 'Preparing' });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: "Preparing" } : r)));
+
+    // notify other UI parts to reload data
+    try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
   };
 
   const toReady = async (id) => {
     await api.patch(`/reservations/admin/${id}`, { status: 'Ready' });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: "Ready" } : r)));
+
+    try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
   };
 
   const toClaimed = async (id) => {
     await api.patch(`/reservations/admin/${id}`, { status: 'Claimed' });
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, status: "Claimed" } : r)));
+
+    try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
   };
 
   return (

@@ -1,4 +1,5 @@
 const { load, save } = require("../lib/db");
+const mongoose = require("mongoose");
 
 function nowISO() {
   return new Date().toISOString();
@@ -78,4 +79,32 @@ exports.markManyReadAdmin = (req, res) => {
   }
   save(db);
   res.json({ ok: true });
+};
+
+exports.delete = async (req, res) => {
+  const id = req.params.id;
+  try {
+    // If Mongo is available, remove from collection
+    if (mongoose && mongoose.connection && mongoose.connection.readyState === 1) {
+      const db = mongoose.connection.db;
+      const col = db.collection("notifications");
+      const result = await col.findOneAndDelete({ $or: [{ id }, { _id: id }] });
+      if (!result.value) return res.status(404).json({ error: "Not Found" });
+      return res.json({ ok: true });
+    }
+
+    // Fallback to file DB
+    const db = await load();
+    db.notifications = Array.isArray(db.notifications) ? db.notifications : [];
+    const idx = db.notifications.findIndex(
+      (n) => String(n.id) === String(id) || String(n._id) === String(id)
+    );
+    if (idx === -1) return res.status(404).json({ error: "Not Found" });
+    db.notifications.splice(idx, 1);
+    await save(db);
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("[NOTIFICATIONS] delete error:", err);
+    res.status(500).json({ error: "Failed to delete notification", details: err.message });
+  }
 };

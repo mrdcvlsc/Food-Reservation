@@ -32,6 +32,8 @@ import AdminReservations   from "./pages/admin/adminReservations";
 import AdminApproved       from "./pages/admin/adminApproved";
 import AdminStats          from "./pages/admin/adminStats";
 import AdminInventory      from "./pages/admin/adminInventory";
+import AdminReports        from "./pages/admin/adminReports";
+import AdminUsers          from "./pages/admin/AdminUsers";
 
 /* --------------- status pages --------------- */
 import { 
@@ -103,6 +105,10 @@ function App() {
         <Route path="/admin/stats"                    element={<AdminStats />} />
         <Route path="/admin/inventory"                element={<AdminInventory />} />
 
+        {/* Reports */}
+        <Route path="/admin/reports"                element={<AdminReports />} />
+        <Route path="/admin/users"                element={<AdminUsers />} />
+
         {/* ---------- status pages ---------- */}
         <Route path="/status/maintenance"          element={<Maintenance />} />
         <Route path="/status/not_found"            element={<NotFound />} />
@@ -110,6 +116,9 @@ function App() {
         <Route path="/status/unauthorized"         element={<Unauthorized />} />
         <Route path="/status/forbidden"            element={<Forbidden />} />
         <Route path="/status/something_went_wrong" element={<SomethingWentWrong />} />
+
+        {/* Public read-only menu alias */}
+        <Route path="/menu" element={<Shop publicView={true} />} />
 
         {/* ------------- Fallback / 404 redirect ------------- */}
         <Route path="*" element={<Navigate to="/status/not_found" replace />} />

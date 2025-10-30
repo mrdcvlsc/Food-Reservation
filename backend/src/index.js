@@ -12,6 +12,12 @@ const cartRouter = require("./routes/cart.routes");
 const routes = require("./routes");
 // Added: notifications router
 const notificationsRouter = require("./routes/notifications.routes");
+// Added: reports router
+const reportsRouter = require("./routes/reports.routes");
+// Added: admin users router
+const adminUsersRouter = require("./routes/admin.users.routes");
+// Added: menu router
+const menuRouter = require("./routes/menu.routes");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -46,7 +52,6 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
  */
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
 /**
  * Swagger API docs
  */
@@ -63,6 +68,12 @@ app.use("/api/transactions", transactionsRouter);
 app.use("/api/notifications", notificationsRouter);
 // Mount cart under /api/cart
 app.use("/api/cart", cartRouter);
+// Mount reports under /api/reports
+app.use("/api/reports", reportsRouter);
+// Mount admin users under /api/admin
+app.use("/api/admin", adminUsersRouter);
+// Mount menu under /api/menu
+app.use("/api/menu", menuRouter);
 // then aggregated routes
 app.use("/api", routes);
 
@@ -99,7 +110,10 @@ app.use((err, _req, res, _next) => {
   if (process.env.NODE_ENV !== 'production' && err && err.stack) body._stack = err.stack;
   res.status(code).json(body);
 });
- 
+
+// Serve exported reports files (CSV) under /reports-files
+app.use("/reports-files", express.static(path.join(__dirname, "reports")));
+
 const server = app.listen(PORT, () => {
   console.log('='.repeat(70));
   console.log(`🚀 FOOD RESERVATION API SERVER STARTED`);

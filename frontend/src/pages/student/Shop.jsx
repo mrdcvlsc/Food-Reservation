@@ -28,13 +28,35 @@ const SLOTS = [
   { id: "after", label: "After Class • 4:00–4:15 PM" },
 ];
 
-export default function Shop() {
+// Compact guest header used when publicView === true
+function GuestHeader() {
+  return (
+    <header className="bg-white border-b">
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <a href="/" className="inline-flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">J</div>
+            <span className="font-semibold">Jesus Christ King of Kings and Lord of Lords Academy</span>
+          </a>
+        </div>
+        <div className="flex items-center gap-3">
+          <a href="/login" className="text-sm text-blue-600 hover:underline">Student Login</a>
+          <a href="/register" className="text-sm text-gray-600 hover:underline">Create Account</a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+export default function Shop({ publicView = false }) {
   const navigate = useNavigate();
   useEffect(() => {
+    // In public view we skip auth / session refresh so visitors can browse menu.
+    if (publicView) return;
     (async () => {
-      await refreshSessionForProtected({ navigate, requiredRole: 'student' });
+      await refreshSessionForProtected({ navigate, requiredRole: "student" });
     })();
-  }, [navigate]);
+  }, [navigate, publicView]);
 
   // data
   const [items, setItems] = useState([]);
@@ -68,8 +90,10 @@ export default function Shop() {
     try {
       const data = await api.get("/menu");
       const rows = Array.isArray(data) ? data : data?.data || [];
+      // only show items that are visible (visible !== false)
+      const visibleRows = rows.filter((r) => r.visible !== false);
       setItems(
-        rows.map((r) => ({
+        visibleRows.map((r) => ({
           id: r.id ?? r._id,
           name: r.name,
           category: r.category || "Others",
@@ -90,6 +114,12 @@ export default function Shop() {
     setLoadingWallet(true);
     setWalletError("");
     try {
+      if (publicView) {
+        // public visitors don't have a wallet — show friendly hint instead of failing
+        setWallet({ balance: 0 });
+        setWalletError("Public view – log in to see wallet and place orders.");
+        return;
+      }
       const w = await api.get("/wallets/me");
       const val = (w && (w.data || w)) || {};
       const bal = Number(val.balance) || 0;
@@ -112,6 +142,9 @@ export default function Shop() {
   useEffect(() => {
     fetchMenu();
     fetchWallet();
+    const onMenuUpdated = () => fetchMenu();
+    window.addEventListener("menu:updated", onMenuUpdated);
+    return () => window.removeEventListener("menu:updated", onMenuUpdated);
   }, []);
 
   // restore cart
@@ -344,39 +377,11 @@ export default function Shop() {
   // ==== RENDER ===============================================================
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {publicView ? <GuestHeader /> : <Navbar />}
 
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* header */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Canteen Menu</h1>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <div className="relative flex-1 sm:flex-none">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search menu…"
-                className="w-full sm:w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Search menu"
-              />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            </div>
-            <button
-              onClick={() => {
-                fetchMenu();
-                fetchWallet();
-              }}
-              className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
-              title="Refresh"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
-          </div>
-        </div>
-
         {/* filters */}
-        <div className="flex flex-wrap items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-3 sticky top-16 z-10">
+        <div className="flex flex-wrap items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-3">
           <div className="inline-flex items-center gap-2 mr-2 text-gray-700">
             <Filter className="w-4 h-4" />
             <span className="text-sm font-medium">Filter</span>
@@ -434,6 +439,34 @@ export default function Shop() {
           </div>
         </div>
 
+        {/* header (moved below filters) */}
+        <div className="flex items-center justify-between gap-3 flex-wrap mt-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Canteen Menu</h1>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search menu…"
+                className="w-full sm:w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Search menu"
+              />
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            </div>
+            <button
+              onClick={() => {
+                fetchMenu();
+                fetchWallet();
+              }}
+              className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
+              title="Refresh"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* menu grid */}
           <section className="lg:col-span-2">
@@ -459,29 +492,12 @@ export default function Shop() {
                 </div>
               ) : (
                 filtered.map((it) => {
-                  const inCart = cart[String(it.id)] || 0;
                   const soldOut = Number(it.stock) <= 0;
-                  const hasImg = Boolean(it.img);
                   return (
-                    <div
-                      key={it.id}
-                      className="relative bg-white rounded-lg shadow-sm border border-gray-100 p-4 flex flex-col"
-                    >
-                      {/* removed redundant top-left "Sold out" badge to avoid visual artifact; keep the price pill */}
-                      {inCart > 0 && (
-                        <span className="absolute top-2 right-2 text-[10px] px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-                          In cart: {inCart}
-                        </span>
-                      )}
-
-                      {/* image / placeholder (clickable) */}
-                      <button
-                        type="button"
-                        onClick={() => setPreview(it)}
-                        className="group mb-4 h-36 w-full rounded-lg bg-gray-100 overflow-hidden relative"
-                        title="View"
-                      >
-                        {hasImg ? (
+                    <div key={it.id} className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                      <div className="h-36 mb-4">
+                        {/* image / cover */}
+                        {it.img ? (
                           <img
                             src={it.img}
                             alt={it.name}
@@ -497,67 +513,49 @@ export default function Shop() {
                             <ImageIcon className="w-8 h-8" />
                           </div>
                         )}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent p-2 text-left">
-                          <span className="text-white text-xs inline-flex items-center gap-1">
-                            Preview <ChevronRight className="w-3 h-3" />
-                          </span>
-                        </div>
-                      </button>
-
-                      <h3 className="font-medium text-lg text-gray-900">{it.name}</h3>
-                      <div className="mt-1 flex items-center justify-between">
-                        <p className="text-gray-800 font-semibold">
-                          {peso.format(Number(it.price) || 0)}
-                        </p>
+                      </div>
+                      <div className="font-medium text-gray-900 truncate">{it.name}</div>
+                      <div className="text-sm text-gray-600">{peso.format(it.price)}</div>
+                      {/* always show stock badge (public and logged-in users) */}
+                      <div className="mt-2">
                         <span
                           className={`text-xs px-2 py-1 rounded-full ${
-                            Number(it.stock) > 0
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
+                            Number(it.stock) > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                           }`}
                         >
                           {Number(it.stock) > 0 ? `${it.stock} in stock` : "Out of stock"}
                         </span>
                       </div>
-
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="inline-flex items-center border rounded-lg">
-                          <button
-                            className="px-3 py-2 hover:bg-gray-50 disabled:opacity-50"
-                            onClick={() => dec(it.id)}
-                            disabled={!cart[String(it.id)]}
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="px-4 text-sm min-w-[2.5rem] text-center">
-                            {cart[String(it.id)] || 0}
-                          </span>
-                          <button
-                            className="px-3 py-2 hover:bg-gray-50 disabled:opacity-50"
-                            onClick={() => inc(it.id)}
-                            disabled={soldOut || (cart[String(it.id)] || 0) >= Number(it.stock)}
-                            title={
-                              soldOut
-                                ? "Out of stock"
-                                : (cart[String(it.id)] || 0) >= Number(it.stock)
-                                ? "Max stock reached"
-                                : "Increase quantity"
-                            }
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        <button
-                          onClick={() => handleAddFromShop(it, 1)}
-                          disabled={soldOut}
-                          className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
-                        >
-                          <ShoppingCart className="w-4 h-4" />
-                          Add
-                        </button>
+                      <div className="mt-3 flex items-center gap-3">
+                        {/* PUBLIC VIEW: hide quantity and add controls; keep Preview only */}
+                        {publicView ? (
+                          <div className="flex items-center gap-2">
+                            <a href="#" onClick={(e) => { e.preventDefault(); setPreview(it); }} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:underline">
+                              Preview &rsaquo;
+                            </a>
+                          </div>
+                        ) : (
+                          // original logged-in controls (quantity, add, etc.)
+                          <div className="flex items-center gap-3">
+                            <div className="inline-flex items-center border rounded-lg">
+                              <button onClick={() => dec(it.id)} className="px-2 py-1.5 hover:bg-gray-50">
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <span className="px-3 text-sm">{(cart[String(it.id)] || 0)}</span>
+                              <button onClick={() => inc(it.id)} className="px-2 py-1.5 hover:bg-gray-50" disabled={soldOut}>
+                                <Plus className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => handleAddFromShop(it, 1)}
+                              disabled={soldOut}
+                              className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
+                            >
+                              <ShoppingCart className="w-4 h-4" />
+                              Add
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -566,111 +564,115 @@ export default function Shop() {
             </div>
           </section>
 
-          {/* cart sidebar */}
-          <aside className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 h-fit sticky top-24">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-gray-900">Your Cart</h2>
-              <span className="text-xs text-gray-600">
-                {list.reduce((a, b) => a + b.qty, 0)} items
-              </span>
-            </div>
-
-            <div className="mt-2 flex items-center justify-between text-sm">
-              <div className="inline-flex items-center gap-2 text-gray-700">
-                <Wallet className="w-4 h-4" />
-                <span>Wallet:</span>
+          {/* cart sidebar (hidden in public view) */}
+          {!publicView && (
+            <aside className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 lg:h-[72vh] h-auto sticky top-24 flex flex-col min-h-[40vh]">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-gray-900">Your Cart</h2>
+                <span className="text-xs text-gray-600">
+                  {list.reduce((a, b) => a + b.qty, 0)} items
+                </span>
               </div>
-              <div className="font-semibold">
-                {loadingWallet ? "…" : peso.format(Number(wallet.balance) || 0)}
-              </div>
-            </div>
 
-            {insufficient && list.length > 0 && (
-              <div className="mt-2 text-xs inline-flex items-center gap-2 text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                Insufficient balance. Please top-up before reserving.
-              </div>
-            )}
-
-            <div className="mt-3 divide-y">
-              {list.map((it) => (
-                <div key={it.id} className="py-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium text-gray-900 truncate">{it.name}</div>
-                    <div className="text-xs text-gray-500">
-                      {peso.format(Number(it.price) || 0)}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="inline-flex items-center border rounded-lg">
-                      <button onClick={() => dec(it.id)} className="px-2 py-1.5 hover:bg-gray-50">
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="px-3 text-sm">{it.qty}</span>
-                      <button
-                        onClick={() => inc(it.id)}
-                        className="px-2 py-1.5 hover:bg-gray-50 disabled:opacity-50"
-                        disabled={it.qty >= it.stock}
-                        title={it.qty >= it.stock ? "Max stock reached" : undefined}
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="text-sm font-medium">
-                      {peso.format((Number(it.price) || 0) * it.qty)}
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(it.id)}
-                      className="text-xs text-gray-500 hover:text-red-600"
-                      title="Remove"
-                    >
-                      Remove
-                    </button>
-                  </div>
+              <div className="mt-2 flex items-center justify-between text-sm">
+                <div className="inline-flex items-center gap-2 text-gray-700">
+                  <Wallet className="w-4 h-4" />
+                  <span>Wallet:</span>
                 </div>
-              ))}
-              {list.length === 0 && (
-                <div className="py-6 text-sm text-gray-500 text-center">Your cart is empty.</div>
+                <div className="font-semibold">
+                  {loadingWallet ? "…" : peso.format(Number(wallet.balance) || 0)}
+                </div>
+              </div>
+
+              {insufficient && list.length > 0 && (
+                <div className="mt-2 text-xs inline-flex items-center gap-2 text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  Insufficient balance. Please top-up before reserving.
+                </div>
               )}
-            </div>
 
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-sm text-gray-600">Total</span>
-              <span className="text-lg font-semibold">{peso.format(total)}</span>
-            </div>
+              {/* scrollable list area */}
+              <div className="mt-3 divide-y overflow-auto flex-1 min-h-0">
+                {list.length === 0 ? (
+                  <div className="py-6 text-sm text-gray-500 text-center">Your cart is empty.</div>
+                ) : (
+                  list.map((it) => (
+                    <div key={it.id} className="py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-gray-900 truncate">{it.name}</div>
+                        <div className="text-xs text-gray-500">
+                          {peso.format(Number(it.price) || 0)}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="inline-flex items-center border rounded-lg">
+                          <button onClick={() => dec(it.id)} className="px-2 py-1.5 hover:bg-gray-50">
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="px-3 text-sm">{it.qty}</span>
+                          <button
+                            onClick={() => inc(it.id)}
+                            className="px-2 py-1.5 hover:bg-gray-50 disabled:opacity-50"
+                            disabled={it.qty >= it.stock}
+                            title={it.qty >= it.stock ? "Max stock reached" : undefined}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="text-sm font-medium">
+                          {peso.format((Number(it.price) || 0) * it.qty)}
+                        </div>
+                        <button
+                          onClick={() => removeFromCart(it.id)}
+                          className="text-xs text-gray-500 hover:text-red-600"
+                          title="Remove"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
-            <div className="mt-4 grid grid-cols-1 gap-2">
-              <button
-                onClick={goCart}
-                disabled={!list.length}
-                className="w-full inline-flex items-center justify-center gap-2 border px-4 py-3 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                Go to Cart
-              </button>
-              <button
-                onClick={openReserve}
-                disabled={!list.length}
-                className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black text-sm disabled:opacity-60"
-              >
-                <Clock className="w-4 h-4" />
-                Reserve for Pickup
-              </button>
-              {list.length > 0 && (
+              <div className="mt-4 flex items-center justify-between">
+                <span className="text-sm text-gray-600">Total</span>
+                <span className="text-lg font-semibold">{peso.format(total)}</span>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 gap-2">
                 <button
-                  onClick={clearCart}
-                  className="w-full inline-flex items-center justify-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+                  onClick={goCart}
+                  disabled={!list.length}
+                  className="w-full inline-flex items-center justify-center gap-2 border px-4 py-3 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60"
                 >
-                  Clear cart
+                  <ShoppingCart className="w-4 h-4" />
+                  Go to Cart
                 </button>
-              )}
-            </div>
-          </aside>
+                <button
+                  onClick={openReserve}
+                  disabled={!list.length}
+                  className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black text-sm disabled:opacity-60"
+                >
+                  <Clock className="w-4 h-4" />
+                  Reserve for Pickup
+                </button>
+                {list.length > 0 && (
+                  <button
+                    onClick={clearCart}
+                    className="w-full inline-flex items-center justify-center gap-2 text-sm text-gray-600 hover:underline"
+                  >
+                    Clear cart
+                  </button>
+                )}
+              </div>
+            </aside>
+          )}
         </div>
       </main>
 
       {/* mobile sticky checkout bar */}
-      {list.length > 0 && (
+      {!publicView && list.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
           <div className="mx-3 mb-3 rounded-xl shadow-lg bg-white border border-gray-200 p-3 flex items-center justify-between">
             <div className="text-sm">
@@ -699,7 +701,7 @@ export default function Shop() {
       )}
 
       {/* reservation modal */}
-      {open && (
+      {!publicView && open && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/30" onClick={closeReserve} />
           <div className="absolute inset-0 flex items-center justify-center p-4">
@@ -904,14 +906,17 @@ export default function Shop() {
                     >
                       <Minus className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => inc(preview.id)}
-                      disabled={Number(preview.stock) <= 0}
-                      className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      Add
-                    </button>
+                    {/* In public view the preview modal does not show add button */}
+                    {!publicView && (
+                      <button
+                        onClick={() => inc(preview.id)}
+                        disabled={Number(preview.stock) <= 0}
+                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Add
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

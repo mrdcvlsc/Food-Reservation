@@ -1,7 +1,8 @@
 // src/components/avbar.jsx
 import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, User, Bell } from "lucide-react";
+import { Menu, X, ShoppingCart, User, Bell, LogOut } from "lucide-react";
 import { api } from "../lib/api";
 
 /**
@@ -29,7 +30,20 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [previewNotif, setPreviewNotif] = useState(null); // <-- new
   const navigate = useNavigate();
+ 
+  const doLogout = async () => {
+    try {
+      // try server logout if available
+      await api.post("/auth/logout");
+    } catch (e) {
+      // ignore network errors, still clear client state
+    }
+    // clear token and redirect to login
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
 
   // Shadow on scroll
   useEffect(() => {
@@ -90,6 +104,28 @@ export default function Navbar() {
     const ids = notifications.filter(n => !n.read).map(n => n.id);
     for (const id of ids) markRead(id);
   }, [notifOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const openNotif = async (n) => {
+    setPreviewNotif(n);
+    try {
+      // mark single notification read (student endpoint)
+      await api.patch(`/notifications/${n.id}/read`);
+      setNotifications((prev) => prev.map(x => (x.id === n.id ? { ...x, read: true } : x)));
+    } catch (e) { /* ignore */ }
+  };
+
+  const deleteNotif = async (id) => {
+    try {
+      await api.del(`/notifications/${id}`);
+      setNotifications((prev) => prev.filter(n => n.id !== id));
+      if (previewNotif && previewNotif.id === id) setPreviewNotif(null);
+    } catch (e) {
+      console.error("Delete notif failed", e);
+      const msg = (e && e.message) || String(e);
+      const details = e && e.data ? `\n\nDetails: ${JSON.stringify(e.data)}` : "";
+      alert("Failed to delete notification: " + msg + details);
+    }
+  };
 
   const linkBase =
     "inline-flex items-center px-3 py-2 rounded-md text-[15px] font-medium transition-colors";
@@ -171,11 +207,15 @@ export default function Navbar() {
                   <div className="max-h-64 overflow-auto">
                     {notifications.length === 0 && <div className="p-4 text-sm text-gray-500">No notifications</div>}
                     {notifications.slice(0,20).map(n => (
-                      <div key={n.id} className={`px-3 py-2 hover:bg-gray-50 ${n.read ? "opacity-70" : ""}`}>
+                      <button
+                        key={n.id}
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); openNotif(n); }}
+                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${n.read ? "opacity-70" : ""}`}
+                      >
                         <div className="text-sm font-medium">{n.title}</div>
-                        <div className="text-xs text-gray-600">{n.body}</div>
+                        <div className="text-xs text-gray-600 truncate">{n.body}</div>
                         <div className="text-[11px] text-gray-400 mt-1">{new Date(n.createdAt).toLocaleString()}</div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -196,11 +236,16 @@ export default function Navbar() {
               )}
             </button>
 
-            {/* Profile */}
+            {/* Profile */} 
             <NavLink to="/profile" className={`${linkBase} ${linkIdle} ml-1`}>
               <User className="w-5 h-5" />
               <span className="hidden sm:inline ml-1">Profile</span>
             </NavLink>
+          {/* Logout (desktop) */}
+          <button onClick={doLogout} className={`${linkBase} ${linkIdle} ml-1`} aria-label="Logout">
+            <LogOut className="w-5 h-5" />
+            <span className="hidden sm:inline ml-1">Logout</span>
+          </button>
           </ul>
 
           {/* Mobile toggle */}
@@ -258,8 +303,53 @@ export default function Navbar() {
             <User className="w-5 h-5 mr-2" />
             Profile
           </NavLink>
+          <button
+            onClick={() => {
+              setOpen(false);
+              doLogout();
+            }}
+            className={`${linkBase} ${linkIdle} w-full justify-start`}
+          >
+            <LogOut className="w-5 h-5 mr-2" />
+            Logout
+          </button>
         </ul>
       </div>
+
+      {/* Notification modal (student) - portal so it is clickable above header/dropdown */}
+      {previewNotif &&
+        ReactDOM.createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
+            <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
+              {/* header: title on left, small X in corner (absolute) */}
+              <div className="p-4 border-b relative">
+                <div className="pr-12">
+                  <div className="text-sm text-gray-500">From: {previewNotif.from || "System"}</div>
+                  <div className="text-lg font-semibold">{previewNotif.title}</div>
+                  <div className="text-xs text-gray-400 mt-1">{new Date(previewNotif.createdAt).toLocaleString()}</div>
+                </div>
+                <button
+                  onClick={() => setPreviewNotif(null)}
+                  aria-label="Close notification"
+                  className="absolute top-3 right-3 text-gray-600 hover:bg-gray-100 rounded p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-4 text-sm text-gray-700">
+                {previewNotif.body || previewNotif.message || "No details provided."}
+              </div>
+
+              {/* footer: actions (Close + Delete) so Delete is not overlapped */}
+              <div className="p-4 border-t flex justify-end gap-2">
+                <button onClick={() => setPreviewNotif(null)} className="px-3 py-2 rounded border">Close</button>
+                <button onClick={() => deleteNotif(previewNotif.id)} className="px-3 py-2 rounded bg-rose-600 text-white">Delete</button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </header>
   );
 }

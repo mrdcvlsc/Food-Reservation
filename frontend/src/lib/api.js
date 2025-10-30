@@ -2,9 +2,15 @@
 // Real backend only. Uses CRA proxy to reach Express on :4000.
 // Usage: api.get('/menu'), api.post('/auth/login', {...}), etc.
 
+// allow overriding backend host via REACT_APP_API_URL (e.g. http://localhost:4000)
+const API_BASE = (process.env.REACT_APP_API_URL || "").replace(/\/$/, ""); // no trailing slash
+
 const toApi = (path) => {
-  if (!path) return "/api";
-  return path.startsWith("/api") ? path : "/api" + (path.startsWith("/") ? path : `/${path}`);
+  // default base path for API endpoints
+  if (!path) return `${API_BASE || ""}/api`;
+  // normalize requested path to start with /api
+  const p = path.startsWith("/api") ? path : path.startsWith("/") ? `/api${path}` : `/api/${path}`;
+  return API_BASE ? `${API_BASE}${p}` : p;
 };
 
 async function request(path, { method = "GET", body, headers } = {}) {

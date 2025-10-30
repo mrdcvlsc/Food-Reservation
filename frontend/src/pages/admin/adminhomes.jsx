@@ -1,5 +1,5 @@
 // src/pages/admin/adminhomes.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import {
@@ -9,7 +9,6 @@ import {
   Clock,
   Edit,
   Trash2,
-  Eye,
   Wallet,
   RefreshCw,
 } from "lucide-react";
@@ -30,11 +29,12 @@ const ADMIN_ROUTES = {
   orders: "/admin/orders", // file: adminOrders.jsx
   reservations: "/admin/reservations", // file: adminReservations.jsx
   stats: "/admin/stats", // file: adminStats.jsx
-  itemEdit: (id) => `/admin/items/edit/${id}`, // file: adminEditItems.jsx
+  itemEdit: (id) => `/admin/shops/edit/${id}`, // ensure this matches the route that renders EditItem
 };
 
 export default function AdminHome() {
   const navigate = useNavigate();
+  const [busyId, setBusyId] = useState(null);
   useEffect(() => {
     (async () => {
       await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
@@ -127,16 +127,18 @@ export default function AdminHome() {
     const price = Number(r.price) || 0;
     const stock = Number(r.stock ?? r.quantity ?? 0);
     const category = r.category || r.type || "";
-    // Treat “availability” strictly as stock > 0, but allow a separate active flag to hide products entirely
+    // Treat visibility independently from stock.
+    // activeFlag = whether item is shown on the menu; available = stock > 0 (visibility does NOT affect availability)
     const activeFlag =
+      r.visible !== undefined ? !!r.visible :
       r.active !== undefined ? !!r.active :
       r.isActive !== undefined ? !!r.isActive : true;
-    const available = activeFlag && stock > 0;
+    const available = stock > 0;
 
     return { id, name, price, stock, category, available, activeFlag };
   };
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
     try {
       const data = await api.get("/menu");
@@ -150,7 +152,7 @@ export default function AdminHome() {
     } finally {
       setLoadingProducts(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -161,7 +163,7 @@ export default function AdminHome() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [loadProducts]);
 
   // Demo recent orders if backend not ready
   const [recentOrders] = useState([
@@ -204,6 +206,53 @@ export default function AdminHome() {
     e.preventDefault();
     e.stopPropagation();
     navigate(to);
+  };
+
+  // toggle visibility (eye) same behavior as admin shop
+  const toggleVisibility = async (id, currentFlag) => {
+    if (!window.confirm(`Set visibility to ${currentFlag ? "hidden" : "visible"} for this item?`)) return;
+    setBusyId(id);
+    try {
+      // backend accepts "visible"
+      await api.put(`/menu/${id}`, { visible: !currentFlag });
+      // only flip visibility flag locally — do NOT change stock/availability
+      setCurrentProducts((prev) =>
+        prev.map((p) => (String(p.id) === String(id) ? { ...p, activeFlag: !currentFlag } : p))
+      );
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
+    } catch (err) {
+      console.error("toggle visibility failed", err);
+      alert("Failed to update visibility.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  // delete product (try DELETE, fallback to hide)
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Delete this product? This action cannot be undone.")) return;
+    setBusyId(id);
+    try {
+      // try hard delete first
+      await api.delete(`/menu/${id}`);
+      setCurrentProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
+      return;
+    } catch (e) {
+      console.warn("DELETE failed, trying to hide instead", e);
+    }
+
+    // fallback: mark as not visible
+    try {
+      await api.put(`/menu/${id}`, { visible: false });
+      setCurrentProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
+    } catch (err) {
+      console.error("Delete/hide failed", err);
+      alert("Failed to delete product.");
+    } finally {
+      setBusyId(null);
+    }
   };
 
   return (
@@ -413,15 +462,19 @@ export default function AdminHome() {
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-end gap-2">
+                            {/* visibility slider toggle */}
                             <button
                               type="button"
-                              onClick={safeNav(
-                                ADMIN_ROUTES.shop + `?product=${encodeURIComponent(p.id)}`
-                              )}
-                              className="p-2 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              aria-label={`View ${p.name}`}
+                              onClick={() => toggleVisibility(p.id, p.activeFlag)}
+                              className="inline-flex items-center gap-3 px-2 py-1 rounded-md focus:outline-none"
+                              aria-pressed={p.activeFlag ? "true" : "false"}
+                              aria-label={`Toggle visibility for ${p.name}`}
+                              disabled={busyId === p.id}
                             >
-                              <Eye className="w-4 h-4" />
+                              <span className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors ${p.activeFlag ? "bg-emerald-500" : "bg-gray-300"}`}>
+                                <span className={`absolute left-0 top-0.5 inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${p.activeFlag ? "translate-x-5" : "translate-x-0"}`} />
+                              </span>
+                              <span className="text-sm text-gray-700">{p.activeFlag ? "Visible" : "Hidden"}</span>
                             </button>
 
                             <button
@@ -438,8 +491,7 @@ export default function AdminHome() {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                // TODO: wire up delete API
-                                console.log("delete", p.id);
+                                deleteProduct(p.id);
                               }}
                               className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
                               aria-label={`Delete ${p.name}`}

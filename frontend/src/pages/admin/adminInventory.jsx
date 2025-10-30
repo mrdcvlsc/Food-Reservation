@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
-import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { RefreshCw, Save, AlertTriangle } from "lucide-react";
 
@@ -19,21 +19,24 @@ export default function AdminInventory() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [stockEdits, setStockEdits] = useState({}); // { [id]: string }
+  const [saving, setSaving] = useState(false);
 
   const load = async () => {
     setLoading(true);
     try {
       const data = await api.get("/menu");
       const rows = Array.isArray(data) ? data : data?.data || [];
-      setItems(
-        rows.map((r) => ({
-          id: r.id ?? r._id,
-          name: r.name,
-          category: r.category || "Others",
-          stock: Number(r.stock ?? 0),
-        }))
-      );
-      setStockEdits({});
+      const mapped = rows.map((r) => ({
+        id: r.id ?? r._id,
+        name: r.name,
+        category: r.category || "Others",
+        stock: Number(r.stock ?? 0),
+      }));
+      setItems(mapped);
+      // initialize editable inputs to current stock
+      const edits = {};
+      for (const m of mapped) edits[m.id] = String(m.stock);
+      setStockEdits(edits);
     } catch (e) {
       console.error(e);
       setItems([]);
@@ -43,22 +46,48 @@ export default function AdminInventory() {
   };
 
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    const onMenuUpdated = () => load();
+    window.addEventListener("menu:updated", onMenuUpdated);
+    return () => window.removeEventListener("menu:updated", onMenuUpdated);
+  }, []);
 
   const lowStock = useMemo(() => items.filter((i) => Number(i.stock) <= LOW_STOCK_THRESHOLD), [items]);
 
   const setEditStock = (id, v) => setStockEdits((s) => ({ ...s, [id]: v }));
 
-  const saveStock = async (id) => {
-    const raw = stockEdits[id];
-    const val = raw === undefined ? null : Number(String(raw).replace(/[^\d\-]/g, ""));
-    if (val === null || Number.isNaN(val)) return alert("Enter a valid number");
-    setBusyId(id);
+  const saveStock = async (productId, qty) => {
+    const v = Number(qty);
+    if (!Number.isFinite(v)) return alert("Invalid stock value");
+    setBusyId(productId);
+
     try {
-      await api.put(`/menu/${id}`, { stock: Number(val) });
+      // try the common endpoint first
+      await api.put(`/menu/${productId}`, { stock: v });
       await load();
-    } catch (e) {
-      console.error(e);
-      alert(e?.message || "Failed to update stock");
+      return;
+    } catch (err) {
+      // log full error for debugging
+      console.error("SaveStock primary (PUT /menu/:id) failed:", err);
+      // If the server returned Not Found, try fallback route once
+      if (err && err.status === 404) {
+        try {
+          await api.post(`/inventory/${productId}/stock`, { qty: v });
+          await load();
+          return;
+        } catch (err2) {
+          console.error("SaveStock fallback (POST /inventory/:id/stock) failed:", err2);
+          const msg2 = (err2 && err2.message) || String(err2);
+          const details2 = err2 && err2.data ? `\n\nDetails: ${JSON.stringify(err2.data)}` : "";
+          alert("Failed to save stock (fallback): " + msg2 + details2);
+          return;
+        }
+      }
+
+      // otherwise surface the original error
+      const msg = (err && err.message) || String(err);
+      const details = err && err.data ? `\n\nDetails: ${JSON.stringify(err.data)}` : "";
+      alert("Failed to save stock: " + msg + details);
     } finally {
       setBusyId(null);
     }
@@ -119,16 +148,40 @@ export default function AdminInventory() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-700">{it.category || "-"}</td>
                       <td className="px-6 py-4 text-center text-sm text-gray-700">
-                        <input
-                          value={stockEdits[it.id] !== undefined ? stockEdits[it.id] : String(it.stock)}
-                          onChange={(e) => setEditStock(it.id, e.target.value.replace(/[^\d\-]/g, ""))}
-                          className="w-20 text-center border border-gray-300 rounded px-2 py-1 text-sm"
-                        />
+                        <div className="inline-flex items-center border rounded overflow-hidden">
+                          <button
+                            onClick={() => {
+                              const cur = Number(stockEdits[it.id] ?? it.stock) || 0;
+                              setEditStock(it.id, String(Math.max(0, cur - 1)));
+                            }}
+                            className="px-2 py-1 hover:bg-gray-100"
+                            aria-label="Decrease stock"
+                            type="button"
+                          >
+                            −
+                          </button>
+                          <input
+                            value={stockEdits[it.id] !== undefined ? stockEdits[it.id] : String(it.stock)}
+                            onChange={(e) => setEditStock(it.id, e.target.value.replace(/[^\d\-]/g, ""))}
+                            className="w-20 text-center border-l border-r border-gray-300 px-2 py-1 text-sm"
+                          />
+                          <button
+                            onClick={() => {
+                              const cur = Number(stockEdits[it.id] ?? it.stock) || 0;
+                              setEditStock(it.id, String(cur + 1));
+                            }}
+                            className="px-2 py-1 hover:bg-gray-100"
+                            aria-label="Increase stock"
+                            type="button"
+                          >
+                            +
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="inline-flex items-center gap-2">
                           <button
-                            onClick={() => saveStock(it.id)}
+                            onClick={() => saveStock(it.id, stockEdits[it.id] ?? it.stock)}
                             disabled={busyId === it.id}
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm disabled:opacity-60"
                           >
