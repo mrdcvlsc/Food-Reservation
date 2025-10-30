@@ -1,8 +1,6 @@
 ﻿// backend/src/controllers/reservations.controller.js
 const { load, save, nextId } = require("../lib/db");
 const Notifications = require("./notifications.controller");
-const mongoose = require("mongoose");
-const { ObjectId } = mongoose.Types;
 
 /**
  * POST /api/reservations
@@ -270,10 +268,26 @@ exports.setStatus = async (req, res) => {
         (t) => String(t.ref || "") === String(row.id)
       );
       if (existingTx) {
-        // attach transaction and mark reservation as approved/charged
-        if (!row.transactionId) row.transactionId = existingTx.id;
         // ensure reservation is linked to the user from the existing transaction
+        if (!row.transactionId) row.transactionId = existingTx.id;
         if (!row.userId && existingTx.userId) row.userId = existingTx.userId;
+
+        // Deduct stock if it wasn't already deducted for this reservation
+        if (!row.stockDeducted) {
+          try {
+            const adj = await adjustReservationStock(db, row, "deduct");
+            if (!adj.ok) {
+              // do not fail existing-tx branch hard — log and continue, but attach problems
+              console.warn("[RESERVATION] existingTx stock adjust problems:", adj.problems);
+            } else {
+              row.stockDeducted = true;
+            }
+            await save(db);
+          } catch (e) {
+            console.error("[RESERVATION] failed to adjust stock for existingTx:", e && e.message);
+          }
+        }
+
         row.charged = true;
         row.chargedAt = row.chargedAt || existingTx.createdAt || new Date().toISOString();
         row.status = "Approved";
@@ -336,44 +350,18 @@ exports.setStatus = async (req, res) => {
 
       // Deduct wallet & stock
       user.balance -= total;
-      for (const it of row.items || []) {
-        const qty = Math.max(0, Number(it.qty || 0));
-        const menuItem = (db.menu || []).find((m) => String(m.id) === String(it.id));
-        if (menuItem && typeof menuItem.stock === "number") {
-          menuItem.stock = Math.max(0, Number(menuItem.stock || 0) - qty);
-        }
-      }
 
-      // Also decrement stock in MongoDB collection (if connected) so other views that read from Mongo see the change
-      try {
-        if (mongoose && mongoose.connection && mongoose.connection.db) {
-          const menuCol = mongoose.connection.db.collection("menu");
-          for (const it of row.items || []) {
-            const qty = Math.max(0, Number(it.qty || 0));
-            if (!qty) continue;
-            const rid = String(it.id || it.productId || it._id || "").trim();
-            if (!rid) continue;
-            const itemFilter = ObjectId.isValid(rid) ? { $or: [{ id: rid }, { _id: ObjectId(rid) }] } : { id: rid };
-            // atomic decrement but never below 0
-            await menuCol.updateOne(
-              itemFilter,
-              [
-                {
-                  $set: {
-                    stock: {
-                      $max: [
-                        0,
-                        { $subtract: [{ $ifNull: ["$stock", 0] }, qty] }
-                      ]
-                    }
-                  }
-                }
-              ]
-            );
-          }
-        }
-      } catch (err) {
-        console.warn("[reservations] mongo stock decrement failed:", err && err.message ? err.message : err);
+      // perform stock deduction and mark flag
+      const adj = await adjustReservationStock(db, row, "deduct");
+      if (!adj.ok) {
+        // this should rarely happen because we pre-checked stock, but surface error if it does
+        return res.status(500).json({ error: "Failed to adjust stock", details: adj.problems });
+      }
+      row.stockDeducted = true;
+
+      for (const it of row.items || []) {
+        // keep legacy per-item menu stock decrement (menu already adjusted in adjustReservationStock)
+        // nothing additional needed here
       }
 
       // Create transaction (debit)
@@ -486,60 +474,17 @@ exports.setStatus = async (req, res) => {
         }
       }
 
-      // Update reservation status and timestamp
-      row.status = "Rejected";
-      row.updatedAt = new Date().toISOString();
-      // attach resolved userId if we found one
-      if (targetUserId && !row.userId) row.userId = targetUserId;
-
-      await save(db);
-
-      // Send notification (best-effort)
-      try {
-        if (row.userId) {
-          Notifications.addNotification({
-            id: "notif_" + Date.now().toString(36),
-            for: row.userId,
-            actor: req.user && req.user.id,
-            type: "reservation:status",
-            title: `Reservation ${row.id} Rejected`,
-            body: `Your reservation ${row.id} has been rejected.`,
-            data: { reservationId: row.id, status: "Rejected" },
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-        } else {
-          console.warn("[RESERVATION] Rejected: no userId found for", row.id);
-        }
-      } catch (e) {
-        console.error("Notification publish failed", e && e.message);
-      }
-
-      // If we are rejecting an already-approved reservation, restore stock
-      if (prev === "Approved" && Array.isArray(row.items)) {
-        // restore in file DB
-        for (const it of row.items) {
-          const qty = Math.max(0, Number(it.qty || 0));
-          const menuItem = (db.menu || []).find((m) => String(m.id) === String(it.id));
-          if (menuItem && typeof menuItem.stock === "number") {
-            menuItem.stock = Number(menuItem.stock || 0) + qty;
-          }
-        }
-        // restore in MongoDB (if connected)
+      // If previous was Approved, restore stock that was deducted earlier
+      if (prev === "Approved" && row.stockDeducted) {
         try {
-          if (mongoose && mongoose.connection && mongoose.connection.db) {
-            const menuCol = mongoose.connection.db.collection("menu");
-            for (const it of row.items || []) {
-              const qty = Math.max(0, Number(it.qty || 0));
-              if (!qty) continue;
-              const rid = String(it.id || it.productId || it._id || "").trim();
-              if (!rid) continue;
-              const filter = ObjectId.isValid(rid) ? { $or: [{ id: rid }, { _id: ObjectId(rid) }] } : { id: rid };
-              await menuCol.updateOne(filter, { $inc: { stock: qty } });
-            }
+          const adj = await adjustReservationStock(db, row, "restore");
+          if (!adj.ok) {
+            console.warn("[RESERVATION] restore stock problems:", adj.problems);
           }
-        } catch (err) {
-          console.warn("[reservations] mongo stock restore failed:", err && err.message ? err.message : err);
+          // clear flag so repeated transitions won't double-restore
+          row.stockDeducted = false;
+        } catch (e) {
+          console.error("[RESERVATION] failed to restore stock on refund:", e && e.message);
         }
       }
 
@@ -607,140 +552,48 @@ exports.setStatus = async (req, res) => {
   }
 };
 
-// ensure this handler is used by the route that updates reservation status
-exports.updateStatus = async (req, res) => {
-  try {
-    const reservationId = req.params.id;
-    const newStatus = String(req.body.status || "").trim();
-    if (!reservationId) return res.status(400).json({ error: "Missing reservation id" });
+// helper: safely deduct or restore stock for a reservation's items
+async function adjustReservationStock(db, row, direction = "deduct") {
+  // direction: "deduct" or "restore"
+  // returns { ok: boolean, problems: [] }
+  const problems = [];
+  db.menu = db.menu || [];
+  db.inventory = db.inventory || []; // optional inventory collection
+  for (const it of row.items || []) {
+    const qty = Number(it.qty || 0);
+    if (!qty) continue;
+    const menuItem = db.menu.find((m) => String(m.id) === String(it.id));
+    if (!menuItem) {
+      problems.push(`Menu item ${it.id} not found`);
+      continue;
+    }
 
-    // get DB / collections
-    const db = mongoose && mongoose.connection && mongoose.connection.db;
-    if (!db) return res.status(500).json({ error: "Database not available" });
-
-    const reservationsCol = db.collection("reservations");
-    const menuCol = db.collection("menu");
-
-    // find reservation (try ObjectId then raw id)
-    const tryId = (v) => (ObjectId.isValid(v) ? ObjectId(v) : v);
-    const resDoc = await reservationsCol.findOne({ _id: tryId(reservationId) }) || await reservationsCol.findOne({ id: reservationId });
-    if (!resDoc) return res.status(404).json({ error: "Reservation not found" });
-
-    const prevStatus = String(resDoc.status || "").trim();
-
-    // update reservation status
-    await reservationsCol.updateOne({ _id: resDoc._id }, { $set: { status: newStatus } });
-
-    // Only decrement stock when transitioning into Approved (and not if already approved)
-    const shouldDecrement = prevStatus.toLowerCase() !== "approved" && newStatus.toLowerCase() === "approved";
-
-    if (shouldDecrement && Array.isArray(resDoc.items)) {
-      // Loop items and decrement stock safely
-      for (const it of resDoc.items) {
-        const rid = String(it?.id ?? it?.productId ?? it?.itemId ?? it?._id ?? "").trim();
-        const qty = Math.max(0, Number(it?.qty ?? it?.quantity ?? it?.count ?? 0));
-
-        if (!rid || qty <= 0) continue;
-
-        // Try to find menu doc by _id or id field or suffix match
-        let menuDoc = null;
-        try {
-          if (ObjectId.isValid(rid)) menuDoc = await menuCol.findOne({ _id: ObjectId(rid) });
-          if (!menuDoc) menuDoc = await menuCol.findOne({ id: rid });
-          if (!menuDoc) {
-            // suffix heuristic (fallback)
-            const incomingSuffix = rid.split("-").pop();
-            menuDoc = await menuCol.findOne({ $where: function() {
-              const sid = (this.id ?? this._id ?? "") + "";
-              return sid.split("-").pop() === incomingSuffix;
-            }});
-          }
-        } catch (err) {
-          // ignore lookup errors for this item and continue
-          console.warn("[stock] lookup error for", rid, err && err.message ? err.message : err);
-        }
-
-        if (!menuDoc) continue;
-
-        const currentStock = Number(menuDoc.stock ?? 0);
-        const newStock = Math.max(0, currentStock - qty);
-
-        try {
-          await menuCol.updateOne({ _id: menuDoc._id }, { $set: { stock: newStock } });
-        } catch (err) {
-          console.error("[stock] failed to update menu stock for", menuDoc._id, err);
-        }
+    if (direction === "deduct") {
+      if (typeof menuItem.stock === "number") {
+        // avoid negative
+        menuItem.stock = Math.max(0, Number(menuItem.stock) - qty);
+      }
+    } else {
+      // restore
+      if (typeof menuItem.stock === "number") {
+        menuItem.stock = Number(menuItem.stock) + qty;
       }
     }
 
-    // success
-    return res.json({ ok: true });
-  } catch (err) {
-    console.error("[reservations] updateStatus error:", err && err.stack ? err.stack : err);
-    return res.status(500).json({ error: "Failed to update reservation status", details: String(err && err.message ? err.message : err) });
-  }
-};
-
-// helper: adjust stock for a reservation (sign = -1 to subtract, +1 to restore)
-async function adjustStockForReservation(reservation, sign = -1) {
-  if (!reservation || !Array.isArray(reservation.items)) return;
-  const db = mongoose.connection.db;
-  const menuCol = db.collection("menu");
-  for (const it of reservation.items) {
-    const rid = String(it?.id ?? it?.productId ?? it?.itemId ?? it?._id ?? "").trim();
-    const qty = Math.max(0, Number(it?.qty ?? it?.quantity ?? it?.count ?? 0) || 0);
-    if (!rid || qty === 0) continue;
-
+    // Try to apply same change to inventory records if present
     try {
-      // read current stock
-      const existing = await menuCol.findOne({ $or: [{ id: rid }, { _id: rid }, { _id: new mongoose.Types.ObjectId(rid) }, { id: new RegExp(rid + "$") }] });
-      if (!existing) continue;
-      const curStock = Number(existing.stock ?? 0);
-      const nextStock = Math.max(0, curStock + sign * (-1) * qty); // sign -1 subtracts, +1 restores: compute cur - qty or cur + qty
-      // simpler: if sign === -1 -> curStock - qty ; if sign === 1 -> curStock + qty
-      const computed = sign === -1 ? Math.max(0, curStock - qty) : curStock + qty;
-      await menuCol.updateOne({ _id: existing._id }, { $set: { stock: computed } });
-    } catch (err) {
-      console.error("[STOCK] adjust failed for item", rid, err && err.message ? err.message : err);
-      // continue attempting other items
+      const inv = db.inventory.find((x) =>
+        String(x.productId || x.id) === String(menuItem.id)
+      );
+      if (inv && typeof inv.stock === "number") {
+        inv.stock = direction === "deduct"
+          ? Math.max(0, Number(inv.stock) - qty)
+          : Number(inv.stock) + qty;
+      }
+    } catch (e) {
+      // non-fatal — note and continue
+      problems.push(`Inventory update failed for ${menuItem.id}: ${String(e && e.message)}`);
     }
   }
+  return { ok: problems.length === 0, problems };
 }
-
-// Example: integrate into your existing update-status handler
-exports.update = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const newStatus = req.body.status;
-    const Reservations = mongoose.connection.db.collection("reservations");
-
-    // load existing reservation
-    const existing = await Reservations.findOne({ _id: id }) || await Reservations.findOne({ id });
-    if (!existing) return res.status(404).json({ error: "Reservation not found" });
-
-    const prevStatus = existing.status;
-
-    // perform the status update (your current logic)
-    await Reservations.updateOne({ _id: existing._id }, { $set: { ...req.body, updatedAt: new Date().toISOString() } });
-    const updated = await Reservations.findOne({ _id: existing._id });
-
-    // If status changed to Approved => subtract stock
-    const approvedNames = new Set(["Approved", "approved", "APPROVED"]);
-    if (!approvedNames.has(prevStatus) && approvedNames.has(newStatus)) {
-      await adjustStockForReservation(updated, -1); // subtract
-      try { // notify other services/clients if you have websockets or rely on frontend events
-        // nothing here — frontend will reload via API and menu:updated event dispatched client-side by admin UI
-      } catch {}
-    }
-
-    // If status was Approved and now reverted => restore stock
-    if (approvedNames.has(prevStatus) && !approvedNames.has(newStatus)) {
-      await adjustStockForReservation(existing, 1); // restore
-    }
-
-    return res.json({ success: true, reservation: updated });
-  } catch (err) {
-    console.error("[RESERVATIONS] update error", err);
-    return res.status(500).json({ error: "Update failed", details: String(err && err.message ? err.message : err) });
-  }
-};

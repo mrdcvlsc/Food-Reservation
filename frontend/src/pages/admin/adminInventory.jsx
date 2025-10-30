@@ -46,11 +46,6 @@ export default function AdminInventory() {
   };
 
   useEffect(() => { load(); }, []);
-  useEffect(() => {
-    const onMenuUpdated = () => load();
-    window.addEventListener("menu:updated", onMenuUpdated);
-    return () => window.removeEventListener("menu:updated", onMenuUpdated);
-  }, []);
 
   const lowStock = useMemo(() => items.filter((i) => Number(i.stock) <= LOW_STOCK_THRESHOLD), [items]);
 
