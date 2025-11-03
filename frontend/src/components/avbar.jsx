@@ -1,8 +1,8 @@
 // src/components/avbar.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
-import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Menu, X, ShoppingCart, User, Bell, LogOut } from "lucide-react";
+import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
+import { Menu, X, ShoppingCart, User, Bell, LogOut, Wallet, FileText, Home } from "lucide-react";
 import { api } from "../lib/api";
 
 /**
@@ -19,9 +19,7 @@ const BRAND_NAME =
 const LINKS = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/shop", label: "Shop" },
-  { to: "/topup", label: "Top-Up" },
-  { to: "/transactions", label: "History" },
-  { to: "/topup-history", label: "Top-Up History" },
+  { to: "/transactions", label: "History" }
 ];
 
 export default function Navbar() {
@@ -31,6 +29,9 @@ export default function Navbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [previewNotif, setPreviewNotif] = useState(null); // <-- new
+  const [topupsOpen, setTopupsOpen] = useState(false);
+  const topupsRef = useRef(null);
+  const location = useLocation();
   const navigate = useNavigate();
  
   const doLogout = async () => {
@@ -127,11 +128,43 @@ export default function Navbar() {
     }
   };
 
+  // close topups dropdown when clicking outside or pressing Escape
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (!topupsOpen) return;
+      if (topupsRef.current && !topupsRef.current.contains(e.target)) {
+        setTopupsOpen(false);
+      }
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") setTopupsOpen(false);
+    };
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [topupsOpen]);
+
   const linkBase =
     "inline-flex items-center px-3 py-2 rounded-md text-[15px] font-medium transition-colors";
   const linkIdle =
     "text-slate-700 hover:text-blue-700 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500";
   const linkActive = "text-blue-800 bg-blue-100 shadow-[inset_0_0_0_1px_rgba(59,130,246,.15)]";
+
+  const iconFor = (to) => {
+    switch (to) {
+      case "/dashboard":
+        return <Home className="w-5 h-5 mr-2" />;
+      case "/shop":
+        return <ShoppingCart className="w-5 h-5 mr-2" />;
+      case "/transactions":
+        return <FileText className="w-5 h-5 mr-2" />;
+      default:
+        return <ShoppingCart className="w-5 h-5 mr-2" />;
+    }
+  };
 
   return (
     <header
@@ -184,10 +217,40 @@ export default function Navbar() {
                     `${linkBase} ${isActive ? linkActive : linkIdle}`
                   }
                 >
-                  {label}
+                  {iconFor(to)}
+                  <span>{label}</span>
                 </NavLink>
               </li>
             ))}
+
+            {/* Top-ups dropdown (desktop) */}
+            <div className="relative" ref={topupsRef}>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTopupsOpen((s) => !s);
+                }}
+                className={`${linkBase} ${String(location.pathname).startsWith("/topup") ? linkActive : linkIdle} ml-1 relative`}
+                aria-haspopup="true"
+                aria-expanded={topupsOpen}
+              >
+                <Wallet className="w-5 h-5 mr-2" />
+                <span className="hidden md:inline ml-1">Top-ups</span>
+              </button>
+              {topupsOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg z-50">
+                  <NavLink to="/topup" className={`${linkBase} ${linkIdle} w-full justify-start`} onClick={() => setTopupsOpen(false)}>
+                    <Wallet className="w-4 h-4 mr-2" />
+                    <span>Top-Up</span>
+                  </NavLink>
+                  <NavLink to="/topup-history" className={`${linkBase} ${linkIdle} w-full justify-start`} onClick={() => setTopupsOpen(false)}>
+                    <FileText className="w-4 h-4 mr-2" />
+                    <span>Top-Up History</span>
+                  </NavLink>
+                </div>
+              )}
+            </div>
 
             {/* Notifications (desktop) */}
             <div className="relative">
@@ -238,12 +301,12 @@ export default function Navbar() {
 
             {/* Profile */} 
             <NavLink to="/profile" className={`${linkBase} ${linkIdle} ml-1`}>
-              <User className="w-5 h-5" />
+              <User className="w-5 h-5 mr-2" />
               <span className="hidden sm:inline ml-1">Profile</span>
             </NavLink>
           {/* Logout (desktop) */}
           <button onClick={doLogout} className={`${linkBase} ${linkIdle} ml-1`} aria-label="Logout">
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-5 h-5 mr-2" />
             <span className="hidden sm:inline ml-1">Logout</span>
           </button>
           </ul>
@@ -276,7 +339,8 @@ export default function Navbar() {
                   `${linkBase} ${isActive ? linkActive : linkIdle} w-full`
                 }
               >
-                {label}
+                {iconFor(to)}
+                <span>{label}</span>
               </NavLink>
             </li>
           ))}
@@ -314,6 +378,19 @@ export default function Navbar() {
             Logout
           </button>
         </ul>
+
+        {/* Mobile sheet: add Top-ups submenu */}
+        <div className="border-t pt-2">
+          <div className="text-[11px] font-medium uppercase text-gray-500 px-1 mb-1">Top-ups</div>
+          <NavLink to="/topup" onClick={() => setOpen(false)} className={`${linkBase} ${linkIdle} w-full`}>
+            <Wallet className="w-4 h-4 mr-2" />
+            <span>Top-Up</span>
+          </NavLink>
+          <NavLink to="/topup-history" onClick={() => setOpen(false)} className={`${linkBase} ${linkIdle} w-full`}>
+            <FileText className="w-4 h-4 mr-2" />
+            <span>Top-Up History</span>
+          </NavLink>
+        </div>
       </div>
 
       {/* Notification modal (student) - portal so it is clickable above header/dropdown */}

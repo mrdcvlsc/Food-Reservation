@@ -67,6 +67,7 @@ export default function TopUpHistory() {
         amount: Number(t.amount) || 0,
         status: t.status || "Pending",
         proofUrl: norm(t.proofUrl),
+        reference: t.reference || t.ref || ""
       }));
       setRows(mapped);
     } catch (e) {
@@ -228,6 +229,7 @@ export default function TopUpHistory() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Reference Number</th>
                 <th className="px-6 py-3 text-left  text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Provider</th>
                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
@@ -275,6 +277,7 @@ export default function TopUpHistory() {
                 pageRows.map((r) => (
                   <tr key={r.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{r.id}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{r.reference || "—"}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{fmtDateTime(r.submittedAt)}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 text-center">{r.provider?.toUpperCase()}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900 text-center">{peso.format(r.amount)}</td>

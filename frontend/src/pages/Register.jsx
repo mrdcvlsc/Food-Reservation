@@ -35,6 +35,7 @@ export default function Register() {
     const errs = {};
     if (!form.name.trim()) errs.name = "Name is required";
     if (!form.studentId.trim()) errs.studentId = "Student ID is required";
+    else if (!/^\d+$/.test(String(form.studentId).trim())) errs.studentId = "Student ID must contain digits only";
     if (!form.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       errs.email = "Invalid email";
@@ -60,6 +61,7 @@ export default function Register() {
     try {
       await api.post("/auth/register", {
         name: form.name.trim(),
+        studentId: form.studentId.trim(),
         email: form.email.trim(),
         password: form.password,
         grade: "",
@@ -79,27 +81,41 @@ export default function Register() {
       navigate("/dashboard", { replace: true });
       return;
     } catch (err) {
+      setIsLoading(false);
+      // If ApiError, try to show useful form error(s)
       if (err instanceof ApiError) {
-        setIsLoading(false);
-        switch (err.status) {
+        const status = err.status;
+        // try to extract server message
+        const serverMsg = (err?.response && err.response.data && err.response.data.error) || (err?.data && err.data.error) || err.message || "";
+        if (status === ApiError.Conflict) {
+          setErrors({ email: "Email already registered. Please log in instead." });
+          return;
+        }
+        if (status === 400) {
+          // if message mentions studentId show on that field, otherwise generic
+          if (/studentid/i.test(serverMsg) || /student id/i.test(serverMsg)) {
+            setErrors({ studentId: serverMsg });
+          } else {
+            setErrors({ email: serverMsg || "Invalid registration data" });
+          }
+          return;
+        }
+        switch (status) {
           case ApiError.Maintenance: navigate("/status/maintenance",  { replace: true }); break;
           case ApiError.ServerError: navigate("/status/server_error", { replace: true }); break;
-          case ApiError.Conflict: 
-            setErrors({ email: "Email already registered. Please log in instead." });
-            break;
-          default:
-            navigate("/status/something_went_wrong");
+          default: navigate("/status/something_went_wrong");
         }
         return;
       }
 
+      // fallback generic
       setErrors({ email: "Email already registered. Please log in instead." });
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* HEADER: unchanged design */}
+      {/* HEADER: unchanged design */} 
       <header className="w-full bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="font-bold text-gray-900 text-lg">
@@ -153,7 +169,7 @@ export default function Register() {
               name="studentId"
               value={form.studentId}
               onChange={handleChange}
-              placeholder="e.g. 2023‑00001"
+              placeholder="Digits only, e.g. 202300001"
               error={errors.studentId}
             />
             <Input

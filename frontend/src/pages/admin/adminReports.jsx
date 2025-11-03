@@ -1,4 +1,4 @@
-// ...new file...
+// filepath: c:\Documents\Food-Reservation\Food-Reservation\frontend\src\pages\admin\adminReports.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
@@ -55,10 +55,26 @@ function getCreated(obj) {
     null
   );
 }
-function isInThisMonth(iso, now = new Date()) {
+// iso: date string; month: string ("all" or "1".."12"); year: string ("all" or "2025"...)
+function isInMonth(iso, month = "all", year = "all") {
   if (!iso) return false;
   const d = new Date(iso);
-  return !isNaN(d) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  if (isNaN(d)) return false;
+  const m = d.getMonth() + 1;
+  const y = d.getFullYear();
+  if ((month === "all" || month === undefined) && (year === "all" || year === undefined)) {
+    return true; // all time
+  }
+  if (month === "all" || month === undefined) {
+    // match any month of the given year
+    return Number(year) === y;
+  }
+  if (year === "all" || year === undefined) {
+    // match given month across all years
+    return Number(month) === m;
+  }
+  // both specified
+  return Number(month) === m && Number(year) === y;
 }
 
 export default function AdminReports() {
@@ -69,8 +85,10 @@ export default function AdminReports() {
     })();
   }, [navigate]);
 
-  const [month, setMonth] = useState(() => new Date().getMonth() + 1);
-  const [year, setYear] = useState(() => new Date().getFullYear());
+  // keep month/year as strings so we can use "all"
+  const now = new Date();
+  const [month, setMonth] = useState(() => String(now.getMonth() + 1));
+  const [year, setYear] = useState(() => String(now.getFullYear()));
   const [loading, setLoading] = useState(false);
 
   // report data (original)
@@ -100,7 +118,11 @@ export default function AdminReports() {
         setDashboard((d) => ({ ...d }));
       } else {
         const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
-        const reportUrl = `/reports/monthly?month=${String(month).padStart(2, "0")}&year=${year}`;
+        // build report url depending on "all" selection
+        const qp = [];
+        if (month !== "all") qp.push(`month=${String(month).padStart(2, "0")}`);
+        if (year !== "all") qp.push(`year=${year}`);
+        const reportUrl = qp.length ? `/reports/monthly?${qp.join("&")}` : `/reports/monthly`;
         const [mres, rres, tres, dres, repres] = await Promise.all([
           api.get("/menu").catch(() => []),
           api.get("/reservations/admin").catch(() => []),
@@ -172,9 +194,9 @@ export default function AdminReports() {
     return map;
   }, [menu]);
 
-  const now = useMemo(() => new Date(), []);
-  const resMonth = useMemo(() => (reservations || []).filter((r) => isInThisMonth(getCreated(r), now)), [reservations, now]);
-  const topMonth = useMemo(() => (topups || []).filter((t) => isInThisMonth(getCreated(t), now)), [topups, now]);
+  // compute reservations/topups that fall into the selected month/year (supports "all")
+  const resMonth = useMemo(() => (reservations || []).filter((r) => isInMonth(getCreated(r), month, year)), [reservations, month, year]);
+  const topMonth = useMemo(() => (topups || []).filter((t) => isInMonth(getCreated(t), month, year)), [topups, month, year]);
 
   const resStats = useMemo(() => {
     let revenue = 0;
@@ -267,48 +289,240 @@ export default function AdminReports() {
   // report visual data (original adminReports logic)
   // unified top-products / categories source:
   // prefer server report, otherwise build from computed month stats (resStats)
+  // base topProducts (from server report if available, otherwise from computed resStats)
   const topProducts = (Array.isArray(report?.topProducts) && report.topProducts.length > 0)
     ? report.topProducts
-    : (resStats.topItems || []).map((it) => ({ name: it.name, qty: it.qty, revenue: it.revenue }));
-  const topCategories = (Array.isArray(report?.topCategories) && report.topCategories.length > 0)
-    ? report.topCategories
-    : (resStats.categoryRows || []).map((c) => ({ category: c.category, revenue: c.amount }));
+    : (resStats.topItems || []).map((it) => ({ name: it.name, qty: it.qty, revenue: it.revenue, category: it.category }));
+
+  // Ensure menu items (new uploads) appear in the "All" period:
+  // Build totals from raw reservations (useful for All-time merges)
+  const totalsFromReservations = useMemo(() => {
+    const byName = {};
+    const byId = {};
+    const bySuffix = {};
+    const APPROVED_SET = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
+    for (const r of reservations || []) {
+      // only include reservations that are approved or beyond
+      const rStatus = normalizeStatus(r?.status);
+      if (!APPROVED_SET.has(rStatus)) continue;
+      // apply month/year filter so totals match the current period selection
+      if (!(month === "all" && year === "all")) {
+        const created = getCreated(r);
+        if (!isInMonth(created, month, year)) continue;
+      }
+      if (!Array.isArray(r.items)) continue;
+      for (const it of r.items) {
+        const rawId = String(it?.id ?? it?.productId ?? it?._id ?? "").trim();
+        const suffix = rawId ? rawId.split("-").pop() : "";
+        const rawName = String(it?.name ?? it?.title ?? "").trim();
+        const keyName = rawName.toLowerCase();
+        const qty = Number(it?.qty ?? it?.quantity ?? it?.count ?? 0) || 0;
+        const price = Number(it?.price ?? it?.unitPrice ?? 0) || 0;
+        const rev = qty * price;
+        if (keyName && qty > 0) {
+          byName[keyName] = byName[keyName] || { qty: 0, revenue: 0, name: rawName };
+          byName[keyName].qty += qty;
+          byName[keyName].revenue += rev;
+        }
+        if (rawId && qty > 0) {
+          byId[rawId] = byId[rawId] || { qty: 0, revenue: 0, id: rawId, name: rawName };
+          byId[rawId].qty += qty;
+          byId[rawId].revenue += rev;
+        }
+        if (suffix && qty > 0) {
+          bySuffix[suffix] = bySuffix[suffix] || { qty: 0, revenue: 0, suffix };
+          bySuffix[suffix].qty += qty;
+          bySuffix[suffix].revenue += rev;
+        }
+      }
+    }
+    return { byName, byId, bySuffix };
+  }, [reservations, month, year]);
+
+  const mergedTopProducts = useMemo(() => {
+     // start from server report or computed topProducts
+     const base = (topProducts || []).map((p) => ({ ...p }));
+ 
+     // If month === "all", keep existing merging logic (merge menu with all-time totals)
+     if (month === "all") {
+       const seen = new Set(base.map((p) => String(p.name || "").toLowerCase()));
+       for (const m of menu || []) {
+         const mName = String(m?.name || "").trim();
+         if (!mName) continue;
+         const keyName = mName.toLowerCase();
+         if (seen.has(keyName)) continue;
+         // try to find totals by id / suffix / name
+         let qty = 0, revenue = 0;
+         // by id
+         if (m.id) {
+           const matched = totalsFromReservations.byId[String(m.id)];
+           if (matched) { qty = matched.qty; revenue = matched.revenue; }
+         }
+         // by suffix
+         if (qty === 0 && String(m.id || "").includes("-")) {
+           const sfx = String(m.id).split("-").pop();
+           const matched = totalsFromReservations.bySuffix[sfx];
+           if (matched) { qty = matched.qty; revenue = matched.revenue; }
+         }
+         // by name
+         if (qty === 0) {
+           const matched = totalsFromReservations.byName[keyName];
+           if (matched) { qty = matched.qty; revenue = matched.revenue; }
+         }
+         // Only merge menu item into All-time if it has approved-order qty (> 0)
+         if ((qty && qty > 0) || (revenue && revenue > 0)) {
+           base.push({ name: mName, qty, revenue, category: m?.category || "Uncategorized" });
+           seen.add(keyName);
+         }
+       }
+       return base;
+     }
+ 
+     // For a specific month: include server/computed topProducts + any menu items
+     // that were added/updated in the selected month (so new products show up with 0 sales).
+     const seen = new Set(base.map((p) => String(p.name || "").toLowerCase()));
+     for (const m of menu || []) {
+       const mName = String(m?.name || "").trim();
+       if (!mName) continue;
+       const keyName = mName.toLowerCase();
+       if (seen.has(keyName)) continue;
+ 
+       // include if menu item has approved sales in this month (from totalsFromReservations)
+       let qty = 0, revenue = 0;
+       if (m.id) {
+         const byIdMatch = totalsFromReservations.byId[String(m.id)];
+         if (byIdMatch) { qty = byIdMatch.qty; revenue = byIdMatch.revenue; }
+       }
+       if ((qty === 0 || revenue === 0) && String(m.id || "").includes("-")) {
+         const sfx = String(m.id).split("-").pop();
+         const bySfx = totalsFromReservations.bySuffix[sfx];
+         if (bySfx) { qty = bySfx.qty; revenue = bySfx.revenue; }
+       }
+       if ((qty === 0 || revenue === 0)) {
+         const byName = totalsFromReservations.byName[keyName];
+         if (byName) { qty = byName.qty; revenue = byName.revenue; }
+       }
+ 
+       // if it has approved sales this month, include with totals; otherwise include if menu was created/updated in this month
+       const candidateDate = m.createdAt || m.created_at || m.updatedAt || m.updated_at || m?.created || m?.updated;
+       const createdInMonth = candidateDate ? isInMonth(candidateDate, month, year) : false;
+ 
+       if ((qty && qty > 0) || (revenue && revenue > 0)) {
+         base.push({ name: mName, qty, revenue, category: m?.category || "Uncategorized", unitPrice: m?.price || 0 });
+         seen.add(keyName);
+       } else if (createdInMonth) {
+         base.push({ name: mName, qty: 0, revenue: 0, category: m?.category || "Uncategorized", unitPrice: m?.price || 0 });
+         seen.add(keyName);
+       }
+     }
+ 
+     return base;
+   }, [topProducts, menu, month, year, totalsFromReservations]);
+ 
+   const topCategories = (Array.isArray(report?.topCategories) && report.topCategories.length > 0)
+     ? report.topCategories
+     : (resStats.categoryRows || []).map((c) => ({ category: c.category, revenue: c.amount }));
 
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  // derive year options from data (include "all")
+  const yearOptions = useMemo(() => {
+    const s = new Set();
+    // collect years from reservations, topups and report if present
+    const collect = (arr) => {
+      for (const it of arr || []) {
+        const d = new Date(getCreated(it));
+        if (!isNaN(d)) s.add(String(d.getFullYear()));
+      }
+    };
+    collect(reservations);
+    collect(topups);
+    if (Array.isArray(report?.years)) {
+      for (const y of report.years) s.add(String(y));
+    }
+    const years = Array.from(s).map((y) => Number(y)).filter(Boolean).sort((a,b) => b - a).map(String);
+    // ensure current year exists
+    if (!years.includes(String(now.getFullYear()))) years.unshift(String(now.getFullYear()));
+    return ["all", ...years];
+  }, [reservations, topups, report]);
+
+  const monthNames = useMemo(() => ["All","January","February","March","April","May","June","July","August","September","October","November","December"], []);
+
+  // helper to render human-friendly period label
+  const periodLabel = useMemo(() => {
+    if (month === "all" && year === "all") return "All time";
+    if (month === "all" && year !== "all") return `${year} (all months)`;
+    if (month !== "all" && year === "all") {
+      const mName = monthNames[Number(month)] || `Month ${month}`;
+      return `${mName} (all years)`;
+    }
+    const mName = monthNames[Number(month)] || `Month ${month}`;
+    return `${mName} ${year}`;
+  }, [month, year, monthNames]);
+
+  // build categories list for UI (include menu categories)
   const categories = useMemo(() => {
     const s = new Set();
     s.add("All");
-    // source: server report categories
-    if (Array.isArray(report?.topCategories)) {
-      for (const c of report.topCategories) if (c?.category) s.add(c.category);
-    }
-    // source: server/topProducts categories
-    if (Array.isArray(report?.topProducts)) {
-      for (const p of report.topProducts) if (p?.category) s.add(p.category);
-    }
-    // source: computed categories
-    for (const c of resStats.categoryRows || []) if (c?.category) s.add(c.category);
-    // source: menu
+    if (Array.isArray(report?.topCategories)) for (const c of report.topCategories) if (c?.category) s.add(c.category);
+    if (Array.isArray(report?.topProducts)) for (const p of report.topProducts) if (p?.category) s.add(p.category);
+    for (const r of resStats.categoryRows || []) if (r?.category) s.add(r.category);
     for (const m of menu || []) if (m?.category) s.add(m.category);
     return Array.from(s);
   }, [report, resStats, menu]);
 
   // filtered data according to selectedCategory
   const filteredTopProducts = useMemo(() => {
-    const source = (Array.isArray(report?.topProducts) && report.topProducts.length > 0)
-      ? report.topProducts
-      : (resStats.topItems || []);
+    const source = mergedTopProducts || [];
     if (!selectedCategory || selectedCategory === "All") return source;
     const sc = String(selectedCategory).toLowerCase();
     return source.filter((p) => String(p?.category || p?.cat || "").toLowerCase() === sc);
-  }, [report, resStats, selectedCategory]);
-
+  }, [mergedTopProducts, selectedCategory]);
+ 
+  // include unsold menu items in the All-time top-items table (qty/revenue = 0)
+  const mergedResTopItems = useMemo(() => {
+    // base is computed item aggregates for the selected period (resStats.topItems)
+    const base = (resStats.topItems || []).map((it) => ({ ...it }));
+    if (month !== "all") return base;
+    const mapByName = {};
+    for (const it of base) mapByName[String(it.name || "").toLowerCase()] = it;
+    for (const m of menu || []) {
+      const nm = String(m?.name || "").trim();
+      if (!nm) continue;
+      const key = nm.toLowerCase();
+      if (mapByName[key]) {
+        // ensure metadata exists
+        mapByName[key].category = mapByName[key].category || m?.category || "Uncategorized";
+        mapByName[key].unitPrice = mapByName[key].unitPrice || m?.price || 0;
+        continue;
+      }
+      // try to find totals from reservation totals (computed above)
+      let qty = 0, revenue = 0;
+      if (m.id) {
+        const byIdMatch = totalsFromReservations.byId[String(m.id)];
+        if (byIdMatch) { qty = byIdMatch.qty; revenue = byIdMatch.revenue; }
+      }
+      if (qty === 0 && String(m.id || "").includes("-")) {
+        const sfx = String(m.id).split("-").pop();
+        const bySfx = totalsFromReservations.bySuffix[sfx];
+        if (bySfx) { qty = bySfx.qty; revenue = bySfx.revenue; }
+      }
+      if (qty === 0) {
+        const byName = totalsFromReservations.byName[key];
+        if (byName) { qty = byName.qty; revenue = byName.revenue; }
+      }
+      mapByName[key] = { name: nm, qty: qty || 0, revenue: revenue || 0, category: m?.category || "Uncategorized", unitPrice: m?.price || 0 };
+    }
+    // return sorted list (highest revenue first)
+    return Object.values(mapByName).sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
+  }, [resStats, menu, month, totalsFromReservations]);
+ 
   const filteredResTopItems = useMemo(() => {
-    if (!selectedCategory || selectedCategory === "All") return resStats.topItems || [];
+    const source = mergedResTopItems || [];
+    if (!selectedCategory || selectedCategory === "All") return source;
     const sc = String(selectedCategory).toLowerCase();
-    return (resStats.topItems || []).filter((it) => String(it?.category || "").toLowerCase() === sc);
-  }, [resStats, selectedCategory]);
+    return source.filter((it) => String(it?.category || "").toLowerCase() === sc);
+  }, [mergedResTopItems, selectedCategory]);
 
   // pie data varies: all-categories -> topCategories (by category), else product breakdown for category
   const pieForCategory = useMemo(() => {
@@ -356,7 +570,10 @@ export default function AdminReports() {
   const doExport = async (format = "xlsx") => {
     try {
       const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
-      const exportUrl = `${API_BASE}/reports/export?month=${String(month).padStart(2, "0")}&year=${year}&format=${format}`;
+      const qp = [];
+      if (month !== "all") qp.push(`month=${String(month).padStart(2, "0")}`);
+      if (year !== "all") qp.push(`year=${year}`);
+      const exportUrl = qp.length ? `${API_BASE}/reports/export?${qp.join("&")}&format=${format}` : `${API_BASE}/reports/export?format=${format}`;
 
       const token = localStorage.getItem("token");
       const headers = {};
@@ -396,7 +613,7 @@ export default function AdminReports() {
       // download blob - prefer filename from Content-Disposition
       const blob = await resp.blob();
       const cd = resp.headers.get("content-disposition") || "";
-      let filename = `report_${String(month).padStart(2, "0")}_${year}.${format === "pdf" ? "pdf" : format === "xlsx" ? "xlsx" : "csv"}`;
+      let filename = `${periodLabel.replace(/\s+/g, "_")}.${format === "pdf" ? "pdf" : format === "xlsx" ? "xlsx" : "csv"}`;
       const m = cd.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)/i);
       if (m && m[1]) {
         filename = decodeURIComponent(m[1].replace(/["']/g, ""));
@@ -428,10 +645,26 @@ export default function AdminReports() {
             <p className="text-gray-600">Combined monthly reports and current month statistics.</p>
           </div>
           <div className="flex items-center gap-2">
-            <select value={month} onChange={(e) => setMonth(Number(e.target.value))} className="border rounded px-3 py-2">
-              {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{String(i+1).padStart(2,"0")}</option>)}
+            {/* month select with "All" option */}
+            <select value={month} onChange={(e) => setMonth(String(e.target.value))} className="border rounded px-3 py-2">
+              <option value="all">All</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
             </select>
-            <input type="number" value={year} onChange={(e) => setYear(Number(e.target.value))} className="w-24 border rounded px-3 py-2" />
+            {/* year select derived from data, include "All" */}
+            <select value={year} onChange={(e) => setYear(String(e.target.value))} className="w-36 border rounded px-3 py-2">
+              {yearOptions.map((y) => <option key={y} value={y}>{y === "all" ? "All years" : y}</option>)}
+            </select>
             <button type="button" onClick={load} className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
               <RefreshCw className="w-4 h-4" /> Refresh
             </button>
@@ -442,24 +675,26 @@ export default function AdminReports() {
               <Download className="w-4 h-4" /> Download PDF
             </button>
            </div>
-        </section>
+         </section>
 
         {/* KPI cards (from previous Stats page) */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Revenue (this month)</span>
+              <span className="text-sm text-gray-600">Revenue (this period)</span>
               <TrendingUp className="w-5 h-5 text-emerald-600" />
             </div>
             <div className="text-3xl font-bold text-gray-900">{peso.format((dashboard.totalSales || 0) || resStats.revenue || 0)}</div>
+            <div className="text-xs text-gray-500 mt-1">{periodLabel}</div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Orders (this month)</span>
+              <span className="text-sm text-gray-600">Orders (this period)</span>
               <ClipboardList className="w-5 h-5 text-blue-600" />
             </div>
             <div className="text-3xl font-bold text-gray-900">{resStats.orders}</div>
+            <div className="text-xs text-gray-500 mt-1">{periodLabel}</div>
           </div>
 
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -482,7 +717,7 @@ export default function AdminReports() {
         {/* Reservation status + revenue by category (from previous Stats page) */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservation status (this month)</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservation status ({periodLabel})</h3>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 {CANONICAL_STATUSES.map((label) => (
@@ -496,7 +731,7 @@ export default function AdminReports() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top-ups (this month)</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top-ups ({periodLabel})</h3>
             <table className="w-full text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr><td className="py-2 text-gray-600">Approved</td><td className="py-2 text-right font-semibold text-gray-900">{topupStats?.approvedCount ?? 0}</td></tr>
@@ -508,7 +743,7 @@ export default function AdminReports() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by category</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by category ({periodLabel})</h3>
             {resStats.categoryRows.length === 0 ? (
               <p className="text-sm text-gray-500">No data yet.</p>
             ) : (
@@ -546,13 +781,13 @@ export default function AdminReports() {
               </div>
               <div className="text-sm text-gray-500 mt-2">Filters apply to all top lists and charts. Showing: <strong>{selectedCategory}</strong></div>
             </div>
-            <div className="text-sm text-gray-500">Tip: select a category to filter Top Products, Top items (this month) and the charts.</div>
+            <div className="text-sm text-gray-500">Tip: select a category to filter Top Products, Top items and the charts.</div>
           </div>
         </section>
 
         {/* Top items & report visuals (existing adminReports content) */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top items (this month)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top items ({periodLabel})</h3>
           {filteredResTopItems.length === 0 ? (
             <p className="text-sm text-gray-500">No data yet.</p>
           ) : (
@@ -581,7 +816,7 @@ export default function AdminReports() {
 
         {/* Top Products (from monthly report if available, otherwise fall back to computed top items) */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products (report)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products (report) — {periodLabel}</h3>
           { ((filteredTopProducts && filteredTopProducts.length > 0) || (filteredResTopItems && filteredResTopItems.length > 0)) ? (
             <table className="w-full text-sm">
               <thead className="text-left text-gray-500">
@@ -615,7 +850,7 @@ export default function AdminReports() {
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="col-span-2 bg-white p-6 rounded shadow">
             <h3 className="font-semibold mb-3">Top Products (Qty & Revenue)</h3>
-            {topProducts.length === 0 ? <div className="text-sm text-gray-500">No top product data yet.</div> : <Bar data={productsBar} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />}
+            {(mergedTopProducts || []).length === 0 ? <div className="text-sm text-gray-500">No top product data yet.</div> : <Bar data={productsBar} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />}
           </div>
           <div className="bg-white p-6 rounded shadow">
             <h3 className="font-semibold mb-3">Category Revenue Share</h3>

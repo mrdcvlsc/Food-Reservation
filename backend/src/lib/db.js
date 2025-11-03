@@ -1,92 +1,115 @@
 ﻿// server/src/lib/db.js
+const fs = require("fs");
 const path = require("path");
-const fs = require("fs-extra");
+const DB = path.join(__dirname, "..", "data", "db.json");
 
-const DB_FILE = path.join(__dirname, "..", "data", "db.json");
-
-// Database cache to prevent loading from disk on every request
-let dbCache = null;
-let lastModified = 0;
-
-function ensureFile() {
-  fs.ensureFileSync(DB_FILE);
+function readRaw() {
   try {
-    const txt = fs.readFileSync(DB_FILE, "utf8");
-    if (txt && txt.trim()) return JSON.parse(txt);
+    return fs.readFileSync(DB, "utf8");
   } catch (err) {
-    console.warn("db: parse error, recreating db.json:", err.message);
+    return null;
   }
-  // IMPORTANT: include wallets
-  const seed = {
-    menu: [],
-    reservations: [],
-    topups: [],
-    users: [],
-    transactions: [],
-    wallets: [],
-  };
-  fs.writeFileSync(DB_FILE, JSON.stringify(seed, null, 2));
-  return seed;
 }
 
-async function _loadAsync() {
-  return ensureFile();
-}
-
-async function _saveAsync(dbObj) {
-  fs.writeFileSync(DB_FILE, JSON.stringify(dbObj, null, 2));
-}
-
-function nextId(list = [], prefix = "RES") {
-  let n = 0;
-  for (const x of list) {
-    const last = String(x.id || "").split("-").pop();
-    const num = Number(last);
-    if (!Number.isNaN(num)) n = Math.max(n, num);
-  }
-  return `${prefix}-${n + 1}`;
+function save(obj) {
+  fs.writeFileSync(DB, JSON.stringify(obj, null, 2), "utf8");
 }
 
 function load() {
-  try {
-    // Check if file was modified since last load
-    const stats = fs.statSync(DB_FILE);
-    const currentModified = stats.mtime.getTime();
-    
-    // Return cached data if file hasn't changed
-    if (dbCache && currentModified <= lastModified) {
-      console.log('[DB] Using cached database (file unchanged)');
-      return dbCache;
+  let data = { users: [], menu: [], reservations: [], topups: [], transactions: [], notifications: [] };
+  const raw = readRaw();
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      console.error("[DB] invalid db.json, starting with empty DB", err && err.message);
     }
-    
-    console.log('[DB] Loading database from disk:', DB_FILE);
-    const result = ensureFile();
-    console.log('[DB] Database loaded successfully. Collections:', Object.keys(result));
-    
-    // Update cache
-    dbCache = result;
-    lastModified = currentModified;
-    
-    return result;
-  } catch (error) {
-    console.error('[DB] Error loading database:', error.message);
-    throw error;
   }
+
+  data.users = Array.isArray(data.users) ? data.users : [];
+  data.menu = Array.isArray(data.menu) ? data.menu : [];
+  data.reservations = Array.isArray(data.reservations) ? data.reservations : [];
+  data.topups = Array.isArray(data.topups) ? data.topups : [];
+  data.transactions = Array.isArray(data.transactions) ? data.transactions : [];
+  data.notifications = Array.isArray(data.notifications) ? data.notifications : [];
+
+  // --- migration: ensure studentId for all users ---
+  const used = new Set();
+  for (const u of data.users) {
+    if (u && u.studentId) used.add(String(u.studentId).trim());
+  }
+
+  const genUnique9 = () => {
+    let id;
+    let attempts = 0;
+    do {
+      const num = Math.floor(100000000 + Math.random() * 900000000); // 9-digit
+      id = String(num).padStart(9, "0");
+      attempts++;
+      if (attempts > 10000) break;
+    } while (used.has(id));
+    used.add(id);
+    return id;
+  };
+
+  // try to assign preferred admin id
+  for (const u of data.users) {
+    if (u && (u.role === "admin" || String(u.email || "").toLowerCase().includes("admin"))) {
+      if (!u.studentId) {
+        const preferred = "000000001";
+        if (!used.has(preferred)) {
+          u.studentId = preferred;
+          used.add(preferred);
+        } else {
+          u.studentId = genUnique9();
+        }
+      } else {
+        u.studentId = String(u.studentId).trim();
+      }
+    }
+  }
+
+  // assign for remaining users
+  for (const u of data.users) {
+    if (!u.studentId) {
+      u.studentId = genUnique9();
+    } else {
+      u.studentId = String(u.studentId).trim();
+      if (!used.has(u.studentId)) used.add(u.studentId);
+    }
+  }
+
+  // --- migration: populate topups' studentId from user records when possible ---
+  const usersById = {};
+  for (const u of data.users) {
+    if (u && u.id) usersById[String(u.id)] = u;
+  }
+  let topupsChanged = false;
+  for (const t of data.topups) {
+    if (!t) continue;
+    // prefer existing explicit studentId, else resolve by userId
+    if (!t.studentId || t.studentId === "N/A") {
+      if (t.userId && usersById[t.userId] && usersById[t.userId].studentId) {
+        t.studentId = usersById[t.userId].studentId;
+        topupsChanged = true;
+      }
+    } else {
+      // normalize string
+      t.studentId = String(t.studentId);
+    }
+  }
+
+  // persist migration changes if any
+  if (topupsChanged || true) {
+    // always persist user studentId normalization/creation
+    try {
+      fs.writeFileSync(DB, JSON.stringify(data, null, 2), "utf8");
+    } catch (err) {
+      console.error("[DB] failed to save db.json after migration", err && err.message);
+    }
+  }
+
+  return data;
 }
 
-function save(dbObj) {
-  console.log('[DB] Saving database to:', DB_FILE);
-  try {
-    _saveAsync(dbObj);
-    console.log('[DB] Database saved successfully');
-    
-    // Update cache with new data
-    dbCache = dbObj;
-    lastModified = Date.now();
-  } catch (error) {
-    console.error('[DB] Error saving database:', error.message);
-    throw error;
-  }
-}
-
-module.exports = { load, save, nextId, DB_FILE };
+module.exports = { load, save };

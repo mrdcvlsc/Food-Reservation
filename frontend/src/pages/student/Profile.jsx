@@ -37,35 +37,56 @@ function safeDateLabel(isoLike) {
 // ---- component -------------------------------------------------------------
 export default function Profile() {
   const navigate = useNavigate();
+  const [user, setUser] = useState({
+    name: "Guest User",
+    email: "guest@example.com",
+    balance: 0,
+    createdAt: null,
+    studentId: ""
+  });
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     (async () => {
-      await refreshSessionForProtected({ navigate, requiredRole: 'student', setUser });
+      await refreshSessionForProtected({ navigate, requiredRole: "student" });
+    })();
+
+    (async () => {
+      setLoading(true);
+      try {
+        const meRes = await api.get("/me").catch(() => null);
+        const me = meRes?.data ?? meRes;
+        if (me && typeof me === "object") {
+          setUser((u) => ({
+            ...u,
+            name: me.name || me.fullName || u.name,
+            email: me.email || u.email,
+            balance: Number(me.balance ?? me.wallet ?? u.balance),
+            createdAt: me.createdAt || me.registeredAt || u.createdAt,
+            studentId: me.studentId || me.studentID || me.sid || u.studentId
+          }));
+        } else {
+          // fallback to localStorage if /me not available
+          try {
+            const raw = localStorage.getItem("user") || "{}";
+            const lu = JSON.parse(raw) || {};
+            setUser((u) => ({
+              ...u,
+              name: lu.name || lu.fullName || u.name,
+              email: lu.email || u.email,
+              balance: Number(lu.balance ?? lu.wallet ?? u.balance),
+              createdAt: lu.createdAt || u.createdAt,
+              studentId: lu.studentId || lu.studentID || lu.sid || u.studentId
+            }));
+          } catch {}
+        }
+      } catch (err) {
+        console.error("Failed to load profile", err);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [navigate]);
-
-  // Initialize user with a stable shape using localStorage as fallback.
-  const initialLocalUser = (() => {
-    try {
-      const raw = localStorage.getItem('user') || '{}';
-      const u = JSON.parse(raw) || {};
-      return {
-        name: firstDefined(u.name, u.fullName, 'Guest User'),
-        email: firstDefined(u.email, u.username, 'guest@example.com'),
-        balance: coerceNumber(firstDefined(u.balance, u.wallet, u.amount), 0),
-        createdAt: firstDefined(u.createdAt, u.memberSince, u.registeredAt),
-      };
-    } catch (err) {
-      return {
-        name: 'Guest User',
-        email: 'guest@example.com',
-        balance: 0,
-        createdAt: null,
-      };
-    }
-  })();
-
-  const [user, setUser] = useState(initialLocalUser);
-  const [loading, setLoading] = useState(false);
 
   // initials (fallback to email first letters if name missing)
   const initials = useMemo(() => {
@@ -121,43 +142,21 @@ export default function Profile() {
                 <p className="text-sm text-gray-500">Full Name</p>
                 <p className="text-lg font-medium text-gray-900 break-words">{user?.name || "—"}</p>
               </div>
+
+              <div>
+                <p className="text-sm text-gray-500">Student ID</p>
+                <p className="text-lg font-mono text-gray-900 break-words">{user?.studentId || "—"}</p>
+              </div>
+
               <div>
                 <p className="text-sm text-gray-500">Email Address</p>
                 <p className="text-lg font-medium text-gray-900 break-words">
-                  {/* Always prefer the stored/returned email, never the placeholder */}
                   {user?.email && user.email !== "guest@example.com" ? user.email : "—"}
                 </p>
               </div>
-
-              {/* Balance */}
-              <div className="sm:col-span-2">
-                <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-white border">
-                      <Wallet className="w-5 h-5 text-green-700" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Current Balance</p>
-                      <p className="text-2xl font-extrabold text-green-600">
-                        {peso.format(coerceNumber(user?.balance, 0))}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link
-                      to="/topup"
-                      className="px-4 py-2 rounded-lg bg-green-600 text-white text-sm hover:bg-green-700"
-                    >
-                      Top Up
-                    </Link>
-                    <Link
-                      to="/topup-history"
-                      className="px-4 py-2 rounded-lg border text-sm hover:bg-gray-50"
-                    >
-                      Top-Up History
-                    </Link>
-                  </div>
-                </div>
+              <div>
+                <p className="text-sm text-gray-500">Phone</p>
+                <p className="text-lg font-medium text-gray-900">{user?.phone || "—"}</p>
               </div>
             </div>
           </div>

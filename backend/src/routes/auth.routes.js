@@ -1,5 +1,6 @@
 ﻿const router = require("express").Router();
 const C = require("../controllers/auth.controller");
+const P = require("../controllers/password.controller");
 
 /**
  * @swagger
@@ -64,6 +65,9 @@ router.post("/login", C.login);
  *         description: Email already used
  */
 router.post("/register", C.register);
+
+// add change-password endpoint (POST)
+router.post("/change-password", P.changePassword);
 
 /**
  * @swagger

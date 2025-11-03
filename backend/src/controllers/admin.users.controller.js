@@ -21,6 +21,7 @@ exports.list = async (req, res) => {
         createdAt: u.createdAt,
         lastLogin: u.lastLogin,
         passwordSet: !!(u.passwordHash || u.password),
+        studentId: u.studentId || null,
       }));
       return res.json(safe);
     }
@@ -36,6 +37,7 @@ exports.list = async (req, res) => {
       createdAt: u.createdAt,
       lastLogin: u.lastLogin,
       passwordSet: !!(u.passwordHash || u.password),
+      studentId: u.studentId || null,
     }));
     res.json(safe);
   } catch (err) {

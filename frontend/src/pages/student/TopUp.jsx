@@ -75,7 +75,7 @@ export default function TopUp() {
     const u = readLocalUser();
     return {
       name: u.name || u.fullName || "",
-      email: u.email || "",
+      email: u.email || u.username || "",
       studentId: u.studentId || u.studentID || u.sid || "",
       phone: u.phone || u.contact || "",
       balance: toNumber(u.balance ?? u.wallet ?? 0, 0),
@@ -87,7 +87,8 @@ export default function TopUp() {
   const [amount, setAmount] = useState("");
   const [refNo, setRefNo] = useState(""); // required
   const [payerName, setPayerName] = useState("");
-  const [studentId, setStudentId] = useState("");
+  // initialize studentId from stored user so field is populated immediately
+  const [studentId, setStudentId] = useState(user.studentId || user.studentID || user.sid || "");
   const [contact, setContact] = useState("");
   const [agree, setAgree] = useState(false);
 
@@ -140,28 +141,33 @@ export default function TopUp() {
         });
 
         // ---- user (/me) ----
-        const meRes = await api.get("/wallets/me").catch((e) => {
+        // ensure we fetch authenticated user (so studentId is present)
+        const meRes = await api.get("/me").catch((e) => {
           if (e instanceof ApiError) {
             switch (e.status) {
-              case ApiError.Maintenance:  navigate("/status/maintenance");  break;
-              case ApiError.NotFound:     navigate("/status/not_found");    break;
-              case ApiError.ServerError:  navigate("/status/server_error"); break;
-              case ApiError.Unauthorized: navigate("/status/unauthorized"); break;
-              case ApiError.Forbidden:    navigate("/status/unauthorized"); break;
+              case ApiError.Maintenance:
+                navigate("/status/maintenance");
+                break;
+              case ApiError.ServerError:
+                navigate("/status/server_error");
+                break;
+              case ApiError.Unauthorized:
+              case ApiError.Forbidden:
+                navigate("/status/unauthorized");
+                break;
               default:
             }
           }
-
-          return null
+          return {};
         });
         
-        const me = meRes?.data || meRes;
-        if (alive && me) {
+        const me = meRes?.data ?? meRes;
+        if (alive && me && typeof me === "object") {
           setUser((u) => ({
             ...u,
             name: me.name || me.fullName || u.name,
             email: me.email || u.email,
-            studentId: me.studentId || u.studentId,
+            studentId: me.studentId || me.studentID || me.sid || u.studentId,
             phone: me.phone || me.contact || u.phone,
             balance: toNumber(me.balance ?? me.walletBalance ?? u.balance, u.balance),
           }));
@@ -183,10 +189,15 @@ export default function TopUp() {
     };
   }, [navigate]);
 
+  // remove local studentId state usage: keep but keep in sync with user and readonly
+  //  const [studentId, setStudentId] = useState("");
+
   // initialize form defaults once user is known
   useEffect(() => {
     if (payerName === "") setPayerName(user.name || "");
-    if (studentId === "") setStudentId(user.studentId || "");
+    // force studentId from logged-in profile (readonly)
+    // normalize multiple name variants
+    setStudentId(String(user.studentId || user.studentID || user.sid || "").trim());
     if (contact === "") setContact(user.phone || "");
   }, [user]); // eslint-disable-line
 
@@ -244,9 +255,9 @@ export default function TopUp() {
       const fd = new FormData();
       fd.append("provider", normProvider(provider));
       fd.append("amount", numAmount.toFixed(2));
-      fd.append("reference", refNo.trim()); // transaction ref from GCash/Maya
+      fd.append("reference", refNo.trim());
       fd.append("payerName", payerName.trim());
-      fd.append("studentId", studentId.trim());
+      fd.append("studentId", (studentId || user.studentId || "").trim());
       fd.append("contact", contact.trim());
       if (user.email) fd.append("email", user.email);
       if (fileHash) fd.append("fileHash", fileHash);
@@ -380,11 +391,11 @@ export default function TopUp() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
                   <input
                     value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    placeholder="e.g., 23-12345"
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    readOnly
+                    title="Student ID is taken from your account and cannot be changed here"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700"
                   />
-                  {!sidOk && <p className="text-xs text-rose-600 mt-1">Provide your student ID.</p>}
+                  {!studentId && <p className="text-xs text-rose-600 mt-1">No student ID found on your profile.</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Contact Number</label>
