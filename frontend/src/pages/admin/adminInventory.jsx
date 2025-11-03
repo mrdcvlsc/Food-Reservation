@@ -21,6 +21,12 @@ export default function AdminInventory() {
   const [stockEdits, setStockEdits] = useState({}); // { [id]: string }
   const [saving, setSaving] = useState(false);
 
+  // Controls (search / filter / sort) - same behaviour as admin Shop page
+  const [q, setQ] = useState("");
+  const [cat, setCat] = useState("all");
+  const [status, setStatus] = useState("all");
+  const [sort, setSort] = useState("name-asc");
+
   const load = async () => {
     setLoading(true);
     try {
@@ -46,6 +52,34 @@ export default function AdminInventory() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const categories = useMemo(() => {
+    const set = new Set(items.map(i => i.category).filter(Boolean));
+    return ["all", ...Array.from(set)];
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    let rows = items.map((i) => ({ ...i, available: (i.stock ?? 0) > 0 }));
+    const s = q.toLowerCase().trim();
+
+    if (s) rows = rows.filter(r =>
+      r.name?.toLowerCase().includes(s) ||
+      r.category?.toLowerCase().includes(s)
+    );
+    if (cat !== "all") rows = rows.filter(r => r.category === cat);
+    if (status !== "all") {
+      const need = status === "available";
+      rows = rows.filter(r => r.available === need);
+    }
+
+    switch (sort) {
+      case "price-asc":  rows.sort((a,b) => a.price - b.price); break;
+      case "price-desc": rows.sort((a,b) => b.price - a.price); break;
+      case "name-desc":  rows.sort((a,b) => a.name.localeCompare(b.name) * -1); break;
+      default:           rows.sort((a,b) => a.name.localeCompare(b.name));
+    }
+    return rows;
+  }, [items, q, cat, status, sort]);
 
   const lowStock = useMemo(() => items.filter((i) => Number(i.stock) <= LOW_STOCK_THRESHOLD), [items]);
 
@@ -99,6 +133,30 @@ export default function AdminInventory() {
             <p className="text-gray-600">View and edit stock quantities. Low-stock items are highlighted.</p>
           </div>
           <div className="flex items-center gap-2">
+            <div className="relative">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Search by name or category…"
+                className="w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 21l-4.35-4.35" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <select value={cat} onChange={(e) => setCat(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              {categories.map(c => <option key={c} value={c}>{c === "all" ? "All categories" : c}</option>)}
+            </select>
+            <select value={status} onChange={(e) => setStatus(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              <option value="all">All status</option>
+              <option value="available">Available</option>
+              <option value="out">Out of stock</option>
+            </select>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+              <option value="name-asc">Name (A–Z)</option>
+              <option value="name-desc">Name (Z–A)</option>
+              <option value="price-asc">Price (Low→High)</option>
+              <option value="price-desc">Price (High→Low)</option>
+            </select>
+
             <button onClick={load} className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
               <RefreshCw className="w-4 h-4" />
               Refresh
@@ -120,61 +178,67 @@ export default function AdminInventory() {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Item</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500">Loading…</td>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">Loading…</td>
                 </tr>
-              ) : items.length === 0 ? (
+              ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-500">No items found.</td>
+                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-500">No items found.</td>
                 </tr>
               ) : (
-                items.map((it) => {
-                  const isLow = Number(it.stock) <= LOW_STOCK_THRESHOLD;
-                  return (
-                    <tr key={it.id} className={`hover:bg-gray-50 ${isLow ? "bg-yellow-50" : ""}`}>
-                      <td className="px-6 py-4">
-                        <div className="text-sm font-medium text-gray-900">{it.name}</div>
-                        <div className="text-xs text-gray-500">ID: {it.id}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{it.category || "-"}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-700">
-                        <div className="inline-flex items-center border rounded overflow-hidden">
-                          <button
-                            onClick={() => {
-                              const cur = Number(stockEdits[it.id] ?? it.stock) || 0;
-                              setEditStock(it.id, String(Math.max(0, cur - 1)));
-                            }}
-                            className="px-2 py-1 hover:bg-gray-100"
-                            aria-label="Decrease stock"
-                            type="button"
-                          >
-                            −
-                          </button>
-                          <input
-                            value={stockEdits[it.id] !== undefined ? stockEdits[it.id] : String(it.stock)}
-                            onChange={(e) => setEditStock(it.id, e.target.value.replace(/[^\d\-]/g, ""))}
-                            className="w-20 text-center border-l border-r border-gray-300 px-2 py-1 text-sm"
-                          />
-                          <button
-                            onClick={() => {
-                              const cur = Number(stockEdits[it.id] ?? it.stock) || 0;
-                              setEditStock(it.id, String(cur + 1));
-                            }}
-                            className="px-2 py-1 hover:bg-gray-100"
-                            aria-label="Increase stock"
-                            type="button"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="inline-flex items-center gap-2">
+                filtered.map((it) => {
+                   const isLow = Number(it.stock) <= LOW_STOCK_THRESHOLD;
+                   return (
+                     <tr key={it.id} className={`hover:bg-gray-50 ${isLow ? "bg-yellow-50" : ""}`}>
+                       <td className="px-6 py-4">
+                         <div className="text-sm font-medium text-gray-900">{it.name}</div>
+                         {/* category shown in column already */}
+                       </td>
+                       <td className="px-6 py-4 text-sm text-gray-700">{it.category || "-"}</td>
+                       <td className="px-6 py-4 text-center text-sm text-gray-700">
+                         <div className="inline-flex items-center border rounded overflow-hidden">
+                           <button
+                             onClick={() => {
+                               const cur = Number(stockEdits[it.id] ?? it.stock) || 0;
+                               setEditStock(it.id, String(Math.max(0, cur - 1)));
+                             }}
+                             className="px-2 py-1 hover:bg-gray-100"
+                             aria-label="Decrease stock"
+                             type="button"
+                           >
+                             −
+                           </button>
+                           <input
+                             value={stockEdits[it.id] !== undefined ? stockEdits[it.id] : String(it.stock)}
+                             onChange={(e) => setEditStock(it.id, e.target.value.replace(/[^\d\-]/g, ""))}
+                             className="w-20 text-center border-l border-r border-gray-300 px-2 py-1 text-sm"
+                           />
+                           <button
+                             onClick={() => {
+                               const cur = Number(stockEdits[it.id] ?? it.stock) || 0;
+                               setEditStock(it.id, String(cur + 1));
+                             }}
+                             className="px-2 py-1 hover:bg-gray-100"
+                             aria-label="Increase stock"
+                             type="button"
+                           >
+                             +
+                           </button>
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 text-center">
+                         <span className={`text-xs font-semibold inline-block py-1 px-2 rounded-full ${it.stock > 0 ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                           {it.stock > 0 ? "In Stock" : "Out of Stock"}
+                         </span>
+                       </td>
+                       <td className="px-6 py-4 text-right">
+                         <div className="inline-flex items-center gap-2">
                           <button
                             onClick={() => saveStock(it.id, stockEdits[it.id] ?? it.stock)}
                             disabled={busyId === it.id}
@@ -183,15 +247,15 @@ export default function AdminInventory() {
                             {busyId === it.id ? "Saving…" : <><Save className="w-4 h-4" /> Save</>}
                           </button>
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </main>
-    </div>
-  );
+                       </td>
+                     </tr>
+                   );
+                 })
+               )}
+           </tbody>
+         </table>
+       </div>
+     </main>
+   </div>
+ );
 }

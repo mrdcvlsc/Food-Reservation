@@ -95,10 +95,18 @@ export default function AdminReservations() {
           : Array.isArray(r.order)
           ? r.order
           : [];
-        const student = r.student || r.studentName || r.name || "Student";
+        // prefer explicit student fields, then nested user object
+        const student =
+          r.student ||
+          r.studentName ||
+          r.name ||
+          (r.user && (r.user.name || r.user.fullName)) ||
+          r.payerName ||
+          "Student";
         const grade = r.grade || r.gradeLevel || r.grade_level || "";
         const section = r.section || r.classSection || r.section_name || "";
-        const when = r.when || r.slotLabel || r.slot || r.pickup || "";
+        // normalize "When" / pickup label
+        const when = r.when || r.slotLabel || r.slot || r.pickup || r.pickupTime || "";
         const status = normalizeStatus(r.status);
         const created =
           r.createdAt ||
@@ -341,14 +349,15 @@ export default function AdminReservations() {
                           <Pill status={r.status} />
                         </div>
                         <div className="mt-1 text-gray-900 font-medium">
-                          {r.student} • {r.grade}
+                          {r.student} {r.studentId ? <span className="ml-2 text-sm font-mono text-gray-500">{r.studentId}</span> : null} • {r.grade}
                           {r.section ? `-${r.section}` : ""}
                         </div>
                         {r.when && (
-                          <div className="text-sm text-gray-600">When: {r.when}</div>
+                          <div className="text-sm text-gray-600">Pickup Time: {r.when}</div>
                         )}
-                        {r.note && (
-                          <div className="text-sm text-gray-500 mt-1">Note: {r.note}</div>
+                        {/* show claimed timestamp when reservation is Claimed */}
+                        {r.status === "Claimed" && (r.claimedAt || r.pickedAt || r.picked_at || r.claimed_at) && (
+                          <div className="text-xs text-gray-500 mt-1">Claimed: {new Date(r.claimedAt || r.pickedAt || r.picked_at || r.claimed_at).toLocaleString()}</div>
                         )}
                       </div>
                     </div>

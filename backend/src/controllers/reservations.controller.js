@@ -1,6 +1,19 @@
 ﻿// backend/src/controllers/reservations.controller.js
-const { load, save, nextId } = require("../lib/db");
+const { load, save, nextId: libNextId } = require("../lib/db");
 const Notifications = require("./notifications.controller");
+
+/**
+ * fallback nextId generator (used when lib/db does not export nextId)
+ */
+function nextId(arr, prefix = "ID") {
+  if (typeof libNextId === "function") {
+    try { return libNextId(arr, prefix); } catch (e) { /* fallthrough to fallback */ }
+  }
+  // simple, collision-resistant id: PREFIX_ + base36(timestamp) + random3
+  const ts = Date.now().toString(36);
+  const rnd = Math.floor(Math.random() * 900 + 100).toString(36);
+  return `${String(prefix).toUpperCase()}_${ts}${rnd}`;
+}
 
 /**
  * POST /api/reservations

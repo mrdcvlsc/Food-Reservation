@@ -68,7 +68,7 @@
       "name": "chicken masala",
       "category": "Meals",
       "price": 170,
-      "stock": 23,
+      "stock": 22,
       "img": "/uploads/1761207705197_937291.jpg",
       "visible": true
     },
@@ -87,10 +87,10 @@
       "name": "Iced Tea",
       "category": "Beverages",
       "price": 30,
-      "stock": 0,
+      "stock": 1,
       "img": "/uploads/1761538665555_396901.jpg",
       "visible": true,
-      "updatedAt": "2025-10-30T00:14:53.125Z"
+      "updatedAt": "2025-11-03T09:43:10.921Z"
     },
     {
       "id": "ITM-10",
@@ -117,7 +117,7 @@
       "name": "Rebisco Sandwich (10PCS)",
       "category": "Snacks",
       "price": 10,
-      "stock": 15,
+      "stock": 9,
       "img": "/uploads/1761632660060_61033.jpg",
       "createdAt": "2025-10-28T06:17:48.631Z",
       "updatedAt": "2025-10-28T12:42:06.788Z",
@@ -154,7 +154,7 @@
       "name": "Bravo",
       "category": "Snacks",
       "price": 8,
-      "stock": 17,
+      "stock": 16,
       "img": "/uploads/1761993657294_157996.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:40:33.466Z",
@@ -2387,6 +2387,104 @@
       "charged": true,
       "chargedAt": "2025-11-01T13:43:42.984Z",
       "updatedAt": "2025-11-03T01:40:27.589Z"
+    },
+    {
+      "id": "RES_mhj4by469y",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 8,
+          "qty": 1
+        },
+        {
+          "id": "ITM-7",
+          "name": "chicken masala",
+          "price": 170,
+          "qty": 1
+        }
+      ],
+      "total": 178,
+      "status": "Claimed",
+      "createdAt": "2025-11-03T12:30:43.062Z",
+      "transactionId": "txn_mhj4by5i",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-03T12:30:43.110Z",
+      "updatedAt": "2025-11-03T12:33:06.379Z"
+    },
+    {
+      "id": "RES_mhj4ggt9lj",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 5
+        }
+      ],
+      "total": 60,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T12:34:13.917Z",
+      "updatedAt": "2025-11-03T12:35:08.060Z"
+    },
+    {
+      "id": "RES_mhj4jfyurj",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 6
+        }
+      ],
+      "total": 60,
+      "status": "Claimed",
+      "createdAt": "2025-11-03T12:36:32.790Z",
+      "transactionId": "txn_mhj4jg07",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-03T12:36:32.839Z",
+      "updatedAt": "2025-11-03T12:39:54.972Z"
+    },
+    {
+      "id": "RES_mhj4n64dcm",
+      "userId": "usr_mh0h1va7",
+      "student": "Student",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-7",
+          "name": "chicken masala",
+          "price": 170,
+          "qty": 1
+        }
+      ],
+      "total": 170,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T12:39:26.653Z",
+      "updatedAt": "2025-11-03T12:39:45.707Z"
     }
   ],
   "topups": [
@@ -2721,7 +2819,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 1129,
+      "balance": 891,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "164652338"
@@ -3698,6 +3796,62 @@
       "reference": "2423435355353",
       "topupId": "top_mhiovvec",
       "createdAt": "2025-11-03T05:19:18.609Z"
+    },
+    {
+      "id": "txn_mhj4by5i",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 178,
+      "ref": "RES_mhj4by469y",
+      "createdAt": "2025-11-03T12:30:43.110Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj4gguj",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 60,
+      "ref": "RES_mhj4ggt9lj",
+      "createdAt": "2025-11-03T12:34:13.963Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX_mhj4hml834",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mhj4ggt9lj",
+      "amount": 60,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T12:35:08.060Z"
+    },
+    {
+      "id": "txn_mhj4jg07",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 60,
+      "ref": "RES_mhj4jfyurj",
+      "createdAt": "2025-11-03T12:36:32.839Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj4n65o",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 170,
+      "ref": "RES_mhj4n64dcm",
+      "createdAt": "2025-11-03T12:39:26.700Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX_mhj4nktn3t",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mhj4n64dcm",
+      "amount": 170,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T12:39:45.707Z"
     }
   ],
   "wallets": [
@@ -3713,6 +3867,198 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhj4nrz4",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4jfyurj Claimed",
+      "body": "Your reservation RES_mhj4jfyurj is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhj4jfyurj",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:39:54.976Z"
+    },
+    {
+      "id": "notif_mhj4nrpb",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4jfyurj Ready",
+      "body": "Your reservation RES_mhj4jfyurj is now Ready.",
+      "data": {
+        "reservationId": "RES_mhj4jfyurj",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:39:54.623Z"
+    },
+    {
+      "id": "notif_mhj4nr5y",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4jfyurj Preparing",
+      "body": "Your reservation RES_mhj4jfyurj is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhj4jfyurj",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:39:53.926Z"
+    },
+    {
+      "id": "notif_mhj4nktr",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4n64dcm Rejected",
+      "body": "Your reservation RES_mhj4n64dcm has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj4n64dcm",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:39:45.711Z"
+    },
+    {
+      "id": "notif_mhj4n64i",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj4n64dcm"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:39:26.653Z"
+    },
+    {
+      "id": "notif_mhj4jycl",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4jfyurj Approved",
+      "body": "Your reservation RES_mhj4jfyurj has been approved.",
+      "data": {
+        "reservationId": "RES_mhj4jfyurj",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:36:56.613Z"
+    },
+    {
+      "id": "notif_mhj4jfz0",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj4jfyurj"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:36:32.790Z"
+    },
+    {
+      "id": "notif_mhj4hmle",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4ggt9lj Rejected",
+      "body": "Your reservation RES_mhj4ggt9lj has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj4ggt9lj",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:35:08.066Z"
+    },
+    {
+      "id": "notif_mhj4ggte",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj4ggt9lj"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:34:13.917Z"
+    },
+    {
+      "id": "notif_mhj4f0pb",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4by469y Claimed",
+      "body": "Your reservation RES_mhj4by469y is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhj4by469y",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:33:06.383Z"
+    },
+    {
+      "id": "notif_mhj4f0an",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4by469y Ready",
+      "body": "Your reservation RES_mhj4by469y is now Ready.",
+      "data": {
+        "reservationId": "RES_mhj4by469y",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:33:05.855Z"
+    },
+    {
+      "id": "notif_mhj4ezne",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4by469y Preparing",
+      "body": "Your reservation RES_mhj4by469y is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhj4by469y",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:33:05.018Z"
+    },
+    {
+      "id": "notif_mhj4d2k9",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj4by469y Approved",
+      "body": "Your reservation RES_mhj4by469y has been approved.",
+      "data": {
+        "reservationId": "RES_mhj4by469y",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:31:35.481Z"
+    },
+    {
+      "id": "notif_mhj4by4a",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj4by469y"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T12:30:43.062Z"
+    },
     {
       "id": "notif_mhiox5jq",
       "for": "usr_mh0h1va7",
@@ -4825,7 +5171,7 @@
         "topupId": "top_mhenvw3w",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-10-31T09:41:02.428Z"
     },
     {
@@ -7770,8 +8116,27 @@
     {
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
-      "items": [],
-      "updatedAt": "2025-11-03T03:19:29.296Z"
+      "items": [
+        {
+          "itemId": "1761993633466934",
+          "qty": 1,
+          "name": "Bravo",
+          "price": 8
+        },
+        {
+          "itemId": "ITM-7",
+          "qty": 2,
+          "name": "chicken masala",
+          "price": 170
+        },
+        {
+          "itemId": "1761632268631799",
+          "qty": 3,
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10
+        }
+      ],
+      "updatedAt": "2025-11-03T12:38:59.401Z"
     }
   ],
   "inventory": []

@@ -47,6 +47,30 @@ const Pill = ({ status }) => {
   );
 };
 
+// add helpers for student name/id and datetime formatting
+function fmtDateTime(v) {
+  if (!v) return "—";
+  const d = new Date(v);
+  if (isNaN(d)) return String(v);
+  return d.toLocaleString();
+}
+
+function getStudentName(o) {
+  // prefer explicit student name fields, then fallback to nested user.name or payerName
+  return (
+    (o && (o.student || o.studentName || o.payerName || o.customerName)) ||
+    (o && o.user && (o.user.name || o.user.fullName)) ||
+    "—"
+  );
+}
+
+function getStudentId(o) {
+  return (
+    (o && (o.studentId || o.student_id || o.sid || o.user?.studentId || o.user?.studentID)) ||
+    ""
+  );
+}
+
 export default function AdminOrders() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -221,73 +245,91 @@ export default function AdminOrders() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((o) => (
-              <div key={o.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                {/* Card header */}
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">{o.id}</span>
-                      <Pill status={normalizeStatus(o.status)} />
-                    </div>
-                    <div className="mt-1 text-gray-900 font-medium">
-                      {o.student} • {o.grade}-{o.section}
-                    </div>
-                    <div className="text-sm text-gray-600">Pickup: {o.pickup || "—"}</div>
-                    {!!o.note && <div className="text-sm text-gray-500 mt-1">Note: {o.note}</div>}
-                  </div>
+            {filtered.map((o) => {
+              const studentName = getStudentName(o);
+              const studentId = getStudentId(o);
+              // normalize pickup/when and claimed timestamp
+              const when = o.when || o.slot || o.slotLabel || o.pickup || o.pickupTime || "";
+              const claimedAt =
+                o.claimedAt ?? o.pickedAt ?? o.picked_at ?? o.claimed_at ?? o.completedAt ?? o.completed_at ?? o.updatedAt;
+               return (
+                 <div key={o.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                   {/* Card header */}
+                   <div className="flex items-start justify-between gap-3">
+                     <div>
+                       <div className="flex items-center gap-2">
+                         <span className="text-sm text-gray-500">{o.id}</span>
+                         <Pill status={normalizeStatus(o.status)} />
+                       </div>
+                       <div className="mt-1 text-gray-900 font-medium">
+                         {studentName}{" "}
+                         {studentId ? (
+                           <span className="ml-3 text-sm font-mono text-gray-500">{studentId}</span>
+                         ) : null}{" "}
+                         • {o.grade}-{o.section}
+                       </div>
+                       <div className="text-sm text-gray-600">
+                         Pickup Time: {when || "—"}
+                         {/* show claimed timestamp when order is Claimed */}
+                         {normalizeStatus(o.status) === "Claimed" && claimedAt ? (
+                           <div className="text-xs text-gray-500 mt-1">Claimed: {fmtDateTime(claimedAt)}</div>
+                         ) : null}
+                       </div>
+                       {!!o.note && <div className="text-sm text-gray-500 mt-1">Note: {o.note}</div>}
+                     </div>
 
-                  <div className="text-right shrink-0">
-                    <div className="text-sm text-gray-500">Total</div>
-                    <div className="text-lg font-semibold">{peso.format(orderTotal(o))}</div>
-                  </div>
-                </div>
+                     <div className="text-right shrink-0">
+                       <div className="text-sm text-gray-500">Total</div>
+                       <div className="text-lg font-semibold">{peso.format(orderTotal(o))}</div>
+                     </div>
+                   </div>
 
-                {/* Items */}
-                <div className="mt-3 border-t pt-3">
-                  {(o.items || []).map((it, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm py-1">
-                      <div className="text-gray-700">{it.name}</div>
-                      <div className="text-gray-600">x{it.qty ?? it.quantity ?? 0}</div>
-                    </div>
-                  ))}
-                </div>
+                   {/* Items */}
+                   <div className="mt-3 border-t pt-3">
+                     {(o.items || []).map((it, idx) => (
+                       <div key={idx} className="flex items-center justify-between text-sm py-1">
+                         <div className="text-gray-700">{it.name}</div>
+                         <div className="text-gray-600">x{it.qty ?? it.quantity ?? 0}</div>
+                       </div>
+                     ))}
+                   </div>
 
-                {/* Actions */}
-                <div className="mt-3 flex items-center justify-end">
-                  {normalizeStatus(o.status) === "Approved" && (
-                    <button
-                      onClick={() => transition(o.id, "Preparing")}
-                      disabled={busyId === o.id}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
-                    >
-                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Timer className="w-4 h-4" />}
-                      Move to Preparing
-                    </button>
-                  )}
-                  {normalizeStatus(o.status) === "Preparing" && (
-                    <button
-                      onClick={() => transition(o.id, "Ready")}
-                      disabled={busyId === o.id}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
-                    >
-                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                      Mark Ready
-                    </button>
-                  )}
-                  {normalizeStatus(o.status) === "Ready" && (
-                    <button
-                      onClick={() => transition(o.id, "Claimed")}
-                      disabled={busyId === o.id}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-gray-900 text-white hover:bg-black disabled:opacity-60"
-                    >
-                      {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
-                      Mark Claimed
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+                   {/* Actions */}
+                   <div className="mt-3 flex items-center justify-end">
+                     {normalizeStatus(o.status) === "Approved" && (
+                       <button
+                         onClick={() => transition(o.id, "Preparing")}
+                         disabled={busyId === o.id}
+                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60"
+                       >
+                         {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Timer className="w-4 h-4" />}
+                         Move to Preparing
+                       </button>
+                     )}
+                     {normalizeStatus(o.status) === "Preparing" && (
+                       <button
+                         onClick={() => transition(o.id, "Ready")}
+                         disabled={busyId === o.id}
+                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                       >
+                         {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                         Mark Ready
+                       </button>
+                     )}
+                     {normalizeStatus(o.status) === "Ready" && (
+                       <button
+                         onClick={() => transition(o.id, "Claimed")}
+                         disabled={busyId === o.id}
+                         className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-gray-900 text-white hover:bg-black disabled:opacity-60"
+                       >
+                         {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
+                         Mark Claimed
+                       </button>
+                     )}
+                   </div>
+                 </div>
+               );
+            })}
 
             {filtered.length === 0 && (
               <div className="bg-white rounded-xl border border-gray-100 p-10 text-center text-sm text-gray-500">

@@ -51,10 +51,10 @@ export default function AdminAvbar() {
 
   const links = [
     { name: "Dashboard",    to: "/admin",            Icon: LayoutDashboard },
-    { name: "Inventory",    to: "/admin/inventory",  Icon: Box },
-    { name: "Users",        to: "/admin/users",      Icon: FileText }, // <-- added
-    { name: "Reports",      to: "/admin/reports",    Icon: FileText },
     { name: "Shops",        to: "/admin/shops",      Icon: ShoppingBag },
+    { name: "Inventory",    to: "/admin/inventory",  Icon: Box },
+    { name: "Users",        to: "/admin/users",      Icon: FileText },
+    { name: "Reports",      to: "/admin/reports",    Icon: FileText },
     { name: "Orders",       to: "/admin/orders",     Icon: ClipboardList },
     { name: "Reservations", to: "/admin/reservations", Icon: CalendarClock },
   ];
