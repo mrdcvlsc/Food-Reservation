@@ -54,16 +54,18 @@ export default function Profile() {
     (async () => {
       setLoading(true);
       try {
-        const meRes = await api.get("/me").catch(() => null);
+        const meRes = await api.get("/wallets/me").catch(() => null);
+        console.log('meRes = ', meRes)
         const me = meRes?.data ?? meRes;
         if (me && typeof me === "object") {
+          console.log(me.studentId)
           setUser((u) => ({
             ...u,
             name: me.name || me.fullName || u.name,
             email: me.email || u.email,
             balance: Number(me.balance ?? me.wallet ?? u.balance),
             createdAt: me.createdAt || me.registeredAt || u.createdAt,
-            studentId: me.studentId || me.studentID || me.sid || u.studentId
+            studentId: me.user 
           }));
         } else {
           // fallback to localStorage if /me not available

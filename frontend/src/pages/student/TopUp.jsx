@@ -142,7 +142,7 @@ export default function TopUp() {
 
         // ---- user (/me) ----
         // ensure we fetch authenticated user (so studentId is present)
-        const meRes = await api.get("/me").catch((e) => {
+        const meRes = await api.get("/wallets/me").catch((e) => {
           if (e instanceof ApiError) {
             switch (e.status) {
               case ApiError.Maintenance:
@@ -163,11 +163,12 @@ export default function TopUp() {
         
         const me = meRes?.data ?? meRes;
         if (alive && me && typeof me === "object") {
+          console.log('meRes = ', meRes)
           setUser((u) => ({
             ...u,
             name: me.name || me.fullName || u.name,
             email: me.email || u.email,
-            studentId: me.studentId || me.studentID || me.sid || u.studentId,
+            studentId: me.user || me.studentID || me.sid || u.studentId,
             phone: me.phone || me.contact || u.phone,
             balance: toNumber(me.balance ?? me.walletBalance ?? u.balance, u.balance),
           }));

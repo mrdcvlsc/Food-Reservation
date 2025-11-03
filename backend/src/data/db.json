@@ -2661,6 +2661,24 @@
       "submittedAt": "2025-11-01T01:42:43.896Z",
       "createdAt": "2025-11-01T01:42:43.896Z",
       "updatedAt": "2025-11-01T01:44:30.247Z"
+    },
+    {
+      "id": "top_mhiovvec",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "studentId": "164652338",
+      "contact": "09292178329",
+      "email": "spadymold@gmail.com",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "2423435355353",
+      "status": "Approved",
+      "proofUrl": "/uploads/mhiovve0_WIN_20240207_00_08_25_Pro.jpg",
+      "submittedAt": "2025-11-03T05:18:18.804Z",
+      "createdAt": "2025-11-03T05:18:18.804Z",
+      "updatedAt": "2025-11-03T05:19:18.609Z",
+      "credited": true,
+      "creditedAt": "2025-11-03T05:19:18.609Z"
     }
   ],
   "users": [
@@ -2703,7 +2721,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 129,
+      "balance": 1129,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "164652338"
@@ -3671,6 +3689,15 @@
       "ref": "RES-85",
       "createdAt": "2025-11-01T13:43:42.984Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mhiox5jl",
+      "userId": "usr_mh0h1va7",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": "2423435355353",
+      "topupId": "top_mhiovvec",
+      "createdAt": "2025-11-03T05:19:18.609Z"
     }
   ],
   "wallets": [
@@ -3686,6 +3713,33 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhiox5jq",
+      "for": "usr_mh0h1va7",
+      "actor": "u_admin",
+      "type": "topup:status",
+      "title": "Top-up top_mhiovvec Approved",
+      "body": "Your top-up top_mhiovvec was Approved",
+      "data": {
+        "topupId": "top_mhiovvec",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T05:19:18.615Z"
+    },
+    {
+      "id": "notif_mhiovvei",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "topup:created",
+      "title": "New top-up submitted",
+      "body": "Anmol David Das requested ₱1000",
+      "data": {
+        "topupId": "top_mhiovvec"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T05:18:18.804Z"
+    },
     {
       "id": "notif_mhih3q8o",
       "for": "usr_mh0h1va7",
