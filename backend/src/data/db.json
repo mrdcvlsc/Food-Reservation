@@ -87,10 +87,10 @@
       "name": "Iced Tea",
       "category": "Beverages",
       "price": 30,
-      "stock": 1,
+      "stock": 6,
       "img": "/uploads/1761538665555_396901.jpg",
       "visible": true,
-      "updatedAt": "2025-11-03T09:43:10.921Z"
+      "updatedAt": "2025-11-04T06:26:28.853Z"
     },
     {
       "id": "ITM-10",
@@ -2870,6 +2870,46 @@
       "charged": true,
       "chargedAt": "2025-11-04T04:05:19.774Z",
       "updatedAt": "2025-11-04T04:06:59.702Z"
+    },
+    {
+      "id": "RES_mhk6fycsjl",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G9",
+      "section": "rizal",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-7",
+          "name": "chicken masala",
+          "price": 170,
+          "qty": 1
+        }
+      ],
+      "total": 170,
+      "status": "Pending",
+      "createdAt": "2025-11-04T06:17:35.404Z"
+    },
+    {
+      "id": "RES_mhk6qn3h69",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G8",
+      "section": "fsd",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 8,
+          "qty": 1
+        }
+      ],
+      "total": 8,
+      "status": "Pending",
+      "createdAt": "2025-11-04T06:25:54.029Z"
     }
   ],
   "topups": [
@@ -3193,7 +3233,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 760,
+      "balance": 582,
       "studentId": "344667121"
     },
     {
@@ -4500,6 +4540,24 @@
       "ref": "RES_mhk1puz88u",
       "createdAt": "2025-11-04T04:05:19.774Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mhk6fye1",
+      "userId": "usr_meusxal8",
+      "type": "reservation",
+      "amount": 170,
+      "ref": "RES_mhk6fycsjl",
+      "createdAt": "2025-11-04T06:17:35.449Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhk6qn56",
+      "userId": "usr_meusxal8",
+      "type": "reservation",
+      "amount": 8,
+      "ref": "RES_mhk6qn3h69",
+      "createdAt": "2025-11-04T06:25:54.090Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -4515,6 +4573,32 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhk6qn3l",
+      "for": "admin",
+      "actor": "usr_meusxal8",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhk6qn3h69"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T06:25:54.029Z"
+    },
+    {
+      "id": "notif_mhk6fycv",
+      "for": "admin",
+      "actor": "usr_meusxal8",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhk6fycsjl"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T06:17:35.404Z"
+    },
     {
       "id": "notif_mhk1s0ai",
       "for": "usr_mh0h1va7",
@@ -9497,6 +9581,19 @@
         }
       ],
       "updatedAt": "2025-11-03T15:26:31.459Z"
+    },
+    {
+      "id": "cart_user_usr_meusxal8",
+      "userId": "usr_meusxal8",
+      "items": [
+        {
+          "itemId": "ITM-7",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        }
+      ],
+      "updatedAt": "2025-11-04T06:28:48.585Z"
     }
   ],
   "inventory": []

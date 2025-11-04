@@ -1,6 +1,7 @@
 // src/pages/Cart.jsx
 import { api } from "../../lib/api";
 import React, { useEffect, useMemo, useState } from "react";
+import { useCart } from "../../contexts/CartContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
@@ -35,7 +36,7 @@ export default function Cart() {
   }, [navigate]);
   const { state } = useLocation();
 
-  const [cart, setCart] = useState({}); // { [id]: qty }
+  const { cart, add, setQty, remove, clear, meta } = useCart(); // { [id]: qty }
   const [open, setOpen] = useState(false);
   const [reserve, setReserve] = useState({
     grade: "",
@@ -58,135 +59,20 @@ export default function Cart() {
     return () => (m = false);
   }, []);
 
-  // On mount: hydrate from localStorage immediately, then try to sync with server
-  useEffect(() => {
-    let mounted = true;
+  // Cart persistence and server sync handled by CartContext
 
-    // read local storage immediately so UI is never empty
-    const localSaved = (() => {
-      try {
-        const v = JSON.parse(localStorage.getItem("cart") || "{}");
-        return v && typeof v === "object" ? v : {};
-      } catch {
-        return {};
-      }
-    })();
-    if (mounted) {
-      setCart(localSaved);
-    }
-
-    (async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          // not logged in — nothing to sync
-          console.debug("[CART] no token; using local cart", localSaved);
-          return;
-        }
-
-        // Try fetch server cart
-        console.debug("[CART] fetching server cart");
-        const res = await api.get("/cart").catch((err) => {
-          console.warn("[CART] GET /cart failed", err && err.message);
-          return null;
-        });
-
-        if (!mounted) return;
-
-        // Normalize possible server shapes:
-        // - array ([])
-        // - { items: [...] }
-        // - { cart: { itemId: qty, ... } }
-        // - { data: { items: [...] } } (axios-like)
-        let serverItems = null;
-        let serverCartMap = null;
-        if (!res) {
-          serverItems = null;
-        } else if (Array.isArray(res)) {
-          serverItems = res;
-        } else if (Array.isArray(res.items)) {
-          serverItems = res.items;
-        } else if (res.data && Array.isArray(res.data.items)) {
-          serverItems = res.data.items;
-        } else if (res.cart && typeof res.cart === "object") {
-          serverCartMap = res.cart;
-        } else if (res.data && res.data.cart && typeof res.data.cart === "object") {
-          serverCartMap = res.data.cart;
-        }
-
-        // If server returned items -> use server authoritative view (but merge missing local keys)
-        if (serverItems && serverItems.length > 0) {
-          const next = {};
-          for (const it of serverItems) if (it && (it.itemId || it.id)) next[String(it.itemId || it.id)] = Number(it.qty || it.quantity || 0);
-          console.debug("[CART] server has items, using server cart", next);
-          setCart(next);
-          localStorage.setItem("cart", JSON.stringify(next));
-          return;
-        }
-        
-        // support server-side cart mapping shapes
-        if (!serverItems && serverCartMap && Object.keys(serverCartMap).length > 0) {
-          const next = {};
-          for (const [k, v] of Object.entries(serverCartMap)) next[String(k)] = Number(v || 0);
-          console.debug("[CART] server returned cart map, using it", next);
-          setCart(next);
-          localStorage.setItem("cart", JSON.stringify(next));
-          return;
-        }
-
-        // If server empty but we have local items -> push local items to server
-        if ((!serverItems || serverItems.length === 0) && localSaved && Object.keys(localSaved).length > 0) {
-          console.debug("[CART] server empty, syncing local -> server", localSaved);
-          // push each local entry
-          for (const [id, qty] of Object.entries(localSaved)) {
-            try {
-              await api.post("/cart/add", { itemId: id, qty }).catch(() => null);
-            } catch (e) {
-              /* ignore per-item failure */
-            }
-          }
-          // refresh server cart after sync
-          const refreshed = await api.get("/cart").catch(() => null);
-          const refreshedItems = refreshed && (Array.isArray(refreshed.items) ? refreshed.items : Array.isArray(refreshed) ? refreshed : (refreshed.data && Array.isArray(refreshed.data.items) ? refreshed.data.items : null));
-          if (refreshedItems && refreshedItems.length > 0) {
-            const next = {};
-            for (const it of refreshedItems) if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
-            setCart(next);
-            localStorage.setItem("cart", JSON.stringify(next));
-            console.debug("[CART] sync complete, server now has:", next);
-            return;
-          }
-          // server still empty -> keep local view
-          console.debug("[CART] sync finished but server still empty; keeping local cart");
-          setCart(localSaved);
-          return;
-        }
-
-        // No server data; keep localSaved (already applied)
-        console.debug("[CART] no server data; using local cart");
-      } catch (err) {
-        console.error("[CART] sync error", err);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  // CartContext handles multi-tab sync
 
   // support navigation from Shop with { state: { itemId } }
   useEffect(() => {
     const id = state?.itemId;
     if (!id) return;
-    // reuse add logic below — simulate single click add
-    handleAdd(String(id), 1);
+    // reuse CartContext add to simulate single click add
+    add(String(id), 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state?.itemId]);
 
-  // persist cart & update navbar badge via storage event
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+  // CartContext persists cart
 
   const list = useMemo(
     () =>
@@ -212,36 +98,17 @@ export default function Cart() {
     const key = String(itemId);
     const prod = products.find((x) => String(x.id) === String(itemId));
     if (!prod) return;
-    const nextLocal = (c) => {
-      const nextQty = (c[key] || 0) + qty;
-      if (prod.stock > 0 && nextQty > prod.stock) return c; // clamp
-      return { ...c, [key]: nextQty };
-    };
-
-    // optimistic update locally first
-    setCart((c) => {
-      const next = nextLocal(c);
-      localStorage.setItem("cart", JSON.stringify(next));
-      return next;
-    });
-
-    if (!isAuth()) return;
-
+    // client-side stock check for UX only
+    const currentQty = cart[String(key)] || 0;
+    if (prod.stock > 0 && currentQty + qty > prod.stock) {
+      alert(`Sorry, only ${prod.stock} items available in stock.`);
+      return;
+    }
+    // delegate to context
     try {
-      await api.post('/cart/add', { itemId: key, qty, name: prod.name, price: prod.price });
-      // refresh server cart to be safe
-      const data = await api.get('/cart');
-      if (data && Array.isArray(data.items)) {
-        const next = {};
-        for (const it of data.items) {
-          if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
-        }
-        setCart(next);
-        localStorage.setItem("cart", JSON.stringify(next));
-      }
+      await add(key, qty);
     } catch (e) {
-      console.error("Cart add failed", e);
-      // keep optimistic local state; optionally show user message
+      console.error("Add failed", e);
     }
   }
 
@@ -261,46 +128,16 @@ export default function Cart() {
     const item = products.find(x => String(x.id) === String(itemId));
     if (!item) return;
 
-    // Validate stock
     if (item.stock >= 0 && qty > item.stock) {
       alert(`Sorry, only ${item.stock} items available in stock.`);
       return;
     }
 
-    // Optimistic update
     try {
-      const key = String(itemId);
-      const nextCart = { ...cart };
-      
-      if (qty <= 0) {
-        delete nextCart[key];
-      } else {
-        nextCart[key] = qty;
-      }
-
-      setCart(nextCart);
-      localStorage.setItem("cart", JSON.stringify(nextCart));
-
-      // Sync with server
-      if (isAuth()) {
-        await api.post('/cart/update', { itemId: key, qty });
-        
-        // Refresh cart from server
-        const data = await api.get('/cart');
-        if (data?.items) {
-          const serverCart = {};
-          data.items.forEach(item => {
-            serverCart[String(item.itemId)] = Number(item.qty);
-          });
-          setCart(serverCart);
-          localStorage.setItem("cart", JSON.stringify(serverCart));
-        }
-      }
+      await setQty(String(itemId), qty);
     } catch (err) {
-      console.error("Failed to update quantity:", err);
+      console.error("Failed to set qty:", err);
       alert("Failed to update quantity. Please try again.");
-      // Revert optimistic update
-      setCart(cart);
     }
   };
 
@@ -311,23 +148,11 @@ export default function Cart() {
   };
 
   const removeLine = (id) => {
-    const key = String(id);
-    // local update
-    setCart((c) => {
-      const next = { ...c };
-      delete next[key];
-      localStorage.setItem("cart", JSON.stringify(next));
-      return next;
-    });
-    if (!isAuth()) return;
-    api.post('/cart/remove', { itemId: key }).catch((e) => console.error("Cart remove failed", e));
+    remove(id);
   };
 
   const clearCart = () => {
-    setCart({});
-    localStorage.setItem("cart", "{}");
-    if (!isAuth()) return;
-    api.post('/cart/clear').catch((e) => console.error("Cart clear failed", e));
+    clear();
   };
 
   // Compatibility aliases used by the JSX (sync* names expected by UI)
@@ -503,6 +328,7 @@ export default function Cart() {
                 Continue Shopping
               </button>
               <button
+                onClick={openReserve}
                 disabled={!list.length}
                 className="w-full bg-blue-600 text-white rounded px-4 py-2 text-sm"
               >

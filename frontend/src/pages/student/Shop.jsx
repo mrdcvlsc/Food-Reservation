@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
+import { useCart } from "../../contexts/CartContext";
 import {
   Plus,
   Minus,
@@ -73,8 +74,8 @@ export default function Shop({ publicView = false }) {
   const [category, setCategory] = useState("all");
   const [sort, setSort] = useState("featured");
 
-  // cart
-  const [cart, setCart] = useState({});
+  // cart (from context)
+  const { cart, add, setQty, remove, clear, meta } = useCart();
 
   // reservation modal
   const [open, setOpen] = useState(false);
@@ -147,16 +148,7 @@ export default function Shop({ publicView = false }) {
     return () => window.removeEventListener("menu:updated", onMenuUpdated);
   }, []);
 
-  // restore cart
-  useEffect(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem("cart") || "{}");
-      if (saved && typeof saved === "object") setCart(saved);
-    } catch {}
-  }, []);
-  useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
+  // CartContext handles restore and persistence
 
   // debounce search input
   useEffect(() => {
@@ -251,30 +243,19 @@ export default function Shop({ publicView = false }) {
   const inc = (id) => {
     const item = items.find((x) => String(x.id) === String(id));
     if (!item) return;
-
     const currentQty = cart[String(id)] || 0;
     if (item.stock >= 0 && currentQty >= item.stock) {
       alert(`Sorry, only ${item.stock} items available in stock.`);
       return;
     }
 
-    handleAddFromShop(item, 1);
+    add(item.id, 1);
   };
   const dec = (id) =>
-    setCart((c) => {
-      const key = String(id);
-      const next = Math.max((c[key] || 0) - 1, 0);
-      const copy = { ...c, [key]: next };
-      if (next === 0) delete copy[key];
-      return copy;
-    });
+    setQty(id, Math.max((cart[String(id)] || 0) - 1, 0));
   const removeFromCart = (id) =>
-    setCart((c) => {
-      const copy = { ...c };
-      delete copy[String(id)];
-      return copy;
-    });
-  const clearCart = () => setCart({});
+    remove(id);
+  const clearCart = () => clear();
 
   // ==== NAV / MODAL ==========================================================
   const goCart = () => navigate("/cart");
@@ -331,9 +312,8 @@ export default function Shop({ publicView = false }) {
         r = created;
       }
 
-      alert("Reservation submitted and wallet charged.");
-      setCart({});
-      localStorage.removeItem("cart");
+  alert("Reservation submitted and wallet charged.");
+  clear();
       setReserve({ grade: "", section: "", slot: "", note: "" });
       closeReserve();
 
@@ -347,59 +327,7 @@ export default function Shop({ publicView = false }) {
     }
   };
 
-  // Update the cart handling functions
-  const handleAddFromShop = async (item, qty = 1) => {
-    // Validate stock before adding
-    const currentQty = cart[String(item.id)] || 0;
-    const newQty = currentQty + qty;
-    
-    if (item.stock >= 0 && newQty > item.stock) {
-      alert(`Sorry, only ${item.stock} items available in stock.`);
-      return;
-    }
-
-    // Optimistic local update
-    try {
-      const key = String(item.id);
-      setCart(prev => ({
-        ...prev,
-        [key]: newQty
-      }));
-      localStorage.setItem("cart", JSON.stringify({
-        ...cart,
-        [key]: newQty
-      }));
-
-      // Sync with server if logged in
-      if (localStorage.getItem("token")) {
-        await api.post("/cart/add", {
-          itemId: item.id,
-          qty,
-          name: item.name,
-          price: item.price
-        });
-        
-        // Refresh cart from server to ensure consistency
-        const data = await api.get("/cart");
-        if (data?.items) {
-          const serverCart = {};
-          data.items.forEach(item => {
-            serverCart[String(item.itemId)] = Number(item.qty);
-          });
-          setCart(serverCart);
-          localStorage.setItem("cart", JSON.stringify(serverCart));
-        }
-      }
-    } catch (err) {
-      console.error("Failed to add to cart:", err);
-      alert("Failed to add item to cart. Please try again.");
-      // Revert optimistic update
-      setCart(prev => ({
-        ...prev,
-        [String(item.id)]: cart[String(item.id)] || 0
-      }));
-    }
-  };
+  // CartContext handles add/update/remove and multi-tab sync
 
   // ==== RENDER ===============================================================
   return (
@@ -574,7 +502,7 @@ export default function Shop({ publicView = false }) {
                               </button>
                             </div>
                             <button
-                              onClick={() => handleAddFromShop(it, 1)}
+                              onClick={() => add(it.id, 1)}
                               disabled={soldOut}
                               className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
                             >
