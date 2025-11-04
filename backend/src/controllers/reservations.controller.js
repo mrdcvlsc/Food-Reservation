@@ -40,7 +40,9 @@ exports.create = async (req, res) => {
       console.log('[RESERVATION] Create: missing pickup slot');
       return res.status(400).json({ error: "Missing pickup slot" });
     }
-
+    const user = db.users.find(x => x.id === req?.user.id);
+    console.log('mag pakita ka na user = ', user);
+    let studentName;
     // Validate and normalize items (no stock changes here)
     const normalized = [];
     for (const it of items) {
@@ -79,14 +81,15 @@ exports.create = async (req, res) => {
         price: Number(m.price) || 0,
         qty: q,
       });
+      console.log('m.name = ', m?.name)
+      console.log('m.id = ', m?.id)
     }
 
     const total = normalized.reduce((s, r) => s + r.price * r.qty, 0);
-
     const reservation = {
       id: nextId(db.reservations, "RES"),
       userId: req.user?.id || null,
-      student: student || req.user?.name || "Student",
+      student: user.name || req.user?.name,
       grade,
       section,
       when: slot,
@@ -111,8 +114,10 @@ exports.create = async (req, res) => {
           reservation.userId = found.id; // <-- ensure we attach resolved userId
         }
       }
+      console.log('studentNorm = ', studentNorm)
     }
-
+    console.log(req.body)
+    console.log('req.user= ', req?.user)
     db.reservations = db.reservations || [];
     db.reservations.push(reservation);
     await save(db);
@@ -196,6 +201,7 @@ exports.listAdmin = async (req, res) => {
       rows = rows.filter((r) => String(r.status) === String(req.query.status));
     }
     rows.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    console.log(rows)
     res.json(rows);
   } catch (e) {
     console.error(e);

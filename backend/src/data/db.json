@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 20,
+      "stock": 19,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -27,7 +27,7 @@
       "name": "Oishi Pillows",
       "category": "Snacks",
       "price": 12,
-      "stock": 14,
+      "stock": 6,
       "img": "/uploads/1761207651939_889101.jpg",
       "isActive": true,
       "visible": true,
@@ -38,7 +38,7 @@
       "name": "Fried Chicken",
       "category": "Meals",
       "price": 69,
-      "stock": 394,
+      "stock": 393,
       "img": "/uploads/1761207668381_89123.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:12.490Z"
@@ -107,7 +107,7 @@
       "name": "Yakult",
       "category": "Beverages",
       "price": 10,
-      "stock": 20,
+      "stock": 19,
       "img": "/uploads/1761538643677_574382.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T08:49:55.029Z"
@@ -2485,6 +2485,341 @@
       "status": "Rejected",
       "createdAt": "2025-11-03T12:39:26.653Z",
       "updatedAt": "2025-11-03T12:39:45.707Z"
+    },
+    {
+      "id": "RES_mhj77e4ymy",
+      "userId": "usr_mhd5ixwi",
+      "student": "Student",
+      "grade": "G7",
+      "section": "T",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 69,
+      "status": "Claimed",
+      "createdAt": "2025-11-03T13:51:09.394Z",
+      "transactionId": "txn_mhj77e74",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-03T13:51:09.472Z",
+      "updatedAt": "2025-11-03T13:52:09.879Z"
+    },
+    {
+      "id": "RES_mhj7asg79z",
+      "userId": "usr_mhd5ixwi",
+      "student": "Student",
+      "grade": "G9",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 2
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 92,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T13:53:47.911Z",
+      "updatedAt": "2025-11-03T15:29:33.266Z"
+    },
+    {
+      "id": "RES_mhj7sear8h",
+      "userId": "usr_mhd5ixwi",
+      "student": "Student",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        },
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 8,
+          "qty": 2
+        }
+      ],
+      "total": 85,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T14:07:29.379Z",
+      "updatedAt": "2025-11-03T15:29:31.157Z"
+    },
+    {
+      "id": "RES_mhj82iku3c",
+      "userId": "usr_mhd5ixwi",
+      "student": "Student",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        }
+      ],
+      "total": 45,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T14:15:21.486Z",
+      "updatedAt": "2025-11-03T15:29:29.346Z"
+    },
+    {
+      "id": "RES_mhj8donq9i",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 2
+        }
+      ],
+      "total": 24,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T14:24:02.582Z",
+      "updatedAt": "2025-11-03T15:29:28.647Z"
+    },
+    {
+      "id": "RES_mhj9co1tf3",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        }
+      ],
+      "total": 40,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T14:51:14.753Z",
+      "updatedAt": "2025-11-03T15:29:27.930Z"
+    },
+    {
+      "id": "RES_mhj9j9687i",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761997137761313",
+          "name": "Oreo",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T14:56:22.064Z",
+      "updatedAt": "2025-11-03T15:29:27.480Z"
+    },
+    {
+      "id": "RES_mhj9om2apc",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761997137761313",
+          "name": "Oreo",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T15:00:32.050Z",
+      "updatedAt": "2025-11-03T15:29:27.217Z"
+    },
+    {
+      "id": "RES_mhj9vg8gbe",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        }
+      ],
+      "total": 40,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T15:05:51.088Z",
+      "updatedAt": "2025-11-03T15:29:26.372Z"
+    },
+    {
+      "id": "RES_mhja4neife",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "T",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761997137761313",
+          "name": "Oreo",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T15:13:00.282Z",
+      "updatedAt": "2025-11-03T15:29:25.849Z"
+    },
+    {
+      "id": "RES_mhja8rphpe",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761997137761313",
+          "name": "Oreo",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T15:16:12.485Z",
+      "updatedAt": "2025-11-03T15:29:24.947Z"
+    },
+    {
+      "id": "RES_mhjaj23dfm",
+      "userId": "usr_mhd5ixwi",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 10,
+      "status": "Rejected",
+      "createdAt": "2025-11-03T15:24:12.505Z",
+      "updatedAt": "2025-11-03T15:29:24.483Z"
+    },
+    {
+      "id": "RES_mhjamvvonb",
+      "userId": "usr_mhd5ixwi",
+      "student": "Aaron Salapar Palgan",
+      "grade": "G8",
+      "section": "E",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 10,
+      "status": "Claimed",
+      "createdAt": "2025-11-03T15:27:11.076Z",
+      "transactionId": "txn_mhjamvxc",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-03T15:27:11.136Z",
+      "updatedAt": "2025-11-03T15:28:39.966Z"
+    },
+    {
+      "id": "RES_mhjar7bafp",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        }
+      ],
+      "total": 45,
+      "status": "Claimed",
+      "createdAt": "2025-11-03T15:30:32.518Z",
+      "transactionId": "txn_mhjar7cj",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-03T15:30:32.563Z",
+      "updatedAt": "2025-11-03T15:31:32.970Z"
+    },
+    {
+      "id": "RES_mhjavirkcw",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 8
+        }
+      ],
+      "total": 96,
+      "status": "Claimed",
+      "createdAt": "2025-11-03T15:33:53.984Z",
+      "transactionId": "txn_mhjavit9",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-03T15:33:54.045Z",
+      "updatedAt": "2025-11-03T15:35:21.311Z"
     }
   ],
   "topups": [
@@ -2819,7 +3154,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 891,
+      "balance": 750,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "164652338"
@@ -2843,7 +3178,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 548,
+      "balance": 469,
       "studentId": "356695883"
     },
     {
@@ -3852,6 +4187,251 @@
       "direction": "credit",
       "status": "Success",
       "createdAt": "2025-11-03T12:39:45.707Z"
+    },
+    {
+      "id": "txn_mhj77e74",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 69,
+      "ref": "RES_mhj77e4ymy",
+      "createdAt": "2025-11-03T13:51:09.472Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj7asn4",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 92,
+      "ref": "RES_mhj7asg79z",
+      "createdAt": "2025-11-03T13:53:48.160Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj7sei3",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 85,
+      "ref": "RES_mhj7sear8h",
+      "createdAt": "2025-11-03T14:07:29.643Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj82iml",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 45,
+      "ref": "RES_mhj82iku3c",
+      "createdAt": "2025-11-03T14:15:21.549Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj8dopy",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 24,
+      "ref": "RES_mhj8donq9i",
+      "createdAt": "2025-11-03T14:24:02.662Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj9co99",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 40,
+      "ref": "RES_mhj9co1tf3",
+      "createdAt": "2025-11-03T14:51:15.021Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj9j97h",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES_mhj9j9687i",
+      "createdAt": "2025-11-03T14:56:22.109Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj9om41",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES_mhj9om2apc",
+      "createdAt": "2025-11-03T15:00:32.113Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhj9vga7",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 40,
+      "ref": "RES_mhj9vg8gbe",
+      "createdAt": "2025-11-03T15:05:51.151Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhja4ngm",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES_mhja4neife",
+      "createdAt": "2025-11-03T15:13:00.358Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhja8rrb",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES_mhja8rphpe",
+      "createdAt": "2025-11-03T15:16:12.551Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhjaj256",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 10,
+      "ref": "RES_mhjaj23dfm",
+      "createdAt": "2025-11-03T15:24:12.570Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhjamvxc",
+      "userId": "usr_mhd5ixwi",
+      "type": "reservation",
+      "amount": 10,
+      "ref": "RES_mhjamvvonb",
+      "createdAt": "2025-11-03T15:27:11.136Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX_mhjapqtfcw",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhjaj23dfm",
+      "amount": 10,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:24.483Z"
+    },
+    {
+      "id": "TX_mhjapr6b3f",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhja8rphpe",
+      "amount": 20,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:24.947Z"
+    },
+    {
+      "id": "TX_mhjaprvdfc",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhja4neife",
+      "amount": 20,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:25.849Z"
+    },
+    {
+      "id": "TX_mhjaps9w62",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj9vg8gbe",
+      "amount": 40,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:26.372Z"
+    },
+    {
+      "id": "TX_mhjapsxd35",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj9om2apc",
+      "amount": 20,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:27.217Z"
+    },
+    {
+      "id": "TX_mhjapt4orf",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj9j9687i",
+      "amount": 20,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:27.480Z"
+    },
+    {
+      "id": "TX_mhjapth68o",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj9co1tf3",
+      "amount": 40,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:27.930Z"
+    },
+    {
+      "id": "TX_mhjapu13da",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj8donq9i",
+      "amount": 24,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:28.647Z"
+    },
+    {
+      "id": "TX_mhjapukhqj",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj82iku3c",
+      "amount": 45,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:29.346Z"
+    },
+    {
+      "id": "TX_mhjapvytog",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj7sear8h",
+      "amount": 85,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:31.157Z"
+    },
+    {
+      "id": "TX_mhjapxleby",
+      "userId": "usr_mhd5ixwi",
+      "title": "Refund",
+      "ref": "RES_mhj7asg79z",
+      "amount": 92,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-03T15:29:33.266Z"
+    },
+    {
+      "id": "txn_mhjar7cj",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 45,
+      "ref": "RES_mhjar7bafp",
+      "createdAt": "2025-11-03T15:30:32.563Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhjavit9",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 96,
+      "ref": "RES_mhjavirkcw",
+      "createdAt": "2025-11-03T15:33:54.045Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -3867,6 +4447,579 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhjaxe5e",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjavirkcw Claimed",
+      "body": "Your reservation RES_mhjavirkcw is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhjavirkcw",
+        "status": "Claimed"
+      },
+      "read": false,
+      "createdAt": "2025-11-03T15:35:21.314Z"
+    },
+    {
+      "id": "notif_mhjaxdan",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjavirkcw Ready",
+      "body": "Your reservation RES_mhjavirkcw is now Ready.",
+      "data": {
+        "reservationId": "RES_mhjavirkcw",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-11-03T15:35:20.207Z"
+    },
+    {
+      "id": "notif_mhjaxct3",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjavirkcw Preparing",
+      "body": "Your reservation RES_mhjavirkcw is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhjavirkcw",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-03T15:35:19.575Z"
+    },
+    {
+      "id": "notif_mhjawvbo",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjavirkcw Approved",
+      "body": "Your reservation RES_mhjavirkcw has been approved.",
+      "data": {
+        "reservationId": "RES_mhjavirkcw",
+        "status": "Approved"
+      },
+      "read": false,
+      "createdAt": "2025-11-03T15:34:56.916Z"
+    },
+    {
+      "id": "notif_mhjavirn",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhjavirkcw"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:33:53.984Z"
+    },
+    {
+      "id": "notif_mhjashyn",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjar7bafp Claimed",
+      "body": "Your reservation RES_mhjar7bafp is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhjar7bafp",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:31:32.975Z"
+    },
+    {
+      "id": "notif_mhjashl1",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjar7bafp Ready",
+      "body": "Your reservation RES_mhjar7bafp is now Ready.",
+      "data": {
+        "reservationId": "RES_mhjar7bafp",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:31:32.485Z"
+    },
+    {
+      "id": "notif_mhjasggo",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjar7bafp Preparing",
+      "body": "Your reservation RES_mhjar7bafp is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhjar7bafp",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:31:31.032Z"
+    },
+    {
+      "id": "notif_mhjas8qv",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjar7bafp Approved",
+      "body": "Your reservation RES_mhjar7bafp has been approved.",
+      "data": {
+        "reservationId": "RES_mhjar7bafp",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:31:21.031Z"
+    },
+    {
+      "id": "notif_mhjar7bg",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhjar7bafp"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:30:32.518Z"
+    },
+    {
+      "id": "notif_mhjapxlh",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj7asg79z Rejected",
+      "body": "Your reservation RES_mhj7asg79z has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj7asg79z",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:33.269Z"
+    },
+    {
+      "id": "notif_mhjapvyx",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj7sear8h Rejected",
+      "body": "Your reservation RES_mhj7sear8h has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj7sear8h",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:31.161Z"
+    },
+    {
+      "id": "notif_mhjapuko",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj82iku3c Rejected",
+      "body": "Your reservation RES_mhj82iku3c has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj82iku3c",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:29.352Z"
+    },
+    {
+      "id": "notif_mhjapu18",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj8donq9i Rejected",
+      "body": "Your reservation RES_mhj8donq9i has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj8donq9i",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:28.652Z"
+    },
+    {
+      "id": "notif_mhjapth9",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj9co1tf3 Rejected",
+      "body": "Your reservation RES_mhj9co1tf3 has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj9co1tf3",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:27.934Z"
+    },
+    {
+      "id": "notif_mhjapt4s",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj9j9687i Rejected",
+      "body": "Your reservation RES_mhj9j9687i has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj9j9687i",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:27.484Z"
+    },
+    {
+      "id": "notif_mhjapsxk",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj9om2apc Rejected",
+      "body": "Your reservation RES_mhj9om2apc has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj9om2apc",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:27.224Z"
+    },
+    {
+      "id": "notif_mhjaps9z",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj9vg8gbe Rejected",
+      "body": "Your reservation RES_mhj9vg8gbe has been rejected.",
+      "data": {
+        "reservationId": "RES_mhj9vg8gbe",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:26.375Z"
+    },
+    {
+      "id": "notif_mhjaprvj",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhja4neife Rejected",
+      "body": "Your reservation RES_mhja4neife has been rejected.",
+      "data": {
+        "reservationId": "RES_mhja4neife",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:25.855Z"
+    },
+    {
+      "id": "notif_mhjapr6h",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhja8rphpe Rejected",
+      "body": "Your reservation RES_mhja8rphpe has been rejected.",
+      "data": {
+        "reservationId": "RES_mhja8rphpe",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:24.953Z"
+    },
+    {
+      "id": "notif_mhjapqtj",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjaj23dfm Rejected",
+      "body": "Your reservation RES_mhjaj23dfm has been rejected.",
+      "data": {
+        "reservationId": "RES_mhjaj23dfm",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:29:24.487Z"
+    },
+    {
+      "id": "notif_mhjaosh0",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjamvvonb Claimed",
+      "body": "Your reservation RES_mhjamvvonb is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhjamvvonb",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:28:39.972Z"
+    },
+    {
+      "id": "notif_mhjaoru1",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjamvvonb Ready",
+      "body": "Your reservation RES_mhjamvvonb is now Ready.",
+      "data": {
+        "reservationId": "RES_mhjamvvonb",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:28:39.145Z"
+    },
+    {
+      "id": "notif_mhjaor4u",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjamvvonb Preparing",
+      "body": "Your reservation RES_mhjamvvonb is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhjamvvonb",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:28:38.238Z"
+    },
+    {
+      "id": "notif_mhjaofju",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhjamvvonb Approved",
+      "body": "Your reservation RES_mhjamvvonb has been approved.",
+      "data": {
+        "reservationId": "RES_mhjamvvonb",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:28:23.227Z"
+    },
+    {
+      "id": "notif_mhjamvvt",
+      "for": "admin",
+      "actor": "usr_mhd5ixwi",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Aaron Salapar Palgan submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhjamvvonb"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:27:11.076Z"
+    },
+    {
+      "id": "notif_mhjaj23m",
+      "for": "admin",
+      "actor": "usr_mhd5ixwi",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "usr_mhd5ixwi submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhjaj23dfm"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:24:12.505Z"
+    },
+    {
+      "id": "notif_mhja8rpp",
+      "for": "admin",
+      "actor": "usr_mhd5ixwi",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "usr_mhd5ixwi submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhja8rphpe"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:16:12.485Z"
+    },
+    {
+      "id": "notif_mhja4neo",
+      "for": "admin",
+      "actor": "usr_mhd5ixwi",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "usr_mhd5ixwi submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhja4neife"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:13:00.282Z"
+    },
+    {
+      "id": "notif_mhj9vg8m",
+      "for": "admin",
+      "actor": "usr_mhd5ixwi",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "usr_mhd5ixwi submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj9vg8gbe"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:05:51.088Z"
+    },
+    {
+      "id": "notif_mhj9om2g",
+      "for": "admin",
+      "actor": "usr_mhd5ixwi",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "usr_mhd5ixwi submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj9om2apc"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T15:00:32.050Z"
+    },
+    {
+      "id": "notif_mhj9j96e",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "undefined submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj9j9687i"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T14:56:22.064Z"
+    },
+    {
+      "id": "notif_mhj9co20",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "undefined submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj9co1tf3"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T14:51:14.753Z"
+    },
+    {
+      "id": "notif_mhj8donw",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "undefined submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj8donq9i"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T14:24:02.582Z"
+    },
+    {
+      "id": "notif_mhj82ikz",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj82iku3c"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T14:15:21.486Z"
+    },
+    {
+      "id": "notif_mhj7seax",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj7sear8h"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T14:07:29.379Z"
+    },
+    {
+      "id": "notif_mhj7asgc",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj7asg79z"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T13:53:47.911Z"
+    },
+    {
+      "id": "notif_mhj78ot7",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj77e4ymy Claimed",
+      "body": "Your reservation RES_mhj77e4ymy is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhj77e4ymy",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T13:52:09.883Z"
+    },
+    {
+      "id": "notif_mhj78o8o",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj77e4ymy Ready",
+      "body": "Your reservation RES_mhj77e4ymy is now Ready.",
+      "data": {
+        "reservationId": "RES_mhj77e4ymy",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T13:52:09.144Z"
+    },
+    {
+      "id": "notif_mhj78no3",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj77e4ymy Preparing",
+      "body": "Your reservation RES_mhj77e4ymy is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhj77e4ymy",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T13:52:08.403Z"
+    },
+    {
+      "id": "notif_mhj77zc3",
+      "for": "usr_mhd5ixwi",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhj77e4ymy Approved",
+      "body": "Your reservation RES_mhj77e4ymy has been approved.",
+      "data": {
+        "reservationId": "RES_mhj77e4ymy",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T13:51:36.867Z"
+    },
+    {
+      "id": "notif_mhj77e54",
+      "for": "admin",
+      "actor": null,
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Student submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhj77e4ymy"
+      },
+      "read": true,
+      "createdAt": "2025-11-03T13:51:09.394Z"
+    },
     {
       "id": "notif_mhj4nrz4",
       "for": "usr_mh0h1va7",
@@ -8118,25 +9271,32 @@
       "userId": "usr_mh0h1va7",
       "items": [
         {
-          "itemId": "1761993633466934",
+          "itemId": "ITM-2",
           "qty": 1,
-          "name": "Bravo",
-          "price": 8
+          "name": "Choco Drink",
+          "price": 45
         },
         {
-          "itemId": "ITM-7",
+          "itemId": "ITM-3",
+          "qty": 8,
+          "name": "Oishi Pillows",
+          "price": 12
+        }
+      ],
+      "updatedAt": "2025-11-03T15:33:42.159Z"
+    },
+    {
+      "id": "cart_user_usr_mhd5ixwi",
+      "userId": "usr_mhd5ixwi",
+      "items": [
+        {
+          "itemId": "ITM-11",
           "qty": 2,
-          "name": "chicken masala",
-          "price": 170
-        },
-        {
-          "itemId": "1761632268631799",
-          "qty": 3,
-          "name": "Rebisco Sandwich (10PCS)",
+          "name": "Yakult",
           "price": 10
         }
       ],
-      "updatedAt": "2025-11-03T12:38:59.401Z"
+      "updatedAt": "2025-11-03T15:26:31.459Z"
     }
   ],
   "inventory": []

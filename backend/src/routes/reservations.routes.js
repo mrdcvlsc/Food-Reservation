@@ -38,7 +38,7 @@ const router = express.Router();
  *       400:
  *         description: Invalid input
  */
-router.post("/", R.create);
+router.post("/", requireAuth, R.create) 
 
 /**
  * @swagger

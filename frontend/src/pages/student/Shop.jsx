@@ -305,14 +305,17 @@ export default function Shop({ publicView = false }) {
         slot: reserve.slot,
         note: reserve.note || "",
       };
-
+      console.log('payload = ', payload)
       // Prefer atomic endpoint
       let r;
       try {
         r = await api.post("/reservations/checkout", payload);
+        console.log('r = ', r)
       } catch {
         // Fallback 2-step
         const created = await api.post("/reservations", payload);
+        console.log('created = ', created)
+        console.log('items = ', items)
         const createdId = created?.id || created?.data?.id;
         const amount = created?.total ?? created?.data?.total ?? total;
 
