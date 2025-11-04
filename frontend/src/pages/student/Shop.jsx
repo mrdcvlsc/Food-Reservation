@@ -249,14 +249,16 @@ export default function Shop({ publicView = false }) {
 
   // ==== CART OPS =============================================================
   const inc = (id) => {
-    const prod = items.find((x) => String(x.id) === String(id));
-    if (!prod) return;
-    setCart((c) => {
-      const key = String(id);
-      const next = (c[key] || 0) + 1;
-      if (prod.stock >= 0 && next > Number(prod.stock)) return c; // cap at stock
-      return { ...c, [key]: next };
-    });
+    const item = items.find((x) => String(x.id) === String(id));
+    if (!item) return;
+
+    const currentQty = cart[String(id)] || 0;
+    if (item.stock >= 0 && currentQty >= item.stock) {
+      alert(`Sorry, only ${item.stock} items available in stock.`);
+      return;
+    }
+
+    handleAddFromShop(item, 1);
   };
   const dec = (id) =>
     setCart((c) => {
@@ -345,37 +347,59 @@ export default function Shop({ publicView = false }) {
     }
   };
 
-  // optimistic local update (keep same "cart" key Cart.jsx reads)
-  async function handleAddFromShop(item, qty = 1) {
-    try {
-      const key = String(item.id);
-      const saved = JSON.parse(localStorage.getItem("cart") || "{}");
-      const next = { ...(saved || {}) };
-      next[key] = (Number(next[key]) || 0) + Number(qty || 1);
-      localStorage.setItem("cart", JSON.stringify(next));
-      // update any local state you have in Shop (optional)
-      setCart(next); // replace with your local state updater if present
-    } catch (e) {
-      console.warn("Failed local cart write", e);
+  // Update the cart handling functions
+  const handleAddFromShop = async (item, qty = 1) => {
+    // Validate stock before adding
+    const currentQty = cart[String(item.id)] || 0;
+    const newQty = currentQty + qty;
+    
+    if (item.stock >= 0 && newQty > item.stock) {
+      alert(`Sorry, only ${item.stock} items available in stock.`);
+      return;
     }
 
-    // persist to server when logged in
-    if (localStorage.getItem("token")) {
-      try {
-        await api.post("/cart/add", { itemId: item.id, qty, name: item.name, price: item.price });
-        // optionally refresh server cart and sync localStorage
+    // Optimistic local update
+    try {
+      const key = String(item.id);
+      setCart(prev => ({
+        ...prev,
+        [key]: newQty
+      }));
+      localStorage.setItem("cart", JSON.stringify({
+        ...cart,
+        [key]: newQty
+      }));
+
+      // Sync with server if logged in
+      if (localStorage.getItem("token")) {
+        await api.post("/cart/add", {
+          itemId: item.id,
+          qty,
+          name: item.name,
+          price: item.price
+        });
+        
+        // Refresh cart from server to ensure consistency
         const data = await api.get("/cart");
-        if (data && Array.isArray(data.items)) {
-          const synced = {};
-          for (const it of data.items) synced[String(it.itemId)] = Number(it.qty || 0);
-          localStorage.setItem("cart", JSON.stringify(synced));
-          setCart(synced);
+        if (data?.items) {
+          const serverCart = {};
+          data.items.forEach(item => {
+            serverCart[String(item.itemId)] = Number(item.qty);
+          });
+          setCart(serverCart);
+          localStorage.setItem("cart", JSON.stringify(serverCart));
         }
-      } catch (err) {
-        console.error("Server cart add failed", err);
       }
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
+      alert("Failed to add item to cart. Please try again.");
+      // Revert optimistic update
+      setCart(prev => ({
+        ...prev,
+        [String(item.id)]: cart[String(item.id)] || 0
+      }));
     }
-  }
+  };
 
   // ==== RENDER ===============================================================
   return (

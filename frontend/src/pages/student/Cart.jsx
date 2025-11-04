@@ -249,41 +249,60 @@ export default function Cart() {
     handleAdd(id, 1);
   };
 
-  async function handleSetQty(itemId, qty) {
-    const key = String(itemId);
-    const prod = products.find((x) => String(x.id) === String(itemId));
-    if (!prod) return;
+  // Add these helper functions at the top of the component
+  const validateCartItem = (item, qty) => {
+    if (!item) return false;
+    if (item.stock >= 0 && qty > item.stock) return false;
+    return true;
+  };
 
-    // local update
-    setCart((c) => {
-      const next = { ...c };
-      if (qty <= 0) delete next[key];
-      else {
-        if (prod.stock > 0 && qty > prod.stock) return c; // clamp
-        next[key] = qty;
-      }
-      localStorage.setItem("cart", JSON.stringify(next));
-      return next;
-    });
+  // Update handleSetQty function
+  const handleSetQty = async (itemId, qty) => {
+    const item = products.find(x => String(x.id) === String(itemId));
+    if (!item) return;
 
-    if (!isAuth()) return;
-
-    try {
-      await api.post('/cart/update', { itemId: key, qty });
-      // refresh
-      const data = await api.get('/cart');
-      if (data && Array.isArray(data.items)) {
-        const next = {};
-        for (const it of data.items) {
-          if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
-        }
-        setCart(next);
-        localStorage.setItem("cart", JSON.stringify(next));
-      }
-    } catch (e) {
-      console.error("Cart update failed", e);
+    // Validate stock
+    if (item.stock >= 0 && qty > item.stock) {
+      alert(`Sorry, only ${item.stock} items available in stock.`);
+      return;
     }
-  }
+
+    // Optimistic update
+    try {
+      const key = String(itemId);
+      const nextCart = { ...cart };
+      
+      if (qty <= 0) {
+        delete nextCart[key];
+      } else {
+        nextCart[key] = qty;
+      }
+
+      setCart(nextCart);
+      localStorage.setItem("cart", JSON.stringify(nextCart));
+
+      // Sync with server
+      if (isAuth()) {
+        await api.post('/cart/update', { itemId: key, qty });
+        
+        // Refresh cart from server
+        const data = await api.get('/cart');
+        if (data?.items) {
+          const serverCart = {};
+          data.items.forEach(item => {
+            serverCart[String(item.itemId)] = Number(item.qty);
+          });
+          setCart(serverCart);
+          localStorage.setItem("cart", JSON.stringify(serverCart));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to update quantity:", err);
+      alert("Failed to update quantity. Please try again.");
+      // Revert optimistic update
+      setCart(cart);
+    }
+  };
 
   const dec = (id) => {
     const current = cart[String(id)] || 0;
@@ -415,20 +434,33 @@ export default function Cart() {
                 ) : (
                   list.map((it) => (
                     <tr key={it.id} className="border-t">
-                      <td className="py-3">{it.name}</td>
+                      <td className="py-3">
+                        <div>
+                          <div>{it.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {it.stock >= 0 && (
+                              <span className={it.stock > 0 ? 'text-green-600' : 'text-red-600'}>
+                                {it.stock > 0 ? `${it.stock} in stock` : 'Out of stock'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </td>
                       <td className="py-3">{peso.format(Number(it.price) || 0)}</td>
                       <td className="py-3">
                         <div className="inline-flex items-center border rounded">
                           <button
-                            onClick={() => syncSet(it.id, Math.max((cart[it.id] || 0) - 1, 0))}
-                            className="px-2"
+                            onClick={() => dec(it.id)}
+                            className="px-2 py-1 hover:bg-gray-50"
                           >
                             <Minus className="w-4 h-4" />
                           </button>
                           <span className="px-3">{cart[it.id] || 0}</span>
                           <button
-                            onClick={() => syncAdd(it.id, 1)}
-                            className="px-2"
+                            onClick={() => inc(it.id)}
+                            className="px-2 py-1 hover:bg-gray-50"
+                            disabled={it.stock >= 0 && cart[it.id] >= it.stock}
+                            title={it.stock >= 0 && cart[it.id] >= it.stock ? 'Maximum stock reached' : undefined}
                           >
                             <Plus className="w-4 h-4" />
                           </button>
@@ -439,8 +471,8 @@ export default function Cart() {
                       </td>
                       <td className="py-3">
                         <button
-                          onClick={() => syncRemove(it.id)}
-                          className="text-xs text-red-600"
+                          onClick={() => removeLine(it.id)}
+                          className="text-sm text-red-600 hover:text-red-700"
                         >
                           Remove
                         </button>

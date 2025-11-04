@@ -106,6 +106,11 @@ export default function AdminReports() {
     recentOrders: [],
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [revenueCurrentPage, setRevenueCurrentPage] = useState(1);
+  const [quantityCurrentPage, setQuantityCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   const load = async () => {
     setLoading(true);
     try {
@@ -633,6 +638,190 @@ export default function AdminReports() {
     }
   };
 
+  // Update the exportToCsv function to handle different data types
+  const exportToCsv = (data, type = 'products') => {
+    let csvContent = '';
+    const filename = `${type}_${periodLabel.replace(/\s/g, '_')}.csv`;
+
+    switch (type) {
+      case 'top_items':
+        csvContent = [
+          ['Item', 'Category', 'Quantity', 'Revenue'],
+          ...data.map(item => [
+            item.name,
+            item.category || 'Uncategorized',
+            item.qty,
+            peso.format(item.revenue)
+          ])
+        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        break;
+
+      case 'products':
+        csvContent = [
+          ['Item', 'Category', 'Quantity', 'Revenue'],
+          ...data.map(item => [
+            item.name,
+            item.category || 'Uncategorized',
+            item.qty,
+            item.revenue
+          ])
+        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        break;
+
+      case 'reservations':
+        csvContent = [
+          ['Status', 'Count'],
+          ...Object.entries(data).map(([status, count]) => [status, count])
+        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        break;
+
+      case 'topups':
+        csvContent = [
+          ['Metric', 'Value'],
+          ['Approved Count', data.approvedCount],
+          ['Approved Amount', data.approvedAmt],
+          ['Pending', data.pending],
+          ['Rejected', data.rejected]
+        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        break;
+
+      case 'categories':
+        csvContent = [
+          ['Category', 'Revenue'],
+          ...data.map(row => [row.category, row.amount])
+        ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        break;
+
+      case 'charts':
+        if (data && data.chartData) { // Check if chartData exists in passed data
+          csvContent = [
+            ['Label', 'Quantity', 'Revenue'],
+            ...data.chartData.labels.map((label, idx) => [
+              label,
+              data.chartData.datasets[0].data[idx],
+              data.chartData.datasets[1].data[idx]
+            ])
+          ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+        }
+        break;
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  // Update the exportCombinedStats function to include KPIs
+  const exportCombinedStats = (resStats, topupStats, categoryStats, dashboard) => {
+    const formatPeso = (value) => `PHP ${Number(value).toFixed(2)}`;
+
+    const csvContent = [
+      ['KEY PERFORMANCE INDICATORS'],
+      ['Metric', 'Value'],
+      ['Revenue (this period)', formatPeso((dashboard.totalSales || 0) || resStats.revenue || 0)],
+      ['Orders (this period)', resStats.orders],
+      ['Pending reservations', resStats.pendingReservations],
+      ['Pending top-ups', topupStats?.pending ?? 0],
+      [''], // empty row as separator
+      ['RESERVATION STATUS'],
+      ['Status', 'Count'],
+      ...Object.entries(resStats.counts),
+      [''],
+      ['TOP-UPS'],
+      ['Metric', 'Value'],
+      ['Approved Count', topupStats.approvedCount],
+      ['Approved Amount', formatPeso(topupStats.approvedAmt)],
+      ['Pending', topupStats.pending],
+      ['Rejected', topupStats.rejected],
+      [''],
+      ['REVENUE BY CATEGORY'],
+      ['Category', 'Revenue'],
+      ...categoryStats.map(row => [row.category, formatPeso(row.amount)])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `combined_stats_${periodLabel.replace(/\s/g, '_')}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  // Update the exportFullReport function to include KPIs
+  const exportFullReport = (allData) => {
+    const { resStats, topupStats, filteredResTopItems, sortedProducts, productsBar, dashboard } = allData;
+    const formatPeso = (value) => `PHP ${Number(value).toFixed(2)}`;
+    
+    const csvContent = [
+      ['FULL REPORT - ' + periodLabel],
+      [''],
+      ['KEY PERFORMANCE INDICATORS'],
+      ['Metric', 'Value'],
+      ['Revenue (this period)', formatPeso((dashboard.totalSales || 0) || resStats.revenue || 0)],
+      ['Orders (this period)', resStats.orders],
+      ['Pending reservations', resStats.pendingReservations],
+      ['Pending top-ups', topupStats?.pending ?? 0],
+      [''],
+      ['RESERVATION STATUS'],
+      ['Status', 'Count'],
+      ...Object.entries(resStats.counts),
+      [''],
+      ['TOP-UPS'],
+      ['Metric', 'Value'],
+      ['Approved Count', topupStats.approvedCount],
+      ['Approved Amount', formatPeso(topupStats.approvedAmt)],
+      ['Pending', topupStats.pending],
+      ['Rejected', topupStats.rejected],
+      [''],
+      ['REVENUE BY CATEGORY'],
+      ['Category', 'Revenue'],
+      ...resStats.categoryRows.map(row => [row.category, formatPeso(row.amount)]),
+      [''],
+      ['TOP ITEMS'],
+      ['Item', 'Category', 'Quantity', 'Revenue'],
+      ...filteredResTopItems.map(item => [
+        item.name,
+        item.category || 'Uncategorized',
+        item.qty,
+        formatPeso(item.revenue)
+      ]),
+      [''],
+      ['TOP PRODUCTS BY REVENUE'],
+      ['Item', 'Category', 'Quantity', 'Revenue'],
+      ...sortedProducts.byRevenue.map(item => [
+        item.name,
+        item.category || 'Uncategorized',
+        item.qty,
+        formatPeso(item.revenue)
+      ]),
+      [''],
+      ['CHART DATA'],
+      ['Label', 'Quantity', 'Revenue'],
+      ...productsBar.labels.map((label, idx) => [
+        label,
+        productsBar.datasets[0].data[idx],
+        formatPeso(productsBar.datasets[1].data[idx])
+      ])
+    ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `full_report_${periodLabel.replace(/\s/g, '_')}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  // Add this memoized sorting function near other useMemo declarations
+  const sortedProducts = useMemo(() => {
+    const byRevenue = [...filteredTopProducts].sort((a, b) => b.revenue - a.revenue);
+    const byQuantity = [...filteredTopProducts].sort((a, b) => b.qty - a.qty);
+    return { byRevenue, byQuantity };
+  }, [filteredTopProducts]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -645,7 +834,6 @@ export default function AdminReports() {
             <p className="text-gray-600">Combined monthly reports and current month statistics.</p>
           </div>
           <div className="flex items-center gap-2">
-            {/* month select with "All" option */}
             <select value={month} onChange={(e) => setMonth(String(e.target.value))} className="border rounded px-3 py-2">
               <option value="all">All</option>
               <option value="1">January</option>
@@ -661,21 +849,27 @@ export default function AdminReports() {
               <option value="11">November</option>
               <option value="12">December</option>
             </select>
-            {/* year select derived from data, include "All" */}
             <select value={year} onChange={(e) => setYear(String(e.target.value))} className="w-36 border rounded px-3 py-2">
               {yearOptions.map((y) => <option key={y} value={y}>{y === "all" ? "All years" : y}</option>)}
             </select>
+            <button
+              onClick={() => exportFullReport({
+                resStats,
+                topupStats,
+                filteredResTopItems,
+                sortedProducts,
+                productsBar,
+                dashboard
+              })}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+            >
+              Export Full Report
+            </button>
             <button type="button" onClick={load} className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
               <RefreshCw className="w-4 h-4" /> Refresh
             </button>
-            <button onClick={() => doExport("xlsx")} className="inline-flex items-center gap-2 bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-emerald-700">
-              <Download className="w-4 h-4" /> Download Excel
-            </button>
-            <button onClick={() => doExport("pdf")} className="inline-flex items-center gap-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-700">
-              <Download className="w-4 h-4" /> Download PDF
-            </button>
-           </div>
-         </section>
+          </div>
+        </section>
 
         {/* KPI cards (from previous Stats page) */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -714,8 +908,19 @@ export default function AdminReports() {
           </div>
         </section>
 
+        {/* Combined export button - moved here */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => exportCombinedStats(resStats, topupStats, resStats.categoryRows, dashboard)}
+            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Export Combined Stats
+          </button>
+        </div>
+
         {/* Reservation status + revenue by category (from previous Stats page) */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Reservation status section - remove export button */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservation status ({periodLabel})</h3>
             <table className="w-full text-sm">
@@ -730,6 +935,7 @@ export default function AdminReports() {
             </table>
           </div>
 
+          {/* Top-ups section - remove export button */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Top-ups ({periodLabel})</h3>
             <table className="w-full text-sm">
@@ -742,8 +948,10 @@ export default function AdminReports() {
             </table>
           </div>
 
+          {/* Revenue by category section - remove export button */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by category ({periodLabel})</h3>
+
             {resStats.categoryRows.length === 0 ? (
               <p className="text-sm text-gray-500">No data yet.</p>
             ) : (
@@ -787,62 +995,223 @@ export default function AdminReports() {
 
         {/* Top items & report visuals (existing adminReports content) */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top items ({periodLabel})</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Top items ({periodLabel})</h3>
+            <button
+              onClick={() => exportToCsv(filteredResTopItems, 'top_items')}
+              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Export CSV
+            </button>
+          </div>
+          
           {filteredResTopItems.length === 0 ? (
             <p className="text-sm text-gray-500">No data yet.</p>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="text-left text-gray-500">
-                <tr>
-                  <th className="py-2">Item</th>
-                  <th className="py-2">Category</th>
-                  <th className="py-2 text-right">Qty</th>
-                  <th className="py-2 text-right">Revenue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredResTopItems.map((it, idx) => (
-                  <tr key={(it.name || idx) + idx}>
-                    <td className="py-2 text-gray-700">{it.name}</td>
-                    <td className="py-2 text-gray-600">{it.category || "Uncategorized"}</td>
-                    <td className="py-2 text-right text-gray-700">{it.qty}</td>
-                    <td className="py-2 text-right font-semibold text-gray-900">{peso.format(it.revenue)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <table className="w-full text-sm">
+                  <thead className="text-left text-gray-500">
+                    <tr>
+                      <th className="py-2">Item</th>
+                      <th className="py-2">Category</th>
+                      <th className="py-2 text-right">Qty</th>
+                      <th className="py-2 text-right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredResTopItems
+                      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                      .map((it, idx) => (
+                        <tr key={(it.name || idx) + idx}>
+                          <td className="py-2 text-gray-700">{it.name}</td>
+                          <td className="py-2 text-gray-600">{it.category || "Uncategorized"}</td>
+                          <td className="py-2 text-right text-gray-700">{it.qty}</td>
+                          <td className="py-2 text-right font-semibold text-gray-900">{peso.format(it.revenue)}</td>
+                        </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Pagination controls */}
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage} of {Math.ceil(filteredResTopItems.length / itemsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredResTopItems.length / itemsPerPage), p + 1))}
+                    disabled={currentPage >= Math.ceil(filteredResTopItems.length / itemsPerPage)}
+                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+
+              {/* Bar chart for current page items */}
+              <div>
+                <Bar
+                  data={{
+                    labels: filteredResTopItems
+                      .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                      .map(it => it.name),
+                    datasets: [
+                      {
+                        label: 'Quantity',
+                        data: filteredResTopItems
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map(it => it.qty),
+                        backgroundColor: 'rgba(59,130,246,0.85)',
+                      },
+                      {
+                        label: 'Revenue',
+                        data: filteredResTopItems
+                          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                          .map(it => it.revenue),
+                        backgroundColor: 'rgba(16,185,129,0.85)',
+                      }
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                      y: {
+                        beginAtZero: true
+                      }
+                    },
+                    plugins: {
+                      legend: {
+                        position: 'top',
+                      }
+                    }
+                  }}
+                  height={300}
+                />
+              </div>
+            </div>
           )}
         </section>
 
         {/* Top Products (from monthly report if available, otherwise fall back to computed top items) */}
         <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Products (report) — {periodLabel}</h3>
-          { ((filteredTopProducts && filteredTopProducts.length > 0) || (filteredResTopItems && filteredResTopItems.length > 0)) ? (
-            <table className="w-full text-sm">
-              <thead className="text-left text-gray-500">
-                <tr>
-                  <th className="py-2">Product</th>
-                  <th className="py-2 text-right">Qty</th>
-                  <th className="py-2 text-right">Revenue</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {(filteredTopProducts && filteredTopProducts.length > 0 ? filteredTopProducts : filteredResTopItems).map((p, i) => {
-                  const name = p.name || p.itemId || p.label || `#${i+1}`;
-                  const qty = Number(p.qty || p.quantity || p.qty_sold || 0) || 0;
-                  const revenue = Number(p.revenue || p.amount || 0) || 0;
-                  return (
-                    <tr key={name + i}>
-                      <td className="py-2 text-gray-700">{name}</td>
-                      <td className="py-2 text-right text-gray-700">{qty}</td>
-                      <td className="py-2 text-right font-semibold text-gray-900">{peso.format(revenue)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Top Products ({periodLabel})</h3>
+            <button
+              onClick={() => exportToCsv(sortedProducts.byRevenue)}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+            >
+              Export as CSV
+            </button>
+          </div>
+          
+          {filteredTopProducts.length === 0 ? (
+            <p className="text-sm text-gray-500">No data available.</p>
           ) : (
-            <p className="text-sm text-gray-500">No report data available yet.</p>
+            <div className="grid grid-cols-2 gap-6">
+              {/* Revenue-sorted list */}
+              <div>
+                <h4 className="text-md font-medium text-gray-700 mb-3">Sorted by Revenue</h4>
+                <table className="w-full text-sm">
+                  <thead className="text-left text-gray-500">
+                    <tr>
+                      <th className="py-2">Item</th>
+                      <th className="py-2">Category</th>
+                      <th className="py-2 text-right">Quantity</th>
+                      <th className="py-2 text-right font-semibold">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {sortedProducts.byRevenue
+                      .slice((revenueCurrentPage - 1) * itemsPerPage, revenueCurrentPage * itemsPerPage)
+                      .map((item, idx) => (
+                        <tr key={`revenue-${item.name}-${idx}`}>
+                          <td className="py-2 text-gray-700">{item.name}</td>
+                          <td className="py-2 text-gray-600">{item.category || "Uncategorized"}</td>
+                          <td className="py-2 text-right text-gray-600">{item.qty}</td>
+                          <td className="py-2 text-right font-semibold text-blue-600">{peso.format(item.revenue)}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                
+                {/* Revenue pagination */}
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => setRevenueCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={revenueCurrentPage === 1}
+                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {revenueCurrentPage} of {Math.ceil(sortedProducts.byRevenue.length / itemsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setRevenueCurrentPage(p => Math.min(Math.ceil(sortedProducts.byRevenue.length / itemsPerPage), p + 1))}
+                    disabled={revenueCurrentPage >= Math.ceil(sortedProducts.byRevenue.length / itemsPerPage)}
+                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+
+              {/* Quantity-sorted list */}
+              <div>
+                <h4 className="text-md font-medium text-gray-700 mb-3">Sorted by Quantity</h4>
+                <table className="w-full text-sm">
+                  <thead className="text-left text-gray-500">
+                    <tr>
+                      <th className="py-2">Item</th>
+                      <th className="py-2">Category</th>
+                      <th className="py-2 text-right font-semibold">Quantity</th>
+                      <th className="py-2 text-right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {sortedProducts.byQuantity
+                      .slice((quantityCurrentPage - 1) * itemsPerPage, quantityCurrentPage * itemsPerPage)
+                      .map((item, idx) => (
+                        <tr key={`quantity-${item.name}-${idx}`}>
+                          <td className="py-2 text-gray-700">{item.name}</td>
+                          <td className="py-2 text-gray-600">{item.category || "Uncategorized"}</td>
+                          <td className="py-2 text-right font-semibold text-green-600">{item.qty}</td>
+                          <td className="py-2 text-right text-gray-600">{peso.format(item.revenue)}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+
+                {/* Quantity pagination */}
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={() => setQuantityCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={quantityCurrentPage === 1}
+                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {quantityCurrentPage} of {Math.ceil(sortedProducts.byQuantity.length / itemsPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setQuantityCurrentPage(p => Math.min(Math.ceil(sortedProducts.byQuantity.length / itemsPerPage), p + 1))}
+                    disabled={quantityCurrentPage >= Math.ceil(sortedProducts.byQuantity.length / itemsPerPage)}
+                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </section>
 

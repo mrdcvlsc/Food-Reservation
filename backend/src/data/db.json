@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 19,
+      "stock": 16,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -48,7 +48,7 @@
       "name": "Fried Lumpia",
       "category": "Meals",
       "price": 40,
-      "stock": 37,
+      "stock": 36,
       "img": "/uploads/1761207680082_825374.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:12.903Z"
@@ -99,8 +99,8 @@
       "price": 20,
       "stock": 48,
       "img": "/uploads/1761538656602_927934.jpg",
-      "visible": false,
-      "updatedAt": "2025-11-03T03:32:29.544Z"
+      "visible": true,
+      "updatedAt": "2025-11-04T04:07:11.711Z"
     },
     {
       "id": "ITM-11",
@@ -2820,6 +2820,56 @@
       "charged": true,
       "chargedAt": "2025-11-03T15:33:54.045Z",
       "updatedAt": "2025-11-03T15:35:21.311Z"
+    },
+    {
+      "id": "RES_mhk0vi76oh",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 3
+        }
+      ],
+      "total": 135,
+      "status": "Claimed",
+      "createdAt": "2025-11-04T03:41:43.266Z",
+      "transactionId": "txn_mhk0vi8g",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-04T03:41:43.312Z",
+      "updatedAt": "2025-11-04T03:42:41.753Z"
+    },
+    {
+      "id": "RES_mhk1puz88u",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        }
+      ],
+      "total": 40,
+      "status": "Claimed",
+      "createdAt": "2025-11-04T04:05:19.508Z",
+      "transactionId": "txn_mhk1pv6m",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-04T04:05:19.774Z",
+      "updatedAt": "2025-11-04T04:06:59.702Z"
     }
   ],
   "topups": [
@@ -3154,7 +3204,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 750,
+      "balance": 575,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "164652338"
@@ -4432,6 +4482,24 @@
       "ref": "RES_mhjavirkcw",
       "createdAt": "2025-11-03T15:33:54.045Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mhk0vi8g",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 135,
+      "ref": "RES_mhk0vi76oh",
+      "createdAt": "2025-11-04T03:41:43.312Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhk1pv6m",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 40,
+      "ref": "RES_mhk1puz88u",
+      "createdAt": "2025-11-04T04:05:19.774Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -4448,6 +4516,144 @@
   ],
   "notifications": [
     {
+      "id": "notif_mhk1s0ai",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk1puz88u Claimed",
+      "body": "Your reservation RES_mhk1puz88u is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhk1puz88u",
+        "status": "Claimed"
+      },
+      "read": false,
+      "createdAt": "2025-11-04T04:06:59.706Z"
+    },
+    {
+      "id": "notif_mhk1rzoe",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk1puz88u Ready",
+      "body": "Your reservation RES_mhk1puz88u is now Ready.",
+      "data": {
+        "reservationId": "RES_mhk1puz88u",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-11-04T04:06:58.910Z"
+    },
+    {
+      "id": "notif_mhk1qev9",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk1puz88u Preparing",
+      "body": "Your reservation RES_mhk1puz88u is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhk1puz88u",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T04:05:45.285Z"
+    },
+    {
+      "id": "notif_mhk1qbyc",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk1puz88u Approved",
+      "body": "Your reservation RES_mhk1puz88u has been approved.",
+      "data": {
+        "reservationId": "RES_mhk1puz88u",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T04:05:41.508Z"
+    },
+    {
+      "id": "notif_mhk1puze",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhk1puz88u"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T04:05:19.508Z"
+    },
+    {
+      "id": "notif_mhk0wrbx",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk0vi76oh Claimed",
+      "body": "Your reservation RES_mhk0vi76oh is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhk0vi76oh",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T03:42:41.757Z"
+    },
+    {
+      "id": "notif_mhk0wr1j",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk0vi76oh Ready",
+      "body": "Your reservation RES_mhk0vi76oh is now Ready.",
+      "data": {
+        "reservationId": "RES_mhk0vi76oh",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T03:42:41.383Z"
+    },
+    {
+      "id": "notif_mhk0wq83",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk0vi76oh Preparing",
+      "body": "Your reservation RES_mhk0vi76oh is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhk0vi76oh",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T03:42:40.323Z"
+    },
+    {
+      "id": "notif_mhk0wf52",
+      "for": "usr_mh0h1va7",
+      "actor": null,
+      "type": "reservation:status",
+      "title": "Reservation RES_mhk0vi76oh Approved",
+      "body": "Your reservation RES_mhk0vi76oh has been approved.",
+      "data": {
+        "reservationId": "RES_mhk0vi76oh",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T03:42:25.958Z"
+    },
+    {
+      "id": "notif_mhk0vi7b",
+      "for": "admin",
+      "actor": "usr_mh0h1va7",
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhk0vi76oh"
+      },
+      "read": true,
+      "createdAt": "2025-11-04T03:41:43.266Z"
+    },
+    {
       "id": "notif_mhjaxe5e",
       "for": "usr_mh0h1va7",
       "actor": null,
@@ -4458,7 +4664,7 @@
         "reservationId": "RES_mhjavirkcw",
         "status": "Claimed"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-03T15:35:21.314Z"
     },
     {
@@ -4472,7 +4678,7 @@
         "reservationId": "RES_mhjavirkcw",
         "status": "Ready"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-03T15:35:20.207Z"
     },
     {
@@ -4486,7 +4692,7 @@
         "reservationId": "RES_mhjavirkcw",
         "status": "Preparing"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-03T15:35:19.575Z"
     },
     {
@@ -4500,7 +4706,7 @@
         "reservationId": "RES_mhjavirkcw",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-03T15:34:56.916Z"
     },
     {
@@ -9271,19 +9477,13 @@
       "userId": "usr_mh0h1va7",
       "items": [
         {
-          "itemId": "ITM-2",
+          "itemId": "ITM-5",
           "qty": 1,
-          "name": "Choco Drink",
-          "price": 45
-        },
-        {
-          "itemId": "ITM-3",
-          "qty": 8,
-          "name": "Oishi Pillows",
-          "price": 12
+          "name": "Fried Lumpia",
+          "price": 40
         }
       ],
-      "updatedAt": "2025-11-03T15:33:42.159Z"
+      "updatedAt": "2025-11-04T04:05:12.033Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
