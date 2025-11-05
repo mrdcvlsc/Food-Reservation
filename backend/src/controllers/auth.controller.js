@@ -1,38 +1,58 @@
 ﻿const bcrypt = require("bcryptjs");
 const { load, save } = require("../lib/db");
 const { sign } = require("../lib/auth");
+const path = require("path");
+const fs = require("fs-extra");
+
+const UPLOAD_DIR = path.join(__dirname, "..", "uploads");
+fs.ensureDirSync(UPLOAD_DIR);
+
+// Helper to save profile picture
+function saveProfilePicture(file, userId) {
+  if (!file || !file.buffer) return null;
+  const ext = path.extname(file.originalname) || '.jpg';
+  const filename = `${userId}-${Date.now()}${ext}`;
+  const outPath = path.join(UPLOAD_DIR, filename);
+  fs.writeFileSync(outPath, file.buffer);
+  return `/uploads/${filename}`;
+}
 
 exports.register = (req, res) => {
   console.log('[AUTH] Register endpoint called');
-  const { name, email, password, grade = "", section = "", studentId } = req.body || {};
+  const { name, email, password, grade = "", section = "", studentId, phone } = req.body || {};
   
   console.log('[AUTH] Registration attempt:', { 
     name: name ? 'provided' : 'missing', 
     email: email ? 'provided' : 'missing', 
     password: password ? 'provided' : 'missing',
-    grade, 
-    section 
+    grade, section, phone: phone ? 'provided' : 'missing'
   });
   
-    if (!name || !email || !password) {
-      console.log('[AUTH] Registration failed: Missing required fields');
-      return res.status(400).json({ error: "Missing fields" });
-    }
+  if (!name || !email || !password) {
+    console.log('[AUTH] Registration failed: Missing required fields');
+    return res.status(400).json({ error: "Missing fields" });
+  }
 
   // require studentId and validate digits-only (whole number)
   if (!studentId || !/^\d+$/.test(String(studentId).trim())) {
     console.log('[AUTH] Registration failed: Invalid or missing studentId');
     return res.status(400).json({ error: "studentId is required and must contain only digits" });
   }
+
+  // require phone (basic validation: digits, +, spaces, dashes, parentheses)
+  if (!phone || !/^[\d+\-\s\(\)]+$/.test(String(phone).trim())) {
+    console.log('[AUTH] Registration failed: Invalid or missing phone');
+    return res.status(400).json({ error: "Contact number is required and must be a valid phone string" });
+  }
   
   console.log('[AUTH] Loading database...');
   const db = load();
   console.log('[AUTH] Database loaded, current users count:', db.users?.length || 0);
   
-    if (db.users.some(u => u.email === email)) {
-      console.log('[AUTH] Registration failed: Email already exists');
-      return res.status(409).json({ error: "Email already used" });
-    }
+  if (db.users.some(u => u.email === email)) {
+    console.log('[AUTH] Registration failed: Email already exists');
+    return res.status(409).json({ error: "Email already used" });
+  }
   // ensure studentId uniqueness
   if (db.users.some(u => u.studentId === String(studentId).trim())) {
     console.log('[AUTH] Registration failed: studentId already exists');
@@ -46,7 +66,8 @@ exports.register = (req, res) => {
     role: "student",
     grade, section,
     balance: 0,
-    studentId: String(studentId).trim()
+    studentId: String(studentId).trim(),
+    phone: String(phone).trim()
   };
   
   console.log('[AUTH] Creating new user:', { 
@@ -60,7 +81,7 @@ exports.register = (req, res) => {
   
   console.log('[AUTH] Saving database...');
   save(db);
-    console.log('[AUTH] Registration successful for user:', newUser.id);
+  console.log('[AUTH] Registration successful for user:', newUser.id);
   
   res.json({ ok: true });
 };
@@ -84,7 +105,7 @@ exports.login = (req, res) => {
   }
 
   const token = sign({ id: u.id, role: u.role });
-  // include studentId so frontend can auto-fill it
+  // include studentId and phone so frontend can auto-fill it
   const user = {
     id: u.id,
     name: u.name,
@@ -92,23 +113,107 @@ exports.login = (req, res) => {
     grade: u.grade,
     section: u.section,
     balance: u.balance,
-    studentId: u.studentId || null
+    studentId: u.studentId || null,
+    phone: u.phone || null
   };
   res.json({ token, user });
 };
 
 exports.me = (req, res) => {
-  const db = load();
-  const u = db.users.find(x => x.id === req.user.id);
-  if (!u) return res.status(404).json({ error: "Not found" });
-  // return studentId as well
-  res.json({
-    id: u.id,
-    name: u.name,
-    role: u.role,
-    grade: u.grade,
-    section: u.section,
-    balance: u.balance,
-    studentId: u.studentId || null
-  });
+  try {
+    const db = load();
+    const uid = req.user && req.user.id;
+    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+
+    const user = (db.users || []).find(u => String(u.id) === String(uid));
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Include phone in response
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      grade: user.grade,
+      section: user.section,
+      balance: user.balance,
+      studentId: user.studentId,
+      phone: user.phone || null,
+      profilePictureUrl: user.profilePictureUrl || null,
+      createdAt: user.createdAt || null,
+      updatedAt: user.updatedAt || null
+    });
+  } catch (err) {
+    console.error('[AUTH] me failed:', err);
+    res.status(500).json({ error: 'Failed to load user data' });
+  }
+};
+
+// Add new PATCH endpoint for profile updates
+exports.updateProfile = async (req, res) => {
+  try {
+    const db = load();
+    const uid = req.user && req.user.id;
+    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+
+    const users = Array.isArray(db.users) ? db.users : [];
+    const idx = users.findIndex(u => String(u.id) === String(uid));
+    if (idx === -1) return res.status(404).json({ error: 'User not found' });
+
+    const user = users[idx];
+    const { name, email, studentId, phone } = req.body || {};
+
+    // Update fields if provided
+    if (typeof name === 'string' && name.trim()) user.name = name.trim();
+    if (typeof email === 'string' && email.trim()) {
+      // Check email uniqueness (except self)
+      if (users.some(u => u.id !== uid && u.email === email.trim())) {
+        return res.status(409).json({ error: 'Email already in use' });
+      }
+      user.email = email.trim();
+    }
+    if (typeof studentId === 'string' && studentId.trim()) {
+      if (!/^\d+$/.test(studentId.trim())) {
+        return res.status(400).json({ error: 'Student ID must contain only digits' });
+      }
+      // Check studentId uniqueness (except self)
+      if (users.some(u => u.id !== uid && String(u.studentId) === studentId.trim())) {
+        return res.status(409).json({ error: 'Student ID already in use' });
+      }
+      user.studentId = studentId.trim();
+    }
+    if (typeof phone === 'string' && phone.trim()) {
+      if (!/^[\d+\-\s\(\)]+$/.test(phone.trim())) {
+        return res.status(400).json({ error: 'Invalid phone number format' });
+      }
+      user.phone = phone.trim();
+    }
+
+    // Handle profile picture upload if present
+    if (req.file) {
+      const pictureUrl = saveProfilePicture(req.file, user.id);
+      if (pictureUrl) user.profilePictureUrl = pictureUrl;
+    }
+
+    user.updatedAt = new Date().toISOString();
+    users[idx] = user;
+    db.users = users;
+    save(db);
+
+    return res.json({
+      ok: true,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        studentId: user.studentId,
+        phone: user.phone || null,
+        profilePictureUrl: user.profilePictureUrl || null,
+        updatedAt: user.updatedAt
+      }
+    });
+  } catch (err) {
+    console.error('[AUTH] updateProfile failed:', err);
+    return res.status(500).json({ error: 'Failed to update profile' });
+  }
 };

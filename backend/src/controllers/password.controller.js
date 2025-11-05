@@ -31,6 +31,12 @@ exports.changePassword = async (req, res, next) => {
     if (user.passwordHash) {
       const ok = await bcrypt.compare(String(currentPassword || ""), String(user.passwordHash || ""));
       if (!ok) return res.status(401).json({ error: "Invalid current password" });
+
+      // prevent using the same password again
+      if (String(currentPassword || "") === String(newPassword || "")) {
+        return res.status(400).json({ error: "New password must be different from current password" });
+      }
+
       const newHash = await bcrypt.hash(String(newPassword), 10);
       users[uidx].passwordHash = newHash;
       // optional: remove plain password field if exists
@@ -42,6 +48,12 @@ exports.changePassword = async (req, res, next) => {
     // If user stores plain text password
     if (user.password !== undefined) {
       if (String(user.password) !== String(currentPassword)) return res.status(401).json({ error: "Invalid current password" });
+
+      // prevent using the same password again
+      if (String(currentPassword || "") === String(newPassword || "")) {
+        return res.status(400).json({ error: "New password must be different from current password" });
+      }
+
       // keep plain password field (or hash it)
       users[uidx].password = String(newPassword);
       writeDb(db);

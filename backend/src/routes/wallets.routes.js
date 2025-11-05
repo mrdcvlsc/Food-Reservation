@@ -107,4 +107,11 @@ router.put(
   W.upsert
 );
 
+// Add this new route
+router.post('/update-profile', 
+  requireAuth,
+  upload.single('profilePicture'),
+  W.updateProfile
+);
+
 module.exports = router;

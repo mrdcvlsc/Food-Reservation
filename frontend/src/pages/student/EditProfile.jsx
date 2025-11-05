@@ -4,238 +4,230 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
+import { Camera } from 'lucide-react';
 
 export default function EditProfile() {
   const navigate = useNavigate();
-  useEffect(() => {
-    (async () => {
-      await refreshSessionForProtected({ navigate, requiredRole: 'student' });
-    })();
-  }, [navigate]);
-
-  // Load current user info from localStorage
-  const localUser = JSON.parse(localStorage.getItem("user") || "{}") || {};
+  const [loading, setLoading] = useState(false);
+  
+  // Get initial values from localStorage
+  const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+  
+  // Initialize form with localStorage values
   const [form, setForm] = useState({
-    name: localUser?.name || "",
-    email: localUser?.email || "",
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
+    name: localUser.name || "",
+    email: localUser.email || "",
+    studentId: localUser.studentId || localUser.user || "", // handle both fields
+    phone: localUser.phone || localUser.contact || ""
   });
 
-  const handleChange = (e) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const [imagePreview, setImagePreview] = useState(localUser.profilePicture || null);
+  const [imageFile, setImageFile] = useState(null);
+
+  // Load fresh data from server and update form
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        const meRes = await api.get("/wallets/me");
+        const data = meRes?.data ?? meRes;
+        
+        if (data && typeof data === "object") {
+          // Debug log to see what we're getting from the server
+          console.log('Server data:', data);
+          
+          setForm(prev => ({
+            ...prev,
+            name: data.name || data.fullName || prev.name || "",
+            email: data.email || prev.email || "",
+            studentId: data.user || prev.studentId || "", // Changed to match Profile.jsx
+            phone: data.phone || prev.phone || "" // Changed to match Profile.jsx
+          }));
+
+          // Also update localStorage with fresh data
+          const updatedUser = {
+            ...localUser,
+            ...data,
+            studentId: data.user, // Changed to match Profile.jsx
+            phone: data.phone // Changed to match Profile.jsx
+          };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
+
+          if (data.profilePictureUrl) {
+            setImagePreview(data.profilePictureUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load user data:", err);
+        // Fallback to localStorage if API fails
+        setForm(prev => ({
+          ...prev,
+          studentId: localUser.studentId || localUser.user || prev.studentId || "",
+          phone: localUser.phone || localUser.contact || prev.phone || ""
+        }));
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size should be less than 5MB');
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Basic client validation
-    if (form.newPassword || form.confirmPassword || form.currentPassword) {
-      if (!form.newPassword) {
-        alert("Enter a new password or leave all password fields empty.");
-        return;
-      }
-      if (form.newPassword !== form.confirmPassword) {
-        alert("New password and confirm password do not match.");
-        return;
-      }
-      if (!form.currentPassword) {
-        // If backend requires current password, we ask for it.
-        if (!window.confirm("You did not enter your current password. Submit anyway?")) {
-          return;
-        }
-      }
-    }
-
     try {
-      // Attempt to update profile (name/email) and password via common admin endpoints.
-      // Try a dedicated password endpoint first (common pattern). If that fails, fallback to updating the user record.
-      const updatePayload = { name: form.name, email: form.email };
+      setLoading(true);
+      const formData = new FormData();
 
-      // Update name/email first (if backend has users/me)
-      let updatedUser = null;
-      try {
-        const res = await api.patch("/users/me", updatePayload);
-        updatedUser = Array.isArray(res) ? null : (res?.data || res);
-      } catch (err) {
-        // ignore — some backends may not support /users/me patch, will continue
+      // Add user ID to ensure uniqueness
+      formData.append('userId', localUser.id || localUser.studentId || localUser.user);
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('studentId', form.studentId);
+      formData.append('phone', form.phone);
+      
+      if (imageFile) {
+        // Append file with unique identifier
+        const fileExt = imageFile.name.split('.').pop();
+        const uniqueFileName = `${form.studentId}_${Date.now()}.${fileExt}`;
+        formData.append('profilePicture', imageFile, uniqueFileName);
       }
 
-      // If user wants to change password, try dedicated endpoint then fallback
-      if (form.newPassword) {
-        const userId = localUser?.id || localUser?._id || null;
-        const endpoints = [
-          "/auth/change-password",
-          "/users/me/change-password",
-          "/users/change-password",
-          "/auth/password/change",
-          "/users/change-password",
-          "/users/me/password",
-          "/users/password",
-        ];
-        const payloads = [
-          { currentPassword: form.currentPassword, newPassword: form.newPassword },
-          { oldPassword: form.currentPassword, newPassword: form.newPassword },
-          { password: form.currentPassword, newPassword: form.newPassword },
-          { current_password: form.currentPassword, new_password: form.newPassword },
-          { old_password: form.currentPassword, new_password: form.newPassword },
-        ];
+      const res = await api.post("/wallets/update-profile", formData);
 
-        let changed = false;
-        let lastError = null;
-        for (const ep of endpoints) {
-          for (const pl of payloads) {
-            // if endpoint expects user id, replace placeholder
-            const target = ep.includes(":id") ? ep.replace(":id", userId) : (ep.includes("{id}") ? ep.replace("{id}", userId) : ep);
-            // if calling /auth/change-password, include email so backend can locate the user
-            const finalPayload = (target === "/auth/change-password") ? { ...pl, email: localUser?.email || form.email } : pl;
-            try {
-              // try POST then PATCH
-              await api.post(target, finalPayload);
-              changed = true;
-              break;
-            } catch (e1) {
-              lastError = e1;
-              try {
-                await api.patch(target, finalPayload);
-                changed = true;
-                break;
-              } catch (e2) {
-                lastError = e2;
-              }
-            }
-          }
-          if (changed) break;
-        }
+      // more robust success detection
+      const success = Boolean(
+        (res && typeof res === 'object' && res.status && res.status >= 200 && res.status < 300) ||
+        (res && res.ok) ||
+        (res && res.data && res.data.ok) ||
+        res === true
+      );
 
-        if (!changed) {
-          // final fallback: attempt to update user record with password field
-          try {
-            await api.patch("/users/me", { password: form.newPassword });
-            changed = true;
-          } catch (finalErr) {
-            lastError = finalErr;
-          }
-        }
+      if (success) {
+        const serverUser = res?.data?.user;
+        const profilePictureUrl = serverUser?.profilePictureUrl || imagePreview;
+        
+        const updatedUser = {
+          ...JSON.parse(localStorage.getItem("user") || "{}"),
+          ...(serverUser || {}),
+          ...(!serverUser ? form : {}),
+          profilePicture: profilePictureUrl,
+          profilePictureUpdatedAt: new Date().toISOString() // Add timestamp to force refresh
+        };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
 
-        if (!changed) {
-          console.error("Password change failed", lastError);
-          const msg = (lastError?.response?.data && (lastError.response.data.message || JSON.stringify(lastError.response.data))) || lastError?.message || "server error";
-          alert("Failed to change password: " + msg);
-          return;
-        }
+        navigate("/profile");
+        setTimeout(() => alert("Profile updated successfully"), 150);
+        return;
       }
 
-      // If server returned updated user, merge it; otherwise update localStorage with fields we know
-      const finalUser = updatedUser || { ...localUser, name: form.name, email: form.email };
-      localStorage.setItem("user", JSON.stringify(finalUser));
-
-      alert("Profile updated successfully.");
-      navigate("/profile");
-    } catch (e) {
-      console.error("Update failed", e);
-      alert("Update failed. See console for details.");
+      // fallback: show error if server didn't indicate success
+      throw new Error((res && res.data && (res.data.error || res.data.message)) || "Update failed");
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert(err.response?.data?.message || err.message || "Failed to update profile. Please try again.");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
       <Navbar />
-
       <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white rounded-2xl shadow-lg p-10">
           <h2 className="text-3xl font-bold mb-8 text-center text-blue-700">
             Edit Profile
           </h2>
+          
           <form onSubmit={handleSubmit} className="space-y-8">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Full Name
-              </label>
-              <input
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Enter your full name"
-              />
+            {/* Profile Picture */}
+            <div className="mb-8 flex flex-col items-center">
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-blue-100">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-700">
+                      {form.name?.[0]?.toUpperCase() || "U"}
+                    </div>
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 bg-blue-600 rounded-full p-2 cursor-pointer hover:bg-blue-700 transition-colors">
+                  <Camera className="w-5 h-5 text-white" />
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    disabled={loading}
+                  />
+                </label>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">Click the camera icon to upload a profile picture</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Email Address
-              </label>
-              <input
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Enter your email"
-              />
-            </div>
+            {/* Form Fields */}
+            {['name', 'email', 'studentId', 'phone'].map((field) => (
+              <div key={field}>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                  {field === 'studentId' ? 'Student ID' : 
+                   field === 'phone' ? 'Contact Number' :
+                   field === 'email' ? 'Email Address' : 'Full Name'}
+                </label>
+                <input
+                  name={field}
+                  type={field === 'email' ? 'email' : 'text'}
+                  value={form[field]}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
+                  placeholder={`Enter your ${field === 'studentId' ? 'student ID' : 
+                              field === 'phone' ? 'phone number' : field}`}
+                  disabled={loading}
+                />
+              </div>
+            ))}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Current Password
-              </label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={form.currentPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Enter current password (required to change password)"
-                autoComplete="current-password"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                New Password{" "}
-                <span className="text-gray-400">(optional)</span>
-              </label>
-              <input
-                type="password"
-                name="newPassword"
-                value={form.newPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Enter new password"
-                autoComplete="new-password"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Confirm New Password
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Re-enter new password"
-                autoComplete="new-password"
-              />
-            </div>
-
+            {/* Buttons */}
             <div className="flex justify-between mt-8">
               <button
                 type="button"
                 onClick={() => navigate("/profile")}
                 className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                disabled={loading}
               >
-                Save Changes
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>

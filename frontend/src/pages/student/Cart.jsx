@@ -12,6 +12,8 @@ import {
   Clock,
   X,
   CheckCircle2,
+  Wallet,
+  AlertTriangle,
 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", {
@@ -37,6 +39,12 @@ export default function Cart() {
   const { state } = useLocation();
 
   const { cart, add, setQty, remove, clear, meta } = useCart(); // { [id]: qty }
+
+  // wallet (added: same pattern as Shop.jsx)
+  const [wallet, setWallet] = useState({ balance: 0 });
+  const [loadingWallet, setLoadingWallet] = useState(true);
+  const [walletError, setWalletError] = useState("");
+
   const [open, setOpen] = useState(false);
   const [reserve, setReserve] = useState({
     grade: "",
@@ -57,6 +65,34 @@ export default function Cart() {
       .catch(() => { if (!m) return; setProducts([]); })
       .finally(() => { if (!m) return; setMenuLoading(false); });
     return () => (m = false);
+  }, []);
+
+  // fetch wallet (copied behavior from Shop.jsx)
+  const fetchWallet = async () => {
+    setLoadingWallet(true);
+    setWalletError("");
+    try {
+      const w = await api.get("/wallets/me");
+      const val = (w && (w.data || w)) || {};
+      const bal = Number(val.balance) || 0;
+      setWallet({ balance: bal });
+      try {
+        const u = JSON.parse(localStorage.getItem("user") || "{}");
+        if (u && u.id) {
+          u.balance = bal;
+          localStorage.setItem("user", JSON.stringify(u));
+        }
+      } catch {}
+    } catch (e) {
+      setWallet({ balance: 0 });
+      setWalletError("Unable to load wallet. You might not be logged in.");
+    } finally {
+      setLoadingWallet(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWallet();
   }, []);
 
   // Cart persistence and server sync handled by CartContext
@@ -89,6 +125,9 @@ export default function Cart() {
     () => list.reduce((sum, it) => sum + it.qty * it.price, 0),
     [list]
   );
+
+  // derived: insufficient like Shop.jsx
+  const insufficient = total > (Number(wallet.balance) || 0);
 
   // helper: is user logged in (quick)
   const isAuth = () => !!localStorage.getItem("token");
@@ -164,17 +203,21 @@ export default function Cart() {
   const openReserve = () => setOpen(true);
   const closeReserve = () => setOpen(false);
 
+  // submitReservation: prevent if insufficient (align with Shop)
   const submitReservation = async () => {
     if (!list.length) return alert("Your cart is empty.");
     if (!reserve.grade) return alert("Select grade level.");
     if (!reserve.section.trim()) return alert("Enter section.");
     if (!reserve.slot) return alert("Choose a pickup window.");
 
-    // require login so the reservation is associated with a user
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in first.");
       return navigate("/login");
+    }
+
+    if (insufficient) {
+      return alert("Insufficient wallet balance. Please top-up first.");
     }
 
     setSubmitting(true);
@@ -193,19 +236,34 @@ export default function Cart() {
         section: reserve.section,
         slot: reserve.slot,
         note: reserve.note,
-        // include student display name so backend can resolve user if needed
         student: user.name || "",
       };
 
-      await api.post('/reservations', payload);
-      alert("Reservation submitted! Track status in History.");
+      // Try atomic checkout endpoint first like Shop.jsx, fallback to basic reservation + charge
+      try {
+        await api.post('/reservations/checkout', payload);
+      } catch {
+        const created = await api.post('/reservations', payload);
+        const createdId = created?.id || created?.data?.id;
+        const amount = created?.total ?? created?.data?.total ?? total;
+        if (!createdId) throw new Error("Reservation created without an id.");
+        await api.post("/wallets/charge", {
+          amount: Number(amount),
+          refType: "reservation",
+          refId: createdId,
+        });
+      }
+
+      alert("Reservation submitted and wallet charged.");
       clearCart();
       setReserve({ grade: "", section: "", slot: "", note: "" });
       closeReserve();
+      await fetchWallet(); // refresh wallet after charge
       navigate("/transactions");
     } catch (e) {
       console.error(e);
-      alert("Failed to submit. Please try again.");
+      const msg = e?.response?.data?.error || e?.message || "Failed to submit. Please try again.";
+      alert(msg);
     } finally {
       setSubmitting(false);
     }
@@ -219,6 +277,14 @@ export default function Cart() {
       </div>
     );
   }
+
+  // Add this CSS at the top of your file after the imports
+  const selectStyles = {
+    height: '160px', // Shows ~5 options at a time
+    overflow: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#94A3B8 #E2E8F0'
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -349,161 +415,202 @@ export default function Cart() {
 
       {/* Reservation modal (same UX as Shop.jsx) */}
       {open && (
-        <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={closeReserve} />
-          <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="w-full max-w-2xl bg-white rounded-xl shadow-xl border border-gray-100">
-              <div className="flex items-center justify-between p-4 border-b">
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="min-h-screen px-4 text-center flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/30" onClick={closeReserve} />
+            
+            <div className="relative inline-block w-full max-w-2xl bg-white rounded-xl shadow-xl border border-gray-100 text-left align-middle">
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-600" />
                   <h3 className="font-semibold">Confirm Reservation</h3>
                 </div>
-                <button onClick={closeReserve} className="p-2 rounded-lg hover:bg-gray-100">
+                <button onClick={closeReserve} className="p-2 rounded-lg hover:bg-gray-100" aria-label="Close">
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Student & slot info */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Grade Level
-                      </label>
-                      <select
-                        value={reserve.grade}
-                        onChange={(e) =>
-                          setReserve((r) => ({ ...r, grade: e.target.value }))
-                        }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">Select grade</option>
-                        <option>G7</option>
-                        <option>G8</option>
-                        <option>G9</option>
-                        <option>G10</option>
-                        <option>G11</option>
-                        <option>G12</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Section
-                      </label>
-                      <input
-                        value={reserve.section}
-                        onChange={(e) =>
-                          setReserve((r) => ({ ...r, section: e.target.value }))
-                        }
-                        placeholder="e.g., A / Rizal"
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Pickup Window
-                    </label>
-                    <div className="grid grid-cols-1 gap-2">
-                      {SLOTS.map((s) => (
-                        <label
-                          key={s.id}
-                          className="flex items-center gap-3 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer"
-                        >
-                          <input
-                            type="radio"
-                            name="pickup-slot"
-                            checked={reserve.slot === s.id}
-                            onChange={() =>
-                              setReserve((r) => ({ ...r, slot: s.id }))
-                            }
-                          />
-                          <span className="text-sm">{s.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Note (optional)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={reserve.note}
-                      onChange={(e) =>
-                        setReserve((r) => ({ ...r, note: e.target.value }))
-                      }
-                      placeholder="e.g., Less sauce"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Summary */}
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Order Summary</h4>
-                  <div className="border rounded-lg divide-y">
-                    {list.map((it) => (
-                      <div
-                        key={it.id}
-                        className="p-3 flex items-center justify-between text-sm"
-                      >
-                        <div className="min-w-0">
-                          <div className="font-medium text-gray-900 truncate">
-                            {it.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {peso.format(it.price)}
+              <div className="max-h-[80vh] flex flex-col">
+                <div className="flex-1 overflow-y-auto">
+                  <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left side form */}
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Grade Level
+                          </label>
+                          <div className="relative">
+                            <select
+                              value={reserve.grade}
+                              onChange={(e) => setReserve((r) => ({ ...r, grade: e.target.value }))}
+                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                            >
+                              <option value="">Select grade</option>
+                              <option>Kindergarten</option>
+                              <option>G1</option>
+                              <option>G2</option>
+                              <option>G3</option>
+                              <option>G4</option>
+                              <option>G5</option>
+                              <option>G6</option>
+                              <option>G7</option>
+                              <option>G8</option>
+                              <option>G9</option>
+                              <option>G10</option>
+                              <option>G11</option>
+                              <option>G12</option>
+                            </select>
+                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
+                              </svg>
+                            </div>
                           </div>
                         </div>
-                        <div className="font-medium">
-                          {it.qty} × {peso.format(it.price)}
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Section
+                          </label>
+                          <input
+                            value={reserve.section}
+                            onChange={(e) => setReserve((r) => ({ ...r, section: e.target.value }))}
+                            placeholder="e.g., A / Rizal"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
                         </div>
                       </div>
-                    ))}
-                    <div className="p-3 flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Total</span>
-                      <span className="text-lg font-semibold">
-                        {peso.format(total)}
-                      </span>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Pickup Window
+                        </label>
+                        <div className="grid grid-cols-1 gap-2">
+                          {SLOTS.map((s) => (
+                            <label
+                              key={s.id}
+                              className="flex items-center gap-3 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer"
+                            >
+                              <input
+                                type="radio"
+                                name="pickup-slot"
+                                checked={reserve.slot === s.id}
+                                onChange={() =>
+                                  setReserve((r) => ({ ...r, slot: s.id }))
+                                }
+                              />
+                              <span className="text-sm">{s.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Note (optional)
+                        </label>
+                        <textarea
+                          rows={3}
+                          value={reserve.note}
+                          onChange={(e) =>
+                            setReserve((r) => ({ ...r, note: e.target.value }))
+                          }
+                          placeholder="e.g., Less sauce"
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Right side - Split into scrollable items and sticky summary */}
+                    <div className="flex flex-col h-full">
+                      <h4 className="font-medium text-gray-900 mb-2">Order Summary</h4>
+                      <div className="border rounded-lg flex-1 flex flex-col"> {/* Added flex flex-col */}
+                        <div className="flex-1 overflow-y-auto divide-y"> {/* Removed max-h-[240px] and made it flex-1 */}
+                          {list.map((it) => (
+                            <div key={it.id} className="p-3 flex items-center justify-between text-sm">
+                              <div className="min-w-0">
+                                <div className="font-medium text-gray-900 truncate">{it.name}</div>
+                                <div className="text-xs text-gray-500">{peso.format(it.price)}</div>
+                              </div>
+                              <div className="font-medium">{it.qty} × {peso.format(it.price)}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <button
-                    onClick={submitReservation}
-                    disabled={submitting || !list.length}
-                    className="mt-4 w-full inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-60"
-                  >
-                    {submitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <Clock className="w-4 h-4 animate-pulse" />
-                        Submitting…
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" />
-                        Submit Reservation
-                      </span>
-                    )}
-                  </button>
                 </div>
-              </div>
 
-              <div className="p-4 border-t text-right">
-                <button
-                  onClick={closeReserve}
-                  className="text-sm px-3 py-2 rounded-lg border hover:bg-gray-50"
-                >
-                  Close
-                </button>
+                {/* Sticky bottom section */}
+                <div className="sticky bottom-0 bg-white border-t">
+                  <div className="p-4 space-y-3">
+                    {/* Totals */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Total</span>
+                        <span className="text-lg font-semibold">{peso.format(total)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="inline-flex items-center gap-2 text-gray-700">
+                          <Wallet className="w-4 h-4" />
+                          <span>Wallet Balance</span>
+                        </div>
+                        <div className="font-semibold">
+                          {loadingWallet ? "…" : peso.format(Number(wallet.balance) || 0)}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Remaining</span>
+                        <span className={`font-semibold ${insufficient ? "text-red-700" : "text-emerald-700"}`}>
+                          {loadingWallet ? "…" : peso.format(Math.max(0, (Number(wallet.balance) || 0) - total))}
+                        </span>
+                      </div>
+                    </div>
+
+                    {walletError && (
+                      <div className="text-xs text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
+                        {walletError}
+                      </div>
+                    )}
+
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        onClick={closeReserve}
+                        className="text-sm px-3 py-2 rounded-lg border hover:bg-gray-50"
+                      >
+                        Close
+                      </button>
+                      <button
+                        onClick={submitReservation}
+                        disabled={submitting || !list.length || insufficient}
+                        className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-60"
+                      >
+                        {submitting ? (
+                          <span className="inline-flex items-center gap-2">
+                            <Clock className="w-4 h-4 animate-pulse" />
+                            Submitting…
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-2">
+                            <CheckCircle2 className="w-4 h-4" />
+                            Submit Reservation
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      <div className="mt-4">
+        
+      </div>
     </div>
   );
 }

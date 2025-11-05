@@ -22,6 +22,7 @@ exports.list = async (req, res) => {
         lastLogin: u.lastLogin,
         passwordSet: !!(u.passwordHash || u.password),
         studentId: u.studentId || null,
+        phone: u.phone || null
       }));
       return res.json(safe);
     }
@@ -38,6 +39,7 @@ exports.list = async (req, res) => {
       lastLogin: u.lastLogin,
       passwordSet: !!(u.passwordHash || u.password),
       studentId: u.studentId || null,
+      phone: u.phone || null
     }));
     res.json(safe);
   } catch (err) {

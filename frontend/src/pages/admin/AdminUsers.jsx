@@ -50,6 +50,7 @@ export default function AdminUsers() {
                   <th className="px-4 py-3">ID Number</th>
                   <th className="px-4 py-3">Full name</th>
                   <th className="px-4 py-3">Email</th>
+                  <th className="px-4 py-3">Phone</th> {/* added */}
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Pwd set</th>
                   <th className="px-4 py-3">Actions</th>
@@ -62,6 +63,7 @@ export default function AdminUsers() {
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-28" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-48" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-56" /></td>
+                      <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-36" /></td> {/* placeholder */}
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-12" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
@@ -73,6 +75,7 @@ export default function AdminUsers() {
                       <td className="px-4 py-3 font-mono text-sm text-gray-700">{u.studentId || u.id}</td>
                       <td className="px-4 py-3">{u.name}</td>
                       <td className="px-4 py-3 break-words">{u.email}</td>
+                      <td className="px-4 py-3">{u.phone || "—"}</td> {/* added */}
                       <td className="px-4 py-3">{u.role}</td>
                       <td className="px-4 py-3">{u.passwordSet ? "Yes" : "No"}</td>
                       <td className="px-4 py-3">

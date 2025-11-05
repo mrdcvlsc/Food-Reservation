@@ -159,21 +159,34 @@ export default function Dashboard() {
 
   // --- derived stats (simple, school-friendly) ---
   const stats = useMemo(() => {
-    const month = new Date().getMonth();
-    // Only consider 'debit' entries (food orders) for orders/total spent
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Filter for current month's activity
     const thisMonth = activity.filter((a) => {
       const d = new Date(a.time);
-      return !isNaN(d) && d.getMonth() === month && (a.direction || "debit") === "debit";
+      return !isNaN(d) && 
+             d.getMonth() === currentMonth && 
+             d.getFullYear() === currentYear;
     });
-    const ordersCount = thisMonth.length;
-    const totalSpent = thisMonth.reduce((s, a) => s + (a.amount || 0), 0);
 
-    const pendingSet = new Set(["Pending", "Approved", "Preparing"]);
-    const readySet   = new Set(["Ready"]);
-    const pendingCount = activity.filter((a) => pendingSet.has(a.status)).length;
-    const readyCount   = activity.filter((a) => readySet.has(a.status)).length;
+    // Only count orders that weren't rejected
+    const validOrders = thisMonth.filter(a => a.status !== "Rejected");
+    const ordersCount = validOrders.length;
 
-    return { ordersCount, totalSpent, pendingCount, readyCount };
+    // Only sum amounts for non-rejected orders
+    const totalSpent = validOrders.reduce((s, a) => {
+      if (a.direction === "debit") {
+        return s + (a.amount || 0);
+      }
+      return s;
+    }, 0);
+
+    const readySet = new Set(["Ready"]);
+    const readyCount = activity.filter((a) => readySet.has(a.status)).length;
+
+    return { ordersCount, totalSpent, readyCount };
   }, [activity]);
 
   // --- greeting ---

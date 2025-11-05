@@ -16,6 +16,7 @@ import Profile      from "./pages/student/Profile";
 import EditProfile  from "./pages/student/EditProfile";
 import TxHistory    from "./pages/student/TxHistory";
 import TopUpHistory from "./pages/student/TopUpHistory";
+import Security     from "./pages/student/Security"; // added import
 
 /* --------------- Admin screens --------------- */
 import AdminHome           from "./pages/admin/adminhomes";
@@ -70,6 +71,7 @@ function App() {
         <Route path="/topup"          element={<TopUp />} />
         <Route path="/topup-history"  element={<TopUpHistory />} />
         <Route path="/transactions"   element={<TxHistory />} />
+        <Route path="/profile/security" element={<Security />} /> {/* added route */}
         {/* alias for older links */}
         <Route path="/topup/history"  element={<TopUpHistory />} />
 

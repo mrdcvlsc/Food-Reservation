@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
-import { Pencil, Wallet } from "lucide-react";
+import { Pencil, Wallet, ShoppingBag, Clock } from "lucide-react";
 
 // Peso formatter
 const peso = new Intl.NumberFormat("en-PH", {
@@ -32,62 +32,140 @@ function safeDateLabel(isoLike) {
   return d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
 }
 
-// (removed unused readLocalUser helper)
+// Add this helper function near the top with other helpers
+const fetchArr = async (path) => {
+  try {
+    const d = await api.get(path);
+    if (Array.isArray(d)) return d;
+    if (d && Array.isArray(d.data)) return d.data;
+    return [];
+  } catch {
+    return [];
+  }
+};
 
 // ---- component -------------------------------------------------------------
 export default function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState({
-    name: "Guest User",
-    email: "guest@example.com",
+    name: "",
+    email: "",
     balance: 0,
-    createdAt: null,
-    studentId: ""
+    studentId: "",
+    phone: "",
+    createdAt: null
   });
+  const [activity, setActivity] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+
+  // Update the stats calculation in useMemo
+  const stats = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Filter for current month's activity
+    const thisMonth = activity.filter((a) => {
+      const d = new Date(a.time);
+      return !isNaN(d) && 
+             d.getMonth() === currentMonth && 
+             d.getFullYear() === currentYear;
+    });
+
+    // Only count orders that weren't rejected
+    const validOrders = thisMonth.filter(a => a.status !== "Rejected");
+    const ordersCount = validOrders.length;
+
+    // Only sum amounts for non-rejected orders
+    const totalSpent = validOrders.reduce((s, a) => {
+      if (a.direction === "debit") {
+        return s + (a.amount || 0);
+      }
+      return s;
+    }, 0);
+
+    const readySet = new Set(["Ready"]);
+    const readyCount = activity.filter((a) => readySet.has(a.status)).length;
+
+    return { ordersCount, totalSpent, readyCount };
+  }, [activity]);
 
   useEffect(() => {
     (async () => {
       await refreshSessionForProtected({ navigate, requiredRole: "student" });
     })();
 
-    (async () => {
-      setLoading(true);
+    const loadActivity = async () => {
       try {
-        const meRes = await api.get("/wallets/me").catch(() => null);
-        console.log('meRes = ', meRes)
+        setLoading(true);
+        // Fetch both sources in parallel and merge them
+        const [reservations, txs] = await Promise.all([
+          fetchArr('/reservations/mine'), 
+          fetchArr('/transactions/mine')
+        ]);
+
+        const rows = [];
+
+        if (Array.isArray(reservations) && reservations.length > 0) {
+          for (const r of reservations) {
+            rows.push({
+              id: r.id || `R-${rows.length + 1}`,
+              title: r.title || 'reservation',
+              amount: Math.abs(Number(r.total || r.amount || 0) || 0),
+              time: r.createdAt || r.date || r.time || new Date().toISOString(),
+              status: r.status || 'Success',
+              direction: 'debit',
+            });
+          }
+        }
+
+        if (Array.isArray(txs) && txs.length > 0) {
+          for (const t of txs) {
+            const id = t.id || t.txId || `TX-${rows.length + 1}`;
+            const direction = (t.direction || (String(t.type || '')).toLowerCase().includes('reservation') ? 'debit' : (t.direction || 'credit'));
+            const ref = String(t.ref || t.reference || t.reservationId || '').toLowerCase();
+            const isReservationRef = ref.includes('res') || ref.startsWith('r-');
+            if (direction === 'debit' || isReservationRef) {
+              rows.push({
+                id,
+                title: t.title || t.type || (isReservationRef ? 'Reservation' : 'Transaction'),
+                amount: Math.abs(Number(t.amount ?? t.total ?? t.value ?? 0) || 0),
+                time: t.createdAt || t.time || t.date || new Date().toISOString(),
+                status: t.status || t.state || 'Success',
+                direction,
+              });
+            }
+          }
+        }
+
+        // Sort by time desc
+        rows.sort((a, b) => new Date(b.time) - new Date(a.time));
+        setActivity(rows);
+
+        // Get user's wallet info
+        const meRes = await api.get("/wallets/me");
         const me = meRes?.data ?? meRes;
+        
         if (me && typeof me === "object") {
-          console.log(me.studentId)
-          setUser((u) => ({
-            ...u,
-            name: me.name || me.fullName || u.name,
-            email: me.email || u.email,
-            balance: Number(me.balance ?? me.wallet ?? u.balance),
-            createdAt: me.createdAt || me.registeredAt || u.createdAt,
-            studentId: me.user 
+          setUser(prev => ({
+            ...prev,
+            name: me.name || me.fullName || prev.name,
+            email: me.email || prev.email,
+            balance: Number(me.balance ?? me.wallet ?? prev.balance),
+            createdAt: me.createdAt || me.registeredAt || prev.createdAt,
+            studentId: me.user,
+            phone: me.phone || prev.phone
           }));
-        } else {
-          // fallback to localStorage if /me not available
-          try {
-            const raw = localStorage.getItem("user") || "{}";
-            const lu = JSON.parse(raw) || {};
-            setUser((u) => ({
-              ...u,
-              name: lu.name || lu.fullName || u.name,
-              email: lu.email || u.email,
-              balance: Number(lu.balance ?? lu.wallet ?? u.balance),
-              createdAt: lu.createdAt || u.createdAt,
-              studentId: lu.studentId || lu.studentID || lu.sid || u.studentId
-            }));
-          } catch {}
         }
       } catch (err) {
-        console.error("Failed to load profile", err);
+        console.error("Failed to load profile data:", err);
       } finally {
         setLoading(false);
       }
-    })();
+    };
+
+    loadActivity();
   }, [navigate]);
 
   // initials (fallback to email first letters if name missing)
@@ -103,11 +181,30 @@ export default function Profile() {
 
   const memberSince = useMemo(() => safeDateLabel(user?.createdAt), [user?.createdAt]);
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
+  // Add effect to handle profile picture updates
+  useEffect(() => {
+    const loadProfilePicture = async () => {
+      try {
+        const meRes = await api.get("/wallets/me");
+        const data = meRes?.data ?? meRes;
+        
+        if (data?.profilePictureUrl) {
+          // Add cache buster to force browser to reload image
+          const cacheBuster = `?t=${new Date().getTime()}`;
+          setProfilePicture(`${data.profilePictureUrl}${cacheBuster}`);
+        }
+      } catch (err) {
+        console.error("Failed to load profile picture:", err);
+      }
+    };
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    loadProfilePicture();
+  }, [user?.studentId]); // Reload when user changes
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
           <Link
@@ -120,13 +217,22 @@ export default function Profile() {
         </div>
 
         {/* Card */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <section className="bg-white rounded-lg shadow-md p-6 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Avatar + meta */}
             <div className="flex md:block items-center md:items-start gap-4 md:gap-0">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-3xl font-bold">
-                  {initials}
+                <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-3xl font-bold overflow-hidden">
+                  {profilePicture ? (
+                    <img 
+                      src={profilePicture}
+                      alt={`${user?.name}'s profile`}
+                      className="w-full h-full object-cover"
+                      onError={() => setProfilePicture(null)} // Fallback to initials on error
+                    />
+                  ) : (
+                    <span>{initials}</span>
+                  )}
                 </div>
               </div>
               <div className="md:mt-4">
@@ -158,7 +264,7 @@ export default function Profile() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Phone</p>
-                <p className="text-lg font-medium text-gray-900">{user?.phone || "—"}</p>
+                <p className="text-lg font-mono text-gray-900 break-words">{user?.phone || "—"}</p>
               </div>
             </div>
           </div>
@@ -178,11 +284,51 @@ export default function Profile() {
               Purchase History
             </Link>
             <Link
-              to="/profile/edit"
+              to="/profile/security"
               className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50"
             >
-              Security & Password
+              Change Password
             </Link>
+          </div>
+        </section>
+
+        {/* Stats section */}
+        <section className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
+          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet className="w-4 h-4 text-emerald-600" />
+              <p className="text-sm text-gray-600">Current Balance</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {peso.format(user.balance || 0)}
+            </p>
+          </div>
+          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+              <ShoppingBag className="w-4 h-4 text-blue-600" />
+              <p className="text-sm text-gray-600">Total Orders</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.ordersCount || 0}
+            </p>
+          </div>
+          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+              <Wallet className="w-4 h-4 text-violet-600" />
+              <p className="text-sm text-gray-600">Total spent</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {peso.format(stats.totalSpent || 0)}
+            </p>
+          </div>
+          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="w-4 h-4 text-violet-600" />
+              <p className="text-sm text-gray-600">Ready for pickup</p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900">
+              {stats.readyCount || 0}
+            </p>
           </div>
         </section>
 

@@ -20,7 +20,8 @@ export default function Register() {
     studentId: "",
     email: "",
     password: "",
-    confirm: ""
+    confirm: "",
+    phone: "" // added
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -39,6 +40,10 @@ export default function Register() {
     if (!form.email.trim()) errs.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       errs.email = "Invalid email";
+
+    if (!form.phone.trim()) errs.phone = "Contact number is required";
+    else if (!/^[\d+\-\s\(\)]+$/.test(form.phone.trim())) errs.phone = "Invalid contact number";
+
     if (!form.password) errs.password = "Password is required";
     else if (form.password.length < 8)
       errs.password = "Must be at least 8 characters";
@@ -66,6 +71,7 @@ export default function Register() {
         password: form.password,
         grade: "",
         section: "",
+        phone: form.phone.trim()
       });
 
       // auto-login
@@ -171,6 +177,14 @@ export default function Register() {
               onChange={handleChange}
               placeholder="Digits only, e.g. 202300001"
               error={errors.studentId}
+            />
+            <Input
+              label="Contact Number"
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="e.g. +63 912 345 6789"
+              error={errors.phone}
             />
             <Input
               label="Email Address"

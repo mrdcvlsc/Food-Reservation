@@ -50,17 +50,29 @@ exports.me = async (req, res) => {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     const user = (db.users || []).find((u) => String(u.id) === String(uid));
-    console.log(user)
+    
     if (!user) { 
       console.log('[WALLET] Me: user not found', uid);
       return res.status(404).json({ error: 'User not found' });
     }
+
     console.log('[WALLET] Me: returning wallet for user', uid);
-    return res.json({ balance: Number(user.balance) || 0, id: user.id, name: user.name, email: user.email, role: user.role, user: user.studentId });
+    return res.json({
+      balance: Number(user.balance) || 0,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      user: user.studentId || user.sid || null,
+      studentId: user.studentId || user.sid || user.student_id || null,
+      phone: user.phone || user.contact || null,
+      // Add profile picture URL to the response
+      profilePictureUrl: user.profilePictureUrl || null
+    });
   } catch (e) {
     console.error(e);
-  console.log('[WALLET] Me: failed to load wallet', e.message);
-  res.status(500).json({ error: 'Failed to load wallet' });
+    console.log('[WALLET] Me: failed to load wallet', e.message);
+    res.status(500).json({ error: 'Failed to load wallet' });
   }
 };
 
@@ -187,5 +199,56 @@ exports.charge = async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Failed to charge wallet' });
+  }
+};
+
+// Add this new endpoint
+exports.updateProfile = async (req, res) => {
+  try {
+    const db = await load();
+    const uid = req.user && req.user.id;
+    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
+
+    const users = Array.isArray(db.users) ? db.users : [];
+    const idx = users.findIndex(u => String(u.id) === String(uid));
+    if (idx === -1) return res.status(404).json({ error: 'User not found' });
+
+    const user = users[idx];
+    const { name, email, studentId, phone } = req.body || {};
+
+    // Update fields if provided
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (studentId) user.studentId = studentId;
+    if (phone) user.phone = phone;
+
+    // Handle profile picture if provided
+    if (req.file) {
+      const ext = path.extname(req.file.originalname) || '.jpg';
+      const filename = `profile-${user.id}-${Date.now()}${ext}`;
+      const filePath = path.join(UPLOAD_DIR, filename);
+      await fs.writeFile(filePath, req.file.buffer);
+      user.profilePictureUrl = `/uploads/${filename}`;
+    }
+
+    user.updatedAt = new Date().toISOString();
+    users[idx] = user;
+    db.users = users;
+    await save(db);
+
+    res.json({ 
+      ok: true, 
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        studentId: user.studentId,
+        phone: user.phone,
+        profilePictureUrl: user.profilePictureUrl
+      }
+    });
+  } catch (err) {
+    console.error('[WALLET] updateProfile failed:', err);
+    res.status(500).json({ error: 'Failed to update profile' });
   }
 };
