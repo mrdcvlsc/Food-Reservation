@@ -288,6 +288,7 @@ export default function Navbar() {
                           <NotificationItem 
                             notification={notification} 
                             onClick={() => openNotif(notification)}
+                            isAdminSide={false} // Add this prop
                           />
                         </div>
                       ))

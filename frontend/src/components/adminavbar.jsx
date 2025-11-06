@@ -25,6 +25,8 @@ const peso = new Intl.NumberFormat("en-PH", {
   currency: "PHP",
 });
 
+const USER_PROFILE_UPDATED = 'USER_PROFILE_UPDATED';
+
 export default function AdminAvbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -142,6 +144,42 @@ export default function AdminAvbar() {
     }
   };
 
+  useEffect(() => {
+    const handleProfileUpdate = (event) => {
+      const { userId, updates } = event.detail;
+      
+      setNotifications(prev => prev.map(notif => {
+        // Update actor data if it matches the updated user
+        if (notif.actor && String(notif.actor.id) === String(userId)) {
+          return {
+            ...notif,
+            actor: {
+              ...notif.actor,
+              ...updates,
+              profilePictureUrl: updates.profilePictureUrl || notif.actor.profilePictureUrl
+            }
+          };
+        }
+        return notif;
+      }));
+
+      // Update preview notification if open
+      if (previewNotif?.actor?.id === userId) {
+        setPreviewNotif(prev => ({
+          ...prev,
+          actor: {
+            ...prev.actor,
+            ...updates,
+            profilePictureUrl: updates.profilePictureUrl || prev.actor.profilePictureUrl
+          }
+        }));
+      }
+    };
+
+    window.addEventListener(USER_PROFILE_UPDATED, handleProfileUpdate);
+    return () => window.removeEventListener(USER_PROFILE_UPDATED, handleProfileUpdate);
+  }, []);
+
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur border-b shadow-sm">
       <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
@@ -255,6 +293,7 @@ export default function AdminAvbar() {
                         <NotificationItem 
                           notification={notification} 
                           onClick={() => openNotif(notification)}
+                          isAdminSide={true} // Add this prop
                         />
                       </div>
                     ))

@@ -61,32 +61,24 @@ export default function Profile() {
 
   // Update the stats calculation in useMemo
   const stats = useMemo(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    // Only count orders that were Approved, Preparing, Ready, or Claimed
+    const validStatuses = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
+    
+    const validOrders = activity.filter(a => validStatuses.has(a.status));
 
-    // Filter for current month's activity
-    const thisMonth = activity.filter((a) => {
-      const d = new Date(a.time);
-      return !isNaN(d) && 
-             d.getMonth() === currentMonth && 
-             d.getFullYear() === currentYear;
-    });
-
-    // Only count orders that weren't rejected
-    const validOrders = thisMonth.filter(a => a.status !== "Rejected");
+    // Calculate total orders (all-time)
     const ordersCount = validOrders.length;
 
-    // Only sum amounts for non-rejected orders
-    const totalSpent = validOrders.reduce((s, a) => {
+    // Calculate total spent (all-time)
+    const totalSpent = validOrders.reduce((sum, a) => {
       if (a.direction === "debit") {
-        return s + (a.amount || 0);
+        return sum + (a.amount || 0);
       }
-      return s;
+      return sum;
     }, 0);
 
-    const readySet = new Set(["Ready"]);
-    const readyCount = activity.filter((a) => readySet.has(a.status)).length;
+    // Count orders ready for pickup
+    const readyCount = activity.filter((a) => a.status === "Ready").length;
 
     return { ordersCount, totalSpent, readyCount };
   }, [activity]);
@@ -99,7 +91,6 @@ export default function Profile() {
     const loadActivity = async () => {
       try {
         setLoading(true);
-        // Fetch both sources in parallel and merge them
         const [reservations, txs] = await Promise.all([
           fetchArr('/reservations/mine'), 
           fetchArr('/transactions/mine')
@@ -111,11 +102,13 @@ export default function Profile() {
           for (const r of reservations) {
             rows.push({
               id: r.id || `R-${rows.length + 1}`,
-              title: r.title || 'reservation',
+              title: r.title || 'Reservation',
               amount: Math.abs(Number(r.total || r.amount || 0) || 0),
               time: r.createdAt || r.date || r.time || new Date().toISOString(),
-              status: r.status || 'Success',
+              status: r.status || 'Pending',
               direction: 'debit',
+              type: 'reservation',
+              items: r.items || []
             });
           }
         }
@@ -123,17 +116,21 @@ export default function Profile() {
         if (Array.isArray(txs) && txs.length > 0) {
           for (const t of txs) {
             const id = t.id || t.txId || `TX-${rows.length + 1}`;
-            const direction = (t.direction || (String(t.type || '')).toLowerCase().includes('reservation') ? 'debit' : (t.direction || 'credit'));
+            const direction = t.direction || 'debit';
             const ref = String(t.ref || t.reference || t.reservationId || '').toLowerCase();
             const isReservationRef = ref.includes('res') || ref.startsWith('r-');
-            if (direction === 'debit' || isReservationRef) {
+            
+            // Only include transactions that are related to orders
+            if (isReservationRef || t.type === 'Reservation') {
               rows.push({
                 id,
-                title: t.title || t.type || (isReservationRef ? 'Reservation' : 'Transaction'),
+                title: t.title || t.type || 'Transaction',
                 amount: Math.abs(Number(t.amount ?? t.total ?? t.value ?? 0) || 0),
                 time: t.createdAt || t.time || t.date || new Date().toISOString(),
                 status: t.status || t.state || 'Success',
                 direction,
+                type: 'transaction',
+                reference: ref
               });
             }
           }
@@ -235,13 +232,7 @@ export default function Profile() {
                   )}
                 </div>
               </div>
-              <div className="md:mt-4">
-                {memberSince ? (
-                  <p className="text-gray-600 text-sm">Member since {memberSince}</p>
-                ) : (
-                  <p className="text-gray-400 text-sm">Member since —</p>
-                )}
-              </div>
+              
             </div>
 
             {/* Details */}

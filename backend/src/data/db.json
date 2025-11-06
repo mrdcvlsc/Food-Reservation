@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 15,
+      "stock": 14,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -88,10 +88,10 @@
       "name": "Iced Tea",
       "category": "Beverages",
       "price": 30,
-      "stock": 5,
+      "stock": 7,
       "img": "/uploads/1761538665555_396901.jpg",
       "visible": true,
-      "updatedAt": "2025-11-04T06:26:28.853Z"
+      "updatedAt": "2025-11-06T02:05:34.646Z"
     },
     {
       "id": "ITM-10",
@@ -108,10 +108,10 @@
       "name": "Yakult",
       "category": "Beverages",
       "price": 10,
-      "stock": 19,
+      "stock": 4,
       "img": "/uploads/1761538643677_574382.jpg",
       "visible": true,
-      "updatedAt": "2025-10-28T08:49:55.029Z"
+      "updatedAt": "2025-11-06T08:27:14.850Z"
     },
     {
       "id": "1761632268631799",
@@ -144,18 +144,18 @@
       "name": "Dutch Mill",
       "category": "Beverages",
       "price": 20,
-      "stock": 2,
+      "stock": 4,
       "img": "/uploads/1761992752859_306286.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:25:30.493Z",
-      "updatedAt": "2025-11-01T10:25:52.866Z"
+      "updatedAt": "2025-11-06T02:05:43.755Z"
     },
     {
       "id": "1761993633466934",
       "name": "Bravo",
       "category": "Snacks",
       "price": 8,
-      "stock": 14,
+      "stock": 12,
       "img": "/uploads/1761993657294_157996.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:40:33.466Z",
@@ -3390,13 +3390,13 @@
         }
       ],
       "total": 40,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-11-05T16:37:54.085Z",
       "transactionId": "txn_mhm81j6r",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-05T16:37:54.147Z",
-      "updatedAt": "2025-11-05T16:38:21.209Z"
+      "updatedAt": "2025-11-06T02:04:54.202Z"
     },
     {
       "id": "RES_mhm9c2tfal",
@@ -3423,6 +3423,120 @@
       "total": 89,
       "status": "Pending",
       "createdAt": "2025-11-05T17:14:05.763Z"
+    },
+    {
+      "id": "RES_mhn4zw6kom",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 8,
+          "qty": 1
+        },
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 28,
+      "status": "Claimed",
+      "createdAt": "2025-11-06T08:00:25.004Z",
+      "transactionId": "txn_mhn4zw88",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-06T08:00:25.064Z",
+      "updatedAt": "2025-11-06T08:01:18.177Z"
+    },
+    {
+      "id": "RES_mhn5n4bgmf",
+      "userId": "usr_mhbem19p",
+      "student": "Sean",
+      "grade": "G9",
+      "section": "C",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 8,
+          "qty": 1
+        },
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        }
+      ],
+      "total": 53,
+      "status": "Approved",
+      "createdAt": "2025-11-06T08:18:28.636Z",
+      "transactionId": "txn_mhn5n4cn",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-06T08:18:28.679Z",
+      "updatedAt": "2025-11-06T08:18:52.889Z"
+    },
+    {
+      "id": "RES_mhn5omdoh7",
+      "userId": "usr_mhbem19p",
+      "student": "Sean",
+      "grade": "G9",
+      "section": "C",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        },
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 99,
+      "status": "Rejected",
+      "createdAt": "2025-11-06T08:19:38.700Z",
+      "updatedAt": "2025-11-06T08:20:00.335Z"
+    },
+    {
+      "id": "RES_mhn5tydgdp",
+      "userId": "usr_mhbem19p",
+      "student": "Sean",
+      "grade": "G9",
+      "section": "C",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Approved",
+      "createdAt": "2025-11-06T08:23:47.524Z",
+      "transactionId": "txn_mhn5tyeq",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-06T08:23:47.570Z",
+      "updatedAt": "2025-11-06T08:24:23.865Z"
     }
   ],
   "topups": [
@@ -3800,6 +3914,24 @@
       "proofUrl": "/uploads/mhm7yjq0_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
       "submittedAt": "2025-11-05T16:35:34.893Z",
       "createdAt": "2025-11-05T16:35:34.893Z"
+    },
+    {
+      "id": "top_mhn5l84x",
+      "userId": "usr_mhbem19p",
+      "student": "Sean",
+      "studentId": "387344410",
+      "contact": "09692832578",
+      "email": "syantut0617@gmail.com",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "24324234242543",
+      "status": "Approved",
+      "proofUrl": "/uploads/mhn5l84d_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-11-06T08:17:00.273Z",
+      "createdAt": "2025-11-06T08:17:00.273Z",
+      "updatedAt": "2025-11-06T08:17:40.831Z",
+      "credited": true,
+      "creditedAt": "2025-11-06T08:17:40.831Z"
     }
   ],
   "users": [
@@ -3810,7 +3942,9 @@
       "passwordHash": "$2a$10$gLcnB2skKVIzJU90Jr60cuPXRWkXKUwTCWPqW5pEB8WfcNzz2OPtW",
       "role": "admin",
       "balance": 0,
-      "studentId": "000000001"
+      "studentId": "000000001",
+      "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg",
+      "updatedAt": "2025-11-06T07:45:18.596Z"
     },
     {
       "id": "usr_meshwbp7",
@@ -3842,13 +3976,13 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 2158,
+      "balance": 2130,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
-      "studentId": "1646523369",
+      "studentId": "1646523368",
       "phone": "09688523259",
-      "updatedAt": "2025-11-05T09:10:11.000Z",
-      "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762333810988.jpg"
+      "updatedAt": "2025-11-06T07:41:34.852Z",
+      "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
     },
     {
       "id": "usr_mhbem19p",
@@ -3858,8 +3992,11 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 0,
-      "studentId": "387344410"
+      "balance": 927,
+      "studentId": "387344410",
+      "phone": "09692832578",
+      "updatedAt": "2025-11-06T08:03:48.522Z",
+      "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
     },
     {
       "id": "usr_mhd5ixwi",
@@ -3871,9 +4008,9 @@
       "section": "",
       "balance": 380,
       "studentId": "356695883",
-      "phone": "0955623456",
+      "phone": "09556234567",
       "profilePictureUrl": "/uploads/profile-usr_mhd5ixwi-1762362814368.jpg",
-      "updatedAt": "2025-11-05T17:13:34.371Z"
+      "updatedAt": "2025-11-06T07:44:12.910Z"
     },
     {
       "id": "usr_mhihxn69",
@@ -3884,7 +4021,9 @@
       "grade": "",
       "section": "",
       "balance": 0,
-      "studentId": "12345678"
+      "studentId": "12345678",
+      "phone": "09692855347",
+      "updatedAt": "2025-11-06T07:43:49.102Z"
     },
     {
       "id": "usr_mhkms3f1",
@@ -5440,6 +5579,61 @@
       "ref": "RES_mhm9c2tfal",
       "createdAt": "2025-11-05T17:14:06.028Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mhn4zw88",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 28,
+      "ref": "RES_mhn4zw6kom",
+      "createdAt": "2025-11-06T08:00:25.064Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhn5m3fj",
+      "userId": "usr_mhbem19p",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": "24324234242543",
+      "topupId": "top_mhn5l84x",
+      "createdAt": "2025-11-06T08:17:40.831Z"
+    },
+    {
+      "id": "txn_mhn5n4cn",
+      "userId": "usr_mhbem19p",
+      "type": "reservation",
+      "amount": 53,
+      "ref": "RES_mhn5n4bgmf",
+      "createdAt": "2025-11-06T08:18:28.679Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhn5omey",
+      "userId": "usr_mhbem19p",
+      "type": "reservation",
+      "amount": 99,
+      "ref": "RES_mhn5omdoh7",
+      "createdAt": "2025-11-06T08:19:38.746Z",
+      "status": "Success"
+    },
+    {
+      "id": "TX_mhn5p32n3e",
+      "userId": "usr_mhbem19p",
+      "title": "Refund",
+      "ref": "RES_mhn5omdoh7",
+      "amount": 99,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-06T08:20:00.335Z"
+    },
+    {
+      "id": "txn_mhn5tyeq",
+      "userId": "usr_mhbem19p",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES_mhn5tydgdp",
+      "createdAt": "2025-11-06T08:23:47.570Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -5455,6 +5649,324 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhn5uqf3",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5tydgdp Approved",
+      "body": "Your reservation RES_mhn5tydgdp has been approved.",
+      "data": {
+        "reservationId": "RES_mhn5tydgdp",
+        "status": "Approved"
+      },
+      "read": false,
+      "createdAt": "2025-11-06T08:24:23.871Z"
+    },
+    {
+      "id": "notif_mhn5tydn",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mhbem19p",
+        "name": "Sean",
+        "email": "syantut0617@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhn5tydgdp",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "student": {
+          "grade": "G9",
+          "section": "C"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:23:47.524Z"
+    },
+    {
+      "id": "notif_mhn5p32t",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5omdoh7 Rejected",
+      "body": "Your reservation RES_mhn5omdoh7 has been rejected.",
+      "data": {
+        "reservationId": "RES_mhn5omdoh7",
+        "status": "Rejected"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:20:00.341Z"
+    },
+    {
+      "id": "notif_mhn5omdu",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mhbem19p",
+        "name": "Sean",
+        "email": "syantut0617@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhn5omdoh7",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 99,
+        "student": {
+          "grade": "G9",
+          "section": "C"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:19:38.700Z"
+    },
+    {
+      "id": "notif_mhn5nn1c",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5n4bgmf Approved",
+      "body": "Your reservation RES_mhn5n4bgmf has been approved.",
+      "data": {
+        "reservationId": "RES_mhn5n4bgmf",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:18:52.896Z"
+    },
+    {
+      "id": "notif_mhn5n4bp",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mhbem19p",
+        "name": "Sean",
+        "email": "syantut0617@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhn5n4bgmf",
+        "items": [
+          {
+            "id": "1761993633466934",
+            "name": "Bravo",
+            "price": 8,
+            "qty": 1
+          },
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 53,
+        "student": {
+          "grade": "G9",
+          "section": "C"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:18:28.636Z"
+    },
+    {
+      "id": "notif_mhn5m3fp",
+      "for": "usr_mhbem19p",
+      "actor": {
+        "id": "u_admin",
+        "name": "Canteen Admin",
+        "email": "admin@school.test",
+        "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg"
+      },
+      "type": "topup:status",
+      "title": "Top-up top_mhn5l84x Approved",
+      "body": "Your top-up top_mhn5l84x was Approved",
+      "data": {
+        "topupId": "top_mhn5l84x",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:17:40.837Z"
+    },
+    {
+      "id": "notif_mhn5l85e",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mhbem19p",
+        "name": "Sean",
+        "email": "syantut0617@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
+      },
+      "type": "topup:created",
+      "title": "New Top-up Request",
+      "body": "Sean submitted a top-up request for ₱1,000.00",
+      "data": {
+        "topupId": "top_mhn5l84x",
+        "amount": 1000,
+        "provider": "gcash",
+        "studentId": "387344410",
+        "reference": "24324234242543",
+        "student": {
+          "name": "Sean",
+          "contact": "09692832578",
+          "email": "syantut0617@gmail.com"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:17:00.273Z"
+    },
+    {
+      "id": "notif_mhn5117q",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn4zw6kom Claimed",
+      "body": "Your reservation RES_mhn4zw6kom is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhn4zw6kom",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:01:18.182Z"
+    },
+    {
+      "id": "notif_mhn510vs",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn4zw6kom Ready",
+      "body": "Your reservation RES_mhn4zw6kom is now Ready.",
+      "data": {
+        "reservationId": "RES_mhn4zw6kom",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:01:17.752Z"
+    },
+    {
+      "id": "notif_mhn50zx6",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn4zw6kom Preparing",
+      "body": "Your reservation RES_mhn4zw6kom is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhn4zw6kom",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:01:16.506Z"
+    },
+    {
+      "id": "notif_mhn50ofq",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn4zw6kom Approved",
+      "body": "Your reservation RES_mhn4zw6kom has been approved.",
+      "data": {
+        "reservationId": "RES_mhn4zw6kom",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:01:01.622Z"
+    },
+    {
+      "id": "notif_mhn4zw6p",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhn4zw6kom",
+        "items": [
+          {
+            "id": "1761993633466934",
+            "name": "Bravo",
+            "price": 8,
+            "qty": 1
+          },
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 28,
+        "student": {
+          "grade": "G10",
+          "section": "R"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-06T08:00:25.004Z"
+    },
+    {
+      "id": "notif_mhmsap8h",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhm81j51qb Claimed",
+      "body": "Your reservation RES_mhm81j51qb is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhm81j51qb",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T02:04:54.209Z"
+    },
+    {
+      "id": "notif_mhmsaonc",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhm81j51qb Ready",
+      "body": "Your reservation RES_mhm81j51qb is now Ready.",
+      "data": {
+        "reservationId": "RES_mhm81j51qb",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T02:04:53.448Z"
+    },
+    {
+      "id": "notif_mhmsanqo",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhm81j51qb Preparing",
+      "body": "Your reservation RES_mhm81j51qb is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhm81j51qb",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-06T02:04:52.272Z"
+    },
     {
       "id": "notif_mhm9c2tm",
       "for": "admin",
@@ -5559,7 +6071,7 @@
         "reservationId": "RES_mhm76n1pp9",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-05T16:36:36.712Z"
     },
     {
@@ -5714,7 +6226,7 @@
         "topupId": "top_mhm77kg5",
         "status": "Rejected"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-05T16:18:00.877Z"
     },
     {
@@ -11459,7 +11971,7 @@
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
       "items": [],
-      "updatedAt": "2025-11-05T16:37:55.101Z"
+      "updatedAt": "2025-11-06T08:00:26.364Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
@@ -11491,6 +12003,12 @@
       "userId": "usr_mhlthc2o",
       "items": [],
       "updatedAt": "2025-11-05T16:13:53.838Z"
+    },
+    {
+      "id": "cart_user_usr_mhbem19p",
+      "userId": "usr_mhbem19p",
+      "items": [],
+      "updatedAt": "2025-11-06T08:23:48.494Z"
     }
   ],
   "inventory": []

@@ -65,10 +65,10 @@ export default function Dashboard() {
 
   const loadActivity = async () => {
     try {
-      // Fetch both sources in parallel and merge them. Reservations are the
-      // canonical source for food orders; transactions may contain ledger
-      // rows that reference reservations or standalone debit entries.
-      const [reservations, txs] = await Promise.all([fetchArr('/reservations/mine'), fetchArr('/transactions/mine')]);
+      const [reservations, txs] = await Promise.all([
+        fetchArr('/reservations/mine'), 
+        fetchArr('/transactions/mine')
+      ]);
 
       const rows = [];
 
@@ -76,11 +76,13 @@ export default function Dashboard() {
         for (const r of reservations) {
           rows.push({
             id: r.id || `R-${rows.length + 1}`,
-            title: r.title || 'reservation',
+            title: r.title || 'Reservation',
             amount: Math.abs(Number(r.total || r.amount || 0) || 0),
             time: r.createdAt || r.date || r.time || new Date().toISOString(),
-            status: r.status || 'Success',
+            status: r.status || 'Pending',
             direction: 'debit',
+            type: 'reservation',
+            items: r.items || []
           });
         }
       }
@@ -88,27 +90,31 @@ export default function Dashboard() {
       if (Array.isArray(txs) && txs.length > 0) {
         for (const t of txs) {
           const id = t.id || t.txId || `TX-${rows.length + 1}`;
-          const direction = (t.direction || (String(t.type || '')).toLowerCase().includes('reservation') ? 'debit' : (t.direction || 'credit'));
-          // include if debit or references a reservation
+          const direction = t.direction || 'debit';
           const ref = String(t.ref || t.reference || t.reservationId || '').toLowerCase();
           const isReservationRef = ref.includes('res') || ref.startsWith('r-');
-          if (direction === 'debit' || isReservationRef) {
+          
+          // Only include transactions that are related to orders
+          if (isReservationRef || t.type === 'Reservation') {
             rows.push({
               id,
-              title: t.title || t.type || (isReservationRef ? 'Reservation' : 'Transaction'),
+              title: t.title || t.type || 'Transaction',
               amount: Math.abs(Number(t.amount ?? t.total ?? t.value ?? 0) || 0),
               time: t.createdAt || t.time || t.date || new Date().toISOString(),
               status: t.status || t.state || 'Success',
               direction,
+              type: 'transaction',
+              reference: ref
             });
           }
         }
       }
 
-      // Sort by time desc and take top 5
+      // Sort by time desc
       rows.sort((a, b) => new Date(b.time) - new Date(a.time));
-      setActivity(rows.slice(0, 5));
-    } catch (e) {
+      setActivity(rows);
+    } catch (err) {
+      console.error("Failed to load activity:", err);
       setActivity([]);
     }
   };
@@ -171,20 +177,16 @@ export default function Dashboard() {
              d.getFullYear() === currentYear;
     });
 
-    // Only count orders that weren't rejected
-    const validOrders = thisMonth.filter(a => a.status !== "Rejected");
+    // Only count orders that were Approved, Preparing, Ready, or Claimed
+    const validStatuses = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
+    const validOrders = thisMonth.filter(a => validStatuses.has(a.status));
     const ordersCount = validOrders.length;
 
-    // Only sum amounts for non-rejected orders
-    const totalSpent = validOrders.reduce((s, a) => {
-      if (a.direction === "debit") {
-        return s + (a.amount || 0);
-      }
-      return s;
-    }, 0);
+    // Only sum amounts for valid orders
+    const totalSpent = validOrders.reduce((s, a) => s + (a.amount || 0), 0);
 
-    const readySet = new Set(["Ready"]);
-    const readyCount = activity.filter((a) => readySet.has(a.status)).length;
+    // Count orders ready for pickup
+    const readyCount = activity.filter((a) => a.status === "Ready").length;
 
     return { ordersCount, totalSpent, readyCount };
   }, [activity]);
