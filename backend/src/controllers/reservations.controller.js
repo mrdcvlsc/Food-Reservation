@@ -124,16 +124,30 @@ exports.create = async (req, res) => {
 
     // Notify admins about new reservation (best-effort)
     try {
+      const user = db.users.find(u => String(u.id) === String(req.user.id));
       Notifications.addNotification({
         id: "notif_" + Date.now().toString(36),
         for: "admin",
-        actor: req.user && req.user.id,
+        actor: user ? {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          profilePictureUrl: user.profilePictureUrl
+        } : req.user.id,
         type: "reservation:created",
         title: "New reservation submitted",
-        body: `${reservation.student || req.user?.name || req.user?.email || req.user?.id} submitted a reservation`,
-        data: { reservationId: reservation.id },
+        body: `${user?.name || reservation.student || req.user?.email || req.user?.id} submitted a reservation`,
+        data: { 
+          reservationId: reservation.id,
+          items: reservation.items,
+          total: reservation.total,
+          student: {
+            grade: reservation.grade,
+            section: reservation.section
+          }
+        },
         read: false,
-        createdAt: reservation.createdAt || new Date().toISOString(),
+        createdAt: reservation.createdAt
       });
     } catch (e) {
       console.error("Notification publish failed", e && e.message);

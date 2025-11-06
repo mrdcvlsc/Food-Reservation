@@ -18,6 +18,12 @@ import {
   Bell,
 } from "lucide-react";
 import { api } from "../lib/api";
+import NotificationItem from './NotificationItem';
+
+const peso = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP",
+});
 
 export default function AdminAvbar() {
   const [open, setOpen] = useState(false);
@@ -224,26 +230,35 @@ export default function AdminAvbar() {
               {unread > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] rounded-full bg-rose-600 text-white text-[10px] leading-[16px] text-center px-1">{unread > 99 ? "99+" : unread}</span>}
             </button>
             {notifOpen && (
-              <div className="absolute right-0 mt-2 w-96 bg-white border rounded-lg shadow-lg z-50 p-2">
-                <div className="flex items-center justify-between p-2">
-                  <div className="text-sm font-medium">Notifications</div>
-                  <button onClick={markAllRead} className="text-xs text-gray-500">Mark all read</button>
+              <div className="absolute right-0 mt-2 w-96 bg-white border rounded-lg shadow-lg z-50">
+                <div className="flex items-center justify-between p-3 border-b">
+                  <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                  <button 
+                    onClick={markAllRead}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    Mark all read
+                  </button>
                 </div>
-                <div className="max-h-64 overflow-auto">
-                  {notifications.length === 0 && <div className="p-4 text-sm text-gray-500">No notifications</div>}
-                  {notifications.map(n => (
-                    <button
-                      key={n.id}
-                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); openNotif(n); }}
-                      className={`w-full text-left p-3 border-b hover:bg-gray-50 ${n.read ? "opacity-70" : ""}`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium">{n.title}</div>
-                        <div className="text-xs text-gray-400">{new Date(n.createdAt).toLocaleString()}</div>
+                
+                <div className="max-h-[calc(100vh-200px)] overflow-y-auto divide-y divide-gray-100">
+                  {notifications.length === 0 ? (
+                    <div className="p-4 text-sm text-gray-500 text-center">
+                      No notifications
+                    </div>
+                  ) : (
+                    notifications.map(notification => (
+                      <div 
+                        key={notification.id}
+                        className="cursor-pointer"
+                      >
+                        <NotificationItem 
+                          notification={notification} 
+                          onClick={() => openNotif(notification)}
+                        />
                       </div>
-                      <div className="text-xs text-gray-600 mt-1 truncate">{n.body}</div>
-                    </button>
-                  ))}
+                    ))
+                 ) }
                 </div>
               </div>
             )}
@@ -327,30 +342,128 @@ export default function AdminAvbar() {
         ReactDOM.createPortal(
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
             <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
-              {/* header with absolute X */}
-              <div className="p-4 border-b relative">
-                <div className="pr-12">
-                  <div className="text-sm text-gray-500">Notification from {previewNotif.from || "System"}</div>
-                  <div className="text-lg font-semibold">{previewNotif.title}</div>
-                  <div className="text-xs text-gray-400 mt-1">{new Date(previewNotif.createdAt).toLocaleString()}</div>
+              {/* Header */}
+              <div className="p-4 border-b relative flex items-start">
+                {/* Profile Picture */}
+                <div className="flex-shrink-0 w-12 h-12 mr-4">
+                  {previewNotif.actor?.profilePictureUrl ? (
+                    <img
+                      src={previewNotif.actor.profilePictureUrl}
+                      alt=""
+                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          previewNotif.actor?.name || 'U'
+                        )}&background=random`;
+                      }}
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-sm border-2 border-white">
+                      <span className="text-blue-600 font-medium text-lg">
+                        {previewNotif.actor?.name?.charAt(0)?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  )}
                 </div>
+
+                {/* Header Content */}
+                <div className="flex-1 pr-8">
+                  <div className="text-sm text-gray-500">Notification from {previewNotif.actor?.name || "System"}</div>
+                  <h3 className="text-lg font-semibold text-gray-900">{previewNotif.title}</h3>
+                  <div className="text-xs text-gray-400 mt-1">
+                    {new Date(previewNotif.createdAt).toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Close Button */}
                 <button
                   onClick={() => setPreviewNotif(null)}
-                  aria-label="Close notification"
-                  className="absolute top-3 right-3 text-gray-600 hover:bg-gray-100 rounded p-1"
+                  className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
                 >
-                  ✕
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="p-4 text-sm text-gray-700">
-                {previewNotif.body || previewNotif.message || "No details provided."}
+              {/* Body Content */}
+              <div className="p-4">
+                <p className="text-sm text-gray-600 mb-4">{previewNotif.body}</p>
+
+                {/* Order/Topup Details */}
+                {previewNotif.data && (
+                  <div className="mt-4 bg-gray-50 rounded-lg p-4">
+                    {previewNotif.data.items && (
+                      <div className="space-y-2">
+                        {previewNotif.data.items.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <span className="text-gray-600">
+                              {item.qty}x {item.name}
+                            </span>
+                            <span className="font-medium">
+                              {peso.format(item.price * item.qty)}
+                            </span>
+                          </div>
+                        ))}
+                        <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-medium">
+                          <span>Total:</span>
+                          <span>{peso.format(previewNotif.data.total || 0)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {previewNotif.data.amount && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Amount:</span>
+                          <span className="font-medium">{peso.format(previewNotif.data.amount)}</span>
+                        </div>
+                        {previewNotif.data.provider && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Method:</span>
+                            <span className="capitalize">{previewNotif.data.provider}</span>
+                          </div>
+                        )}
+                        {previewNotif.data.reference && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Reference:</span>
+                            <span className="font-mono">{previewNotif.data.reference}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {previewNotif.data.student && (
+                      <div className="mt-3 pt-3 border-t border-gray-200">
+                        <div className="text-xs font-medium text-gray-500">Student Details</div>
+                        <div className="mt-1 text-sm">
+                          <div className="font-medium">{previewNotif.data.student.name}</div>
+                          {previewNotif.data.student.grade && (
+                            <div className="text-gray-600">
+                              Grade {previewNotif.data.student.grade}
+                              {previewNotif.data.student.section && ` - ${previewNotif.data.student.section}`}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* footer actions so Delete is reachable and not overlapped */}
+              {/* Footer Actions */}
               <div className="p-4 border-t flex justify-end gap-2">
-                <button onClick={() => setPreviewNotif(null)} className="px-3 py-2 rounded border">Close</button>
-                <button onClick={() => deleteNotif(previewNotif.id)} className="px-3 py-2 rounded bg-rose-600 text-white">Delete</button>
+                <button 
+                  onClick={() => setPreviewNotif(null)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => deleteNotif(previewNotif.id)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                >
+                  Delete
+                </button>
               </div>
             </div>
           </div>,

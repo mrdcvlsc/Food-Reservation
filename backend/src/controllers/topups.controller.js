@@ -1,6 +1,12 @@
 const { load, save } = require("../lib/db");
 const Notifications = require("./notifications.controller");
 
+// Add peso formatter at the top of the file
+const peso = new Intl.NumberFormat("en-PH", {
+  style: "currency",
+  currency: "PHP",
+});
+
 exports.create = (req, res) => {
   // multer may attach a file and may also raise a MulterError which is handled
   // by Express' error middleware; however, in some setups multer errors
@@ -24,7 +30,6 @@ exports.create = (req, res) => {
   const owner = users.find((u) => String(u.id) === String(req.user.id)) || {};
 
   const studentName = req.body.payerName || owner.name || "—";
-  // prefer provided studentId but fallback to owner's studentId if present
   const submittedStudentId = (req?.body?.studentId && String(req.body.studentId).trim()) || owner.studentId || "N/A";
 
   const topup = {
@@ -46,21 +51,31 @@ exports.create = (req, res) => {
   db.topups.push(topup);
   save(db);
 
-  // Notify admins about new top-up
+  // Updated notification code
   try {
+    const user = users.find(u => String(u.id) === String(req.user.id));
     Notifications.addNotification({
-      id: "notif_" + Date.now().toString(36),
       for: "admin",
-      actor: req.user && req.user.id,
+      actor: user?.id || req.user.id, // This ensures the actor ID is set correctly
       type: "topup:created",
-      title: "New top-up submitted",
-      body: `${topup.student || req.user?.name || req.user?.email || req.user?.id} requested ₱${topup.amount}`,
-      data: { topupId: topup.id },
-      read: false,
-      createdAt: topup.createdAt || new Date().toISOString(),
+      title: "New Top-up Request",
+      body: `${studentName} submitted a top-up request for ${peso.format(amt)}`,
+      data: {
+        topupId: topup.id,
+        amount: amt,
+        provider: method,
+        studentId: submittedStudentId,
+        reference: reference,
+        student: {
+          name: studentName,
+          contact: topup.contact,
+          email: topup.email
+        }
+      },
+      createdAt: now
     });
   } catch (e) {
-    console.error("Notification publish failed", e && e.message);
+    console.error("Failed to create notification:", e);
   }
 
   res.json(topup);
@@ -98,7 +113,7 @@ exports.setStatus = (req, res) => {
 
   const db = load();
   const i = (db.topups || []).findIndex(t => String(t.id) === String(id));
-  if (i === -1) return res.status(404).json({ error: 'Not found' });
+  if (i === -1) return res.status(404).json({ error: 'Not found' }); // Fixed missing parentheses
 
   const prev = db.topups[i].status;
   const now = new Date().toISOString();

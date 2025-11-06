@@ -13,10 +13,25 @@ function nowISO() {
 exports.addNotification = (notif = {}) => {
   const db = load();
   db.notifications = Array.isArray(db.notifications) ? db.notifications : [];
+  
+  // Get user data if actor is provided
+  let actorData = null;
+  if (notif.actor) {
+    const user = (db.users || []).find(u => String(u.id) === String(notif.actor));
+    if (user) {
+      actorData = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profilePictureUrl: user.profilePictureUrl || null
+      };
+    }
+  }
+
   const n = {
     id: notif.id || "notif_" + Date.now().toString(36),
     for: notif.for || "admin",
-    actor: notif.actor || null,
+    actor: actorData || notif.actor,
     type: notif.type || "misc",
     title: notif.title || "",
     body: notif.body || "",
@@ -24,6 +39,7 @@ exports.addNotification = (notif = {}) => {
     read: !!notif.read,
     createdAt: notif.createdAt || nowISO(),
   };
+  
   // newest first
   db.notifications.unshift(n);
   save(db);
