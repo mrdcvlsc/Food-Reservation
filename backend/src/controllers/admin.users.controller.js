@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs-extra');
 const { load, save } = require('../lib/db');
+const Notifications = require('./notifications.controller');
 
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 fs.ensureDirSync(UPLOAD_DIR);
@@ -101,7 +102,7 @@ exports.updateUser = async (req, res) => {
     }
 
     const user = db.users[userIndex];
-    const { name, studentId, phone, removePhoto } = req.body;
+    const { name, studentId, phone, removePhoto, note } = req.body;
 
     // Validate student ID uniqueness
     if (studentId && studentId !== user.studentId) {
@@ -153,6 +154,25 @@ exports.updateUser = async (req, res) => {
     user.updatedAt = new Date().toISOString();
     db.users[userIndex] = user;
     save(db);
+
+    // If admin left a note, notify the user
+    if (note && String(note).trim()) {
+      try {
+        Notifications.addNotification({
+          id: "notif_" + Date.now().toString(36),
+          for: user.id,
+          actor: req.user?.id || 'admin',
+          type: 'admin:profile-note',
+          title: 'Message from Admin',
+          body: String(note),
+          data: { note: String(note) },
+          read: false,
+          createdAt: new Date().toISOString()
+        });
+      } catch (e) {
+        console.error("Failed to create admin-note notification:", e && e.message);
+      }
+    }
 
     res.json({
       ok: true,

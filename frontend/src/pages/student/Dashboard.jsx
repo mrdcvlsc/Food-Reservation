@@ -202,6 +202,12 @@ export default function Dashboard() {
     navigate("/login");
   };
 
+  // how many recent activity items to show on dashboard
+  const RECENT_LIMIT = 5;
+  
+  // slice for dashboard preview (show only latest RECENT_LIMIT)
+  const recentPreview = activity.slice(0, RECENT_LIMIT);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -309,7 +315,10 @@ export default function Dashboard() {
         {/* Recent Activity */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+              <div className="text-sm text-gray-500">Showing {recentPreview.length} of {activity.length} recent items</div>
+            </div>
             <button
               onClick={() => navigate("/transactions")}
               className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
@@ -319,45 +328,45 @@ export default function Dashboard() {
           </div>
 
           {activity.length === 0 ? (
-            <div className="text-sm text-gray-500 py-8 text-center">
-              No recent activity. Start by reserving from the <b>Shop</b>.
-            </div>
-          ) : (
-            <ul className="divide-y divide-gray-100">
-              {activity.map((a) => {
-                let statusCls = "bg-gray-100 text-gray-700 border-gray-200";
-                if (a.status === "Success" || a.status === "Claimed") statusCls = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                else if (a.status === "Pending" || a.status === "Approved" || a.status === "Preparing")
-                  statusCls = "bg-amber-50 text-amber-700 border-amber-200";
-                else if (a.status === "Ready")
-                  statusCls = "bg-blue-50 text-blue-700 border-blue-200";
-                else if (a.status === "Rejected")
-                  statusCls = "bg-rose-50 text-rose-700 border-rose-200";
-
-                return (
-                  <li key={a.id} className="py-3 flex items-center justify-between">
-                    <div className="min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        {a.title}
-                      </div>
-                      <div className="mt-1 text-xs text-gray-500 flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {a.time}
-                        </span>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full border ${statusCls}`}>
-                          {a.status}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-sm font-semibold text-gray-900">
-                      {peso.format(a.amount || 0)}
-                    </div>
-                  </li>
-                );
+             <div className="text-sm text-gray-500 py-8 text-center">
+               No recent activity. Start by reserving from the <b>Shop</b>.
+             </div>
+           ) : (
+             <ul className="divide-y divide-gray-100">
+              {recentPreview.map((a) => {
+                 let statusCls = "bg-gray-100 text-gray-700 border-gray-200";
+                 if (a.status === "Success" || a.status === "Claimed") statusCls = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                 else if (a.status === "Pending" || a.status === "Approved" || a.status === "Preparing")
+                   statusCls = "bg-amber-50 text-amber-700 border-amber-200";
+                 else if (a.status === "Ready")
+                   statusCls = "bg-blue-50 text-blue-700 border-blue-200";
+                 else if (a.status === "Rejected")
+                   statusCls = "bg-rose-50 text-rose-700 border-rose-200";
+ 
+                 return (
+                   <li key={a.id} className="py-3 flex items-center justify-between">
+                     <div className="min-w-0">
+                       <div className="text-sm font-medium text-gray-900 truncate">
+                         {a.title}
+                       </div>
+                       <div className="mt-1 text-xs text-gray-500 flex items-center gap-2 flex-wrap">
+                         <span className="inline-flex items-center gap-1">
+                           <Clock className="w-3 h-3" />
+                           {a.time}
+                         </span>
+                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full border ${statusCls}`}>
+                           {a.status}
+                         </span>
+                       </div>
+                     </div>
+                     <div className="text-sm font-semibold text-gray-900">
+                       {peso.format(a.amount || 0)}
+                     </div>
+                   </li>
+                 );
               })}
-            </ul>
-          )}
+             </ul>
+           )}
         </section>
 
         {/* Categories quick access (neutral chips) */}

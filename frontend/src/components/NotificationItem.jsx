@@ -79,7 +79,7 @@ export default function NotificationItem({ notification, onClick, isAdminSide })
           <p className="mt-1 text-sm text-gray-500 line-clamp-2">{body}</p>
 
           {/* Preview Content */}
-          {getPreviewContent(data, peso)}
+          {getPreviewContent(notification, peso)}
         </div>
       </div>
     </div>
@@ -87,19 +87,40 @@ export default function NotificationItem({ notification, onClick, isAdminSide })
 }
 
 // Helper function to generate preview content
-function getPreviewContent(data, peso) {
-  if (data?.amount) {
+function getPreviewContent(notification, peso) {
+  const data = notification?.data || {};
+  
+  // Top-up preview
+  if (data.amount && !data.items) {
     return (
-      <div className="mt-2 space-y-2">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Amount: {peso.format(data.amount)}</span>
-          <span className="text-gray-600">{data.provider || 'GCash'}</span>
+      <div className="mt-3 text-sm">
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-600">Amount</span>
+          <span className="font-medium">{peso.format(data.amount)}</span>
         </div>
-        <div className="flex justify-end">
-          <span className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
-            See Details <ChevronRight className="w-4 h-4" />
-          </span>
-        </div>
+        {data.provider && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Method</span>
+            <span className="capitalize">{data.provider}</span>
+          </div>
+        )}
+        {data.status && (
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-600">Status</span>
+            <span className={`font-medium ${
+              String(data.status).toLowerCase() === "approved" ? "text-green-600" :
+              String(data.status).toLowerCase() === "pending" ? "text-yellow-600" : 
+              String(data.status).toLowerCase() === "rejected" ? "text-red-600" :
+              "text-gray-900"
+            }`}>{data.status}</span>
+          </div>
+        )}
+        {/* Add rejection reason if present */}
+        {data.status?.toLowerCase() === 'rejected' && data.rejectionReason && (
+          <div className="mt-2 text-sm text-red-600 bg-red-50 p-2 rounded border border-red-100">
+            Reason: {data.rejectionReason}
+          </div>
+        )}
       </div>
     );
   }

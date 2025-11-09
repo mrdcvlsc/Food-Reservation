@@ -36,6 +36,8 @@ import AdminStats          from "./pages/admin/adminStats";
 import AdminInventory      from "./pages/admin/adminInventory";
 import AdminReports        from "./pages/admin/adminReports";
 import AdminUsers          from "./pages/admin/AdminUsers";
+import Notifications from "./pages/notifications/Notifications";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 
 /* --------------- status pages --------------- */
 import { 
@@ -112,6 +114,8 @@ function App() {
         {/* Reports */}
         <Route path="/admin/reports"                element={<AdminReports />} />
         <Route path="/admin/users"                element={<AdminUsers />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/admin/notifications" element={<AdminNotifications />} />
 
         {/* ---------- status pages ---------- */}
         <Route path="/status/maintenance"          element={<Maintenance />} />

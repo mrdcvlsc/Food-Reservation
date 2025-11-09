@@ -35,6 +35,13 @@ const ADMIN_ROUTES = {
 export default function AdminHome() {
   const navigate = useNavigate();
   const [busyId, setBusyId] = useState(null);
+  // modal edit states
+  const [editingItem, setEditingItem] = useState(null); // full item object being edited
+  const [editingFields, setEditingFields] = useState(null); // { name, category, stock, price }
+  const [editingImagePreview, setEditingImagePreview] = useState(null);
+  const [editingImageFile, setEditingImageFile] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+
   useEffect(() => {
     (async () => {
       await refreshSessionForProtected({ navigate, requiredRole: 'admin' });
@@ -134,8 +141,10 @@ export default function AdminHome() {
       r.active !== undefined ? !!r.active :
       r.isActive !== undefined ? !!r.isActive : true;
     const available = stock > 0;
+    // include image/url so adminhomes edit modal can show the uploaded image
+    const imageUrl = r.image || r.img || r.imageUrl || null;
 
-    return { id, name, price, stock, category, available, activeFlag };
+    return { id, name, price, stock, category, available, activeFlag, imageUrl };
   };
 
   const loadProducts = useCallback(async () => {
@@ -164,6 +173,11 @@ export default function AdminHome() {
       mounted = false;
     };
   }, [loadProducts]);
+
+  // categories for edit modal dropdown (keeps UI consistent with adminShop edit-items)
+  const categories = Array.from(
+    new Set(currentProducts.map((p) => p.category).filter(Boolean))
+  );
 
   // Demo recent orders if backend not ready
   const [recentOrders] = useState([
@@ -252,6 +266,128 @@ export default function AdminHome() {
       alert("Failed to delete product.");
     } finally {
       setBusyId(null);
+    }
+  };
+
+  // open edit modal for product id
+  const openEditModal = async (id) => {
+    setBusyId(id);
+    try {
+      // try get full product from backend, fallback to local list
+      let item = null;
+      try {
+        item = await api.get(`/menu/${id}`);
+      } catch {
+        item = currentProducts.find((p) => String(p.id) === String(id)) || null;
+      }
+
+      if (!item) {
+        alert("Failed to load item for editing.");
+        return;
+      }
+
+      // normalize fields similar to mapMenuToRow but keep raw image if present
+      const normalized = {
+        id: item._id || item.id || item.productId || id,
+        name: item.name || item.title || "",
+        price: Number(item.price) || 0,
+        stock: Number(item.stock ?? item.quantity ?? 0),
+        category: item.category || item.type || "",
+        activeFlag:
+          item.visible !== undefined ? !!item.visible :
+          item.active !== undefined ? !!item.active :
+          item.isActive !== undefined ? !!item.isActive : true,
+        imageUrl: item.image || item.img || item.imageUrl || null,
+      };
+
+      setEditingItem(normalized);
+      setEditingFields({
+        name: normalized.name,
+        category: normalized.category,
+        stock: normalized.stock,
+        price: normalized.price,
+      });
+      setEditingImagePreview(normalized.imageUrl);
+      setEditingImageFile(null);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const closeEditModal = () => {
+    setEditingItem(null);
+    setEditingFields(null);
+    setEditingImagePreview(null);
+    setEditingImageFile(null);
+    setSavingEdit(false);
+  };
+
+  const onEditFieldChange = (key, value) => {
+    setEditingFields((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const onReplaceImage = (file) => {
+    if (!file) return;
+    setEditingImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (e) => setEditingImagePreview(e.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setEditingImageFile(null);
+    setEditingImagePreview(null);
+  };
+
+  const saveEdit = async () => {
+    if (!editingItem || !editingFields) return;
+    if (!window.confirm("Save changes to this product?")) return;
+    setSavingEdit(true);
+    try {
+      // update basic fields
+      await api.put(`/menu/${editingItem.id}`, {
+        name: editingFields.name,
+        price: Number(editingFields.price) || 0,
+        stock: Number(editingFields.stock) || 0,
+        category: editingFields.category,
+      });
+
+      // if image file selected, try upload to common endpoint; if missing, ignore
+      if (editingImageFile) {
+        try {
+          const fd = new FormData();
+          fd.append("image", editingImageFile);
+          // backend endpoint may differ; try common pattern
+          await api.post(`/menu/${editingItem.id}/image`, fd, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
+        } catch (e) {
+          // non-blocking; still continue saving other fields
+          console.warn("Image upload failed (non-blocking).", e);
+        }
+      }
+
+      // update locally
+      setCurrentProducts((prev) =>
+        prev.map((p) =>
+          String(p.id) === String(editingItem.id)
+            ? {
+                ...p,
+                name: editingFields.name,
+                price: Number(editingFields.price) || 0,
+                stock: Number(editingFields.stock) || 0,
+                category: editingFields.category,
+              }
+            : p
+        )
+      );
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
+      closeEditModal();
+    } catch (err) {
+      console.error("Save edit failed", err);
+      alert("Failed to save changes.");
+    } finally {
+      setSavingEdit(false);
     }
   };
 
@@ -479,7 +615,7 @@ export default function AdminHome() {
 
                             <button
                               type="button"
-                              onClick={safeNav(ADMIN_ROUTES.itemEdit(p.id))}
+                              onClick={() => openEditModal(p.id)}
                               className="p-2 rounded-md text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
                               aria-label={`Edit ${p.name}`}
                             >
@@ -570,6 +706,142 @@ export default function AdminHome() {
         </div>
         {/* NOTE: QR verification lives in /admin/topup */}
       </main>
+
+      {/* Edit Item Modal (matches adminShop/edit-items style) */}
+      {editingItem && editingFields && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
+          <div
+            className="fixed inset-0 bg-black/40"
+            onClick={closeEditModal}
+            aria-hidden="true"
+          />
+          <div className="relative max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden z-10">
+            <div className="flex items-center justify-between p-6 border-b">
+              <h3 className="text-lg font-semibold">Edit Item</h3>
+              <button
+                type="button"
+                onClick={closeEditModal}
+                className="text-gray-600 hover:text-gray-900 text-2xl leading-none"
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-4">
+                <label className="block">
+                  <div className="text-sm font-medium text-gray-700">Name</div>
+                  <input
+                    value={editingFields.name}
+                    onChange={(e) => onEditFieldChange("name", e.target.value)}
+                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </label>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <label className="block">
+                    <div className="text-sm font-medium text-gray-700">Category</div>
+                    <select
+                      value={editingFields.category || ""}
+                      onChange={(e) => onEditFieldChange("category", e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white"
+                    >
+                      <option value="">Select category</option>
+                      {categories.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                      {/* allow free text */}
+                      <option value={editingFields.category} hidden>
+                        {editingFields.category}
+                      </option>
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <div className="text-sm font-medium text-gray-700">Stock</div>
+                    <input
+                      type="number"
+                      value={editingFields.stock}
+                      onChange={(e) => onEditFieldChange("stock", e.target.value)}
+                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    />
+                  </label>
+                </div>
+
+                <label className="block">
+                  <div className="text-sm font-medium text-gray-700">Price (PHP)</div>
+                  <input
+                    type="number"
+                    value={editingFields.price}
+                    onChange={(e) => onEditFieldChange("price", e.target.value)}
+                    className="mt-1 block w-48 border border-gray-300 rounded-md px-3 py-2"
+                  />
+                  <div className="text-xs text-gray-500 mt-1">
+                    Preview: {peso.format(Number(editingFields.price) || 0)}
+                  </div>
+                </label>
+              </div>
+
+              <div className="space-y-4 flex flex-col items-center">
+                <div className="w-full border-2 border-dashed rounded-lg p-4">
+                  <div className="w-40 h-40 mx-auto rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
+                    {editingImagePreview ? (
+                      <img
+                        src={editingImagePreview}
+                        alt="preview"
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <div className="text-sm text-gray-400">No image</div>
+                    )}
+                  </div>
+                  <div className="mt-4 flex items-center justify-center gap-3">
+                    <label className="inline-flex items-center gap-2 bg-slate-900 text-white px-3 py-2 rounded cursor-pointer">
+                      <span aria-hidden>⤴️</span>
+                      <span className="text-sm">Replace</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => onReplaceImage(e.target.files?.[0])}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="bg-red-600 text-white px-3 py-2 rounded text-sm"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeEditModal}
+                className="px-4 py-2 bg-white border rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveEdit}
+                disabled={savingEdit}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md"
+              >
+                <span aria-hidden>💾</span>
+                <span>{savingEdit ? "Saving…" : "Save Changes"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

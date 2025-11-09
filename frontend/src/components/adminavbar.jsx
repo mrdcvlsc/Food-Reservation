@@ -299,8 +299,25 @@ export default function AdminAvbar() {
                     ))
                  ) }
                 </div>
-              </div>
-            )}
+                {/* Footer */}
+                <div className="p-2 border-t flex items-center justify-between">
+                  <Link
+                    to="/admin/notifications"
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-2"
+                    onClick={() => setNotifOpen(false)}
+                  >
+                    See all
+                  </Link>
+                  <Link
+                    to="/admin/notifications"
+                    className="text-sm text-gray-600 hover:text-gray-800"
+                    onClick={() => setNotifOpen(false)}
+                  >
+                    Manage
+                  </Link>
+                </div>
+               </div>
+             )}
           </div>
 
           <button
@@ -376,138 +393,131 @@ export default function AdminAvbar() {
         </div>
       )}
 
-      {/* Notification preview modal (portal: renders into document.body so clicks are always reachable) */}
-      {previewNotif &&
-        ReactDOM.createPortal(
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
-            <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
-              {/* Header */}
-              <div className="p-4 border-b relative flex items-start">
-                {/* Profile Picture */}
-                <div className="flex-shrink-0 w-12 h-12 mr-4">
-                  {previewNotif.actor?.profilePictureUrl ? (
-                    <img
-                      src={previewNotif.actor.profilePictureUrl}
-                      alt=""
-                      className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          previewNotif.actor?.name || 'U'
-                        )}&background=random`;
-                      }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-sm border-2 border-white">
-                      <span className="text-blue-600 font-medium text-lg">
-                        {previewNotif.actor?.name?.charAt(0)?.toUpperCase() || 'U'}
-                      </span>
+      {/* Notification preview modal */}
+      {previewNotif && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
+          <div className="max-w-xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
+            <div className="flex items-start p-4 border-b">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={previewNotif.actor?.profilePictureUrl || "/jckl-192.png"}
+                    alt=""
+                    className="w-8 h-8 rounded-full"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        previewNotif.actor?.name || "U"
+                      )}&background=random`;
+                    }}
+                  />
+                  <div>
+                    <div className="text-sm text-gray-600">From {previewNotif.actor?.name || "System"}</div>
+                    <div className="text-sm text-gray-400">{new Date(previewNotif.createdAt).toLocaleString()}</div>
+                  </div>
+                </div>
+                <h3 className="text-lg font-medium mt-2">{previewNotif.title}</h3>
+              </div>
+              <button 
+                onClick={() => setPreviewNotif(null)} 
+                className="ml-4 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+              <p className="text-sm text-gray-600 mb-4">{previewNotif.body}</p>
+
+              {previewNotif.data && (
+                <div className="bg-gray-50 rounded-lg border p-4">
+                  {/* Reservation Details */}
+                  {previewNotif.data.reservationId && (
+                    <div className="space-y-3">
+                      <div className="text-sm">
+                        <span className="text-gray-500">Reservation ID</span>
+                        <div className="font-medium">{previewNotif.data.reservationId}</div>
+                      </div>
+
+                      {/* Items */}
+                      {previewNotif.data.items?.length > 0 && (
+                        <div className="space-y-2">
+                          <span className="text-xs font-medium text-gray-500 uppercase">Items</span>
+                          {previewNotif.data.items.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-sm">
+                              <span className="text-gray-600">
+                                {item.qty || 1}× {item.name}
+                              </span>
+                              <span className="font-medium">
+                                {peso.format((item.price || 0) * (item.qty || 1))}
+                              </span>
+                            </div>
+                          ))}
+                          <div className="pt-2 border-t flex justify-between text-sm font-medium">
+                            <span>Total</span>
+                            <span>{peso.format(previewNotif.data.total || 0)}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Student Details */}
+                      {(previewNotif.data.grade || previewNotif.data.section) && (
+                        <div className="pt-3 border-t">
+                          <span className="text-xs font-medium text-gray-500 uppercase">Student Details</span>
+                          <div className="mt-1 text-sm font-medium">
+                            Grade {previewNotif.data.grade} - {previewNotif.data.section}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Top-up Details */}
+                  {previewNotif.data.amount && !previewNotif.data.items && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Amount</span>
+                        <span className="font-medium">{peso.format(previewNotif.data.amount)}</span>
+                      </div>
+                      {previewNotif.data.provider && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Method</span>
+                          <span className="font-medium capitalize">{previewNotif.data.provider}</span>
+                        </div>
+                      )}
+                      {previewNotif.data.reference && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Reference</span>
+                          <span className="font-medium font-mono">{previewNotif.data.reference}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-
-                {/* Header Content */}
-                <div className="flex-1 pr-8">
-                  <div className="text-sm text-gray-500">Notification from {previewNotif.actor?.name || "System"}</div>
-                  <h3 className="text-lg font-semibold text-gray-900">{previewNotif.title}</h3>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {new Date(previewNotif.createdAt).toLocaleString()}
-                  </div>
-                </div>
-
-                {/* Close Button */}
-                <button
-                  onClick={() => setPreviewNotif(null)}
-                  className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Body Content */}
-              <div className="p-4">
-                <p className="text-sm text-gray-600 mb-4">{previewNotif.body}</p>
-
-                {/* Order/Topup Details */}
-                {previewNotif.data && (
-                  <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                    {previewNotif.data.items && (
-                      <div className="space-y-2">
-                        {previewNotif.data.items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm">
-                            <span className="text-gray-600">
-                              {item.qty}x {item.name}
-                            </span>
-                            <span className="font-medium">
-                              {peso.format(item.price * item.qty)}
-                            </span>
-                          </div>
-                        ))}
-                        <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-medium">
-                          <span>Total:</span>
-                          <span>{peso.format(previewNotif.data.total || 0)}</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {previewNotif.data.amount && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Amount:</span>
-                          <span className="font-medium">{peso.format(previewNotif.data.amount)}</span>
-                        </div>
-                        {previewNotif.data.provider && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Method:</span>
-                            <span className="capitalize">{previewNotif.data.provider}</span>
-                          </div>
-                        )}
-                        {previewNotif.data.reference && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Reference:</span>
-                            <span className="font-mono">{previewNotif.data.reference}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {previewNotif.data.student && (
-                      <div className="mt-3 pt-3 border-t border-gray-200">
-                        <div className="text-xs font-medium text-gray-500">Student Details</div>
-                        <div className="mt-1 text-sm">
-                          <div className="font-medium">{previewNotif.data.student.name}</div>
-                          {previewNotif.data.student.grade && (
-                            <div className="text-gray-600">
-                              Grade {previewNotif.data.student.grade}
-                              {previewNotif.data.student.section && ` - ${previewNotif.data.student.section}`}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Footer Actions */}
-              <div className="p-4 border-t flex justify-end gap-2">
-                <button 
-                  onClick={() => setPreviewNotif(null)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={() => deleteNotif(previewNotif.id)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
+              )}
             </div>
-          </div>,
-          document.body
-        )}
+
+            {/* Footer */}
+            <div className="flex justify-end gap-2 p-4 border-t">
+              <button
+                onClick={() => setPreviewNotif(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => deleteNotif(previewNotif.id)}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </nav>
   );
 }

@@ -106,6 +106,19 @@ export default function Navbar() {
       setNotifications((prev) => prev.map(n => (String(n.id) === String(id) ? { ...n, read: true } : n)));
     } catch {}
   };
+  // mark all unread notifications as read (user-side)
+  const markAllRead = async () => {
+    const ids = notifications.filter(n => !n.read).map(n => n.id);
+    if (!ids.length) return;
+    const ok = window.confirm("Mark all notifications as read?");
+    if (!ok) return;
+    try {
+      await Promise.all(ids.map(id => api.patch(`/notifications/${id}/read`).catch(() => {})));
+      setNotifications((prev) => prev.map(n => ({ ...n, read: true })));
+    } catch (e) {
+      /* ignore individual failures */
+    }
+  };
   useEffect(() => {
     if (!notifOpen) return;
     const ids = notifications.filter(n => !n.read).map(n => n.id);
@@ -170,6 +183,36 @@ export default function Navbar() {
       default:
         return <ShoppingCart className="w-5 h-5 mr-2" />;
     }
+  };
+
+  // helper: render structured preview data in notifications dropdown/modal
+  const renderPreviewData = (data) => {
+    if (data == null) return <div className="text-sm text-gray-500">No additional details.</div>;
+    if (typeof data === "string" || typeof data === "number" || typeof data === "boolean") {
+      return <div className="text-sm text-gray-700">{String(data)}</div>;
+    }
+    if (Array.isArray(data)) {
+      return (
+        <div className="space-y-2">
+          {data.map((it, i) => (
+            <div key={i} className="border rounded p-2 bg-white text-sm text-gray-700">
+              {typeof it === "object" ? renderPreviewData(it) : String(it)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    // object
+    return (
+      <div className="grid grid-cols-1 gap-3 text-sm text-gray-700">
+        {Object.entries(data).map(([k, v]) => (
+          <div key={k} className="flex items-start gap-4">
+            <div className="w-36 text-xs text-gray-500">{k}</div>
+            <div className="flex-1">{renderPreviewData(v)}</div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -294,8 +337,24 @@ export default function Navbar() {
                       ))
                    ) }
                   </div>
-                </div>
-              )}
+                  {/* Footer: See all / Mark all read */}
+                  <div className="p-2 border-t flex items-center justify-between">
+                    <Link
+                      to="/notifications"
+                      className="text-sm text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-2"
+                      onClick={() => setNotifOpen(false)}
+                    >
+                      See all
+                    </Link>
+                    <button
+                      onClick={markAllRead}
+                      className="text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Mark all read
+                    </button>
+                  </div>
+                 </div>
+               )}
             </div>
 
             {/* Cart */}
@@ -415,34 +474,32 @@ export default function Navbar() {
               <div className="p-4 border-b relative flex items-start">
                 {/* Profile Picture */}
                 <div className="flex-shrink-0 w-12 h-12 mr-4">
-                  {previewNotif.actor?.profilePictureUrl ? (
+                {(() => {
+                  const adminFallback = { name: "Canteen Admin", profilePictureUrl: "/jckl-192.png" };
+                  const display = previewNotif.actor || adminFallback;
+                  return display.profilePictureUrl ? (
                     <img
-                      src={previewNotif.actor.profilePictureUrl}
+                      src={display.profilePictureUrl}
                       alt=""
                       className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          previewNotif.actor?.name || 'U'
-                        )}&background=random`;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(display.name || 'C')}&background=random`;
                       }}
                     />
                   ) : (
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center shadow-sm border-2 border-white">
-                      <span className="text-blue-600 font-medium text-lg">
-                        {previewNotif.actor?.name?.charAt(0)?.toUpperCase() || 'U'}
-                      </span>
+                      <span className="text-blue-600 font-medium text-lg">{(display.name || "C").charAt(0)}</span>
                     </div>
-                  )}
+                  );
+                })()}
                 </div>
 
                 {/* Header Content */}
                 <div className="flex-1 pr-8">
-                  <div className="text-sm text-gray-500">Notification from {previewNotif.actor?.name || "System"}</div>
+                  <div className="text-sm text-gray-500">Notification from {(previewNotif.actor && previewNotif.actor.name) || "Canteen Admin"}</div>
                   <h3 className="text-lg font-semibold text-gray-900">{previewNotif.title}</h3>
-                  <div className="text-xs text-gray-400 mt-1">
-                    {new Date(previewNotif.createdAt).toLocaleString()}
-                  </div>
+                  <div className="text-sm text-gray-400 mt-1">{new Date(previewNotif.createdAt).toLocaleString()}</div>
                 </div>
 
                 {/* Close Button */}
@@ -459,9 +516,10 @@ export default function Navbar() {
                 <p className="text-sm text-gray-600 mb-4">{previewNotif.body}</p>
 
                 {/* Notification Details */}
-                {previewNotif.data && (
-                  <div className="mt-4 bg-gray-50 rounded-lg p-4">
-                    {previewNotif.data.amount && (
+                {previewNotif.data ? (
+                  <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-4">
+                    {/* Top-up */}
+                    {previewNotif.data.amount && !previewNotif.data.items && (
                       <div className="space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Amount:</span>
@@ -473,34 +531,79 @@ export default function Navbar() {
                             <span className="capitalize">{previewNotif.data.provider}</span>
                           </div>
                         )}
-                        {previewNotif.data.reference && (
+                        {(previewNotif.data.reference || previewNotif.data.txId) && (
                           <div className="flex justify-between text-sm">
                             <span className="text-gray-600">Reference:</span>
-                            <span className="font-mono">{previewNotif.data.reference}</span>
+                            <span className="font-mono">{previewNotif.data.reference || previewNotif.data.txId}</span>
+                          </div>
+                        )}
+                        {previewNotif.data.status && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Status:</span>
+                            <span className={`font-medium ${
+                              String(previewNotif.data.status).toLowerCase() === "approved" ? "text-green-600" :
+                              String(previewNotif.data.status).toLowerCase() === "pending" ? "text-yellow-600" : "text-gray-900"
+                            }`}>{previewNotif.data.status}</span>
                           </div>
                         )}
                       </div>
                     )}
 
-                    {previewNotif.data.items && (
-                      <div className="space-y-2">
-                        {previewNotif.data.items.map((item, idx) => (
-                          <div key={idx} className="flex justify-between text-sm">
-                            <span className="text-gray-600">
-                              {item.qty}x {item.name}
-                            </span>
-                            <span className="font-medium">
-                              {peso.format(item.price * item.qty)}
-                            </span>
-                          </div>
-                        ))}
-                        <div className="border-t border-gray-200 pt-2 mt-2 flex justify-between font-medium">
-                          <span>Total:</span>
-                          <span>{peso.format(previewNotif.data.total || 0)}</span>
+                    {/* Reservation */}
+                    {previewNotif.data.items && previewNotif.data.items.length > 0 && (
+                      <div>
+                        <div className="text-xs font-medium text-gray-500 uppercase">Items</div>
+                        <div className="rounded-md border bg-white mt-2">
+                          {previewNotif.data.items.map((item, idx) => (
+                            <div key={idx} className="flex items-center justify-between px-4 py-2 text-sm">
+                              <div className="text-gray-700">
+                                <span className="font-medium">{item.qty || 1}×</span>
+                                <span className="ml-2 truncate">{item.name}</span>
+                                <div className="text-xs text-gray-400">ID: {item.id}</div>
+                              </div>
+                              <div className="font-medium text-gray-900">{peso.format(item.price || 0)}</div>
+                            </div>
+                          ))}
                         </div>
+                        <div className="pt-2 mt-2 border-t flex justify-between font-medium">
+                          <span>Total:</span>
+                          <span>{peso.format(previewNotif.data.total ?? previewNotif.data.amount ?? 0)}</span>
+                        </div>
+
+                        {(previewNotif.data.grade || previewNotif.data.section || previewNotif.data.student) && (
+                          <div className="pt-3 border-t">
+                            <div className="text-xs font-medium text-gray-500 uppercase">Student Details</div>
+                            <div className="mt-1 text-sm text-gray-900">
+                              {previewNotif.data.student && <div>{previewNotif.data.student}</div>}
+                              {(previewNotif.data.grade || previewNotif.data.section) && (
+                                <div className="text-sm text-gray-700">Grade {previewNotif.data.grade} - {previewNotif.data.section}</div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {/* Note and pickup slot */}
+                        {previewNotif.data.note && (
+                          <div className="pt-3">
+                            <div className="text-xs font-medium text-gray-500 uppercase">Note</div>
+                            <div className="mt-1 text-sm font-medium text-gray-900">{previewNotif.data.note}</div>
+                          </div>
+                        )}
+                        {previewNotif.data.slot && (
+                          <div className="pt-2">
+                            <div className="text-xs font-medium text-gray-500 uppercase">Pickup</div>
+                            <div className="mt-1 text-sm font-medium text-gray-900">{previewNotif.data.slot}</div>
+                          </div>
+                        )}
                       </div>
                     )}
+
+                    {/* Fallback structured data */}
+                    {!previewNotif.data.amount && !previewNotif.data.items && (
+                      <div className="text-sm text-gray-700">{renderPreviewData(previewNotif.data)}</div>
+                    )}
                   </div>
+                ) : (
+                  <div className="text-sm text-gray-500">No extra details.</div>
                 )}
               </div>
 

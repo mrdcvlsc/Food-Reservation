@@ -298,8 +298,14 @@ export default function AdminTopUpHistory() {
                 <div className="p-3 border rounded break-words">{selected.reference || "—"}</div>
                 <div className="text-sm text-gray-600 mt-3 mb-2">Contact</div>
                 <div className="p-3 border rounded">{selected.contact || "—"}</div>
-                <div className="text-sm text-gray-600 mt-3 mb-2">Notes</div>
-                <div className="p-3 border rounded">{selected.note || "—"}</div>
+                <div className="text-sm text-gray-600 mt-3 mb-2">
+                  {selected.status?.toLowerCase() === 'rejected' ? 'Rejection Reason' : 'Notes'}
+                </div>
+                <div className="p-3 border rounded">
+                  {selected.status?.toLowerCase() === 'rejected' 
+                    ? (selected.rejectionReason || selected.raw?.rejectionReason || 'No reason provided')
+                    : (selected.note || "—")}
+                </div>
               </div>
               <div>
                 <div className="text-sm text-gray-600 mb-2">Proof</div>

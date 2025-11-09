@@ -107,18 +107,23 @@ exports.listAdmin = (req, res) => {
 // Admin: set status for a topup (Approved|Rejected)
 exports.setStatus = (req, res) => {
   const { id } = req.params || {};
-  const { status } = req.body || {};
+  const { status, reason } = req.body || {};  // Add reason to destructuring
   if (!id) return res.status(400).json({ error: 'Missing id' });
   if (!status) return res.status(400).json({ error: 'Missing status' });
 
   const db = load();
   const i = (db.topups || []).findIndex(t => String(t.id) === String(id));
-  if (i === -1) return res.status(404).json({ error: 'Not found' }); // Fixed missing parentheses
+  if (i === -1) return res.status(404).json({ error: 'Not found' });
 
   const prev = db.topups[i].status;
   const now = new Date().toISOString();
   db.topups[i].status = status;
   db.topups[i].updatedAt = now;
+  
+  // Store rejection reason if provided
+  if (status.toLowerCase() === 'rejected' && reason) {
+    db.topups[i].rejectionReason = reason;
+  }
 
   // If moving into Approved from a non-approved state, credit user's balance and add a transaction.
   // Make this idempotent: skip if we've already recorded a transaction for this topup.
@@ -158,18 +163,32 @@ exports.setStatus = (req, res) => {
   }
 
   save(db);
-  // Notify student of topup status change
+  
+  // Update notification to include rejection reason
   try {
     const target = db.topups[i];
     if (target && target.userId) {
+      const notifTitle = `Top-up ${status}`;
+      let notifBody = `Your top-up request for ${peso.format(target.amount)} was ${status.toLowerCase()}`;
+      
+      // Add reason to notification if rejected
+      if (status.toLowerCase() === 'rejected' && reason) {
+        notifBody += `\nReason: ${reason}`;
+      }
+
       Notifications.addNotification({
         id: "notif_" + Date.now().toString(36),
         for: target.userId,
         actor: req.user && req.user.id,
         type: "topup:status",
-        title: `Top-up ${target.id} ${target.status}`,
-        body: `Your top-up ${target.id} was ${target.status}`,
-        data: { topupId: target.id, status: target.status },
+        title: notifTitle,
+        body: notifBody,
+        data: { 
+          topupId: target.id, 
+          status: target.status,
+          amount: target.amount,
+          rejectionReason: reason || null  // Include reason in notification data
+        },
         read: false,
         createdAt: new Date().toISOString(),
       });

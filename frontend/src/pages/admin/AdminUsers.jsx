@@ -12,7 +12,8 @@ export default function AdminUsers() {
   const [editForm, setEditForm] = useState({
     name: '',
     studentId: '',
-    phone: ''
+    phone: '',
+    note: '' // optional admin note to notify user
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [removePhoto, setRemovePhoto] = useState(false);
@@ -38,7 +39,8 @@ export default function AdminUsers() {
     setEditForm({
       name: user.name,
       studentId: user.studentId,
-      phone: user.phone || ''
+      phone: user.phone || '',
+      note: '' // reset note when opening editor
     });
     setPhotoFile(null);
     setRemovePhoto(false);
@@ -61,6 +63,7 @@ export default function AdminUsers() {
       formData.append('studentId', editForm.studentId);
       formData.append('phone', editForm.phone);
       formData.append('removePhoto', removePhoto);
+      formData.append('note', editForm.note || ""); // include admin note
       if (photoFile) {
         formData.append('photo', photoFile);
       }
@@ -276,6 +279,19 @@ export default function AdminUsers() {
                       value={editForm.phone}
                       onChange={e => setEditForm({...editForm, phone: e.target.value})}
                       className="w-full px-3 py-2 border rounded-md"
+                    />
+                  </div>
+
+                  {/* Optional admin note (will notify user) */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Optional note (notify user)
+                    </label>
+                    <textarea
+                      value={editForm.note}
+                      onChange={e => setEditForm({...editForm, note: e.target.value})}
+                      placeholder="Write a short message to the user (e.g. 'Your profile picture is inappropriate, please change it')"
+                      className="w-full px-3 py-2 border rounded-md text-sm min-h-[80px]"
                     />
                   </div>
                 </div>

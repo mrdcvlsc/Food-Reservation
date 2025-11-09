@@ -137,13 +137,17 @@ exports.create = async (req, res) => {
         type: "reservation:created",
         title: "New reservation submitted",
         body: `${user?.name || reservation.student || req.user?.email || req.user?.id} submitted a reservation`,
+        // include note and slot so admins see "less sauce" etc.
         data: { 
           reservationId: reservation.id,
           items: reservation.items,
           total: reservation.total,
+          note: reservation.note || "",
+          slot: reservation.when || reservation.slot || "",
           student: {
             grade: reservation.grade,
-            section: reservation.section
+            section: reservation.section,
+            name: reservation.student || ""
           }
         },
         read: false,
