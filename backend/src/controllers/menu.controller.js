@@ -7,8 +7,17 @@ const genId = () => String(Date.now()) + String(Math.floor(Math.random() * 1000)
 
 exports.list = (req, res) => {
   const db = load();
-  console.log('[MENU] List: returning', (db.menu || []).length, 'items');
-  res.json(db.menu);
+  const showDeleted = req.query.includeDeleted === 'true';
+  
+  const items = db.menu.filter(item => {
+    // For reports page, show all items including deleted
+    if (showDeleted) return true;
+    // For other pages, filter out deleted items
+    return !item.deleted;
+  });
+
+  console.log('[MENU] List: returning', items.length, 'items');
+  res.json(items);
 };
 
 exports.create = async (req, res) => {
@@ -112,28 +121,57 @@ exports.update = async (req, res) => {
   }
 };
 
-exports.remove = (req, res) => {
+// Modify the remove function to implement soft delete
+exports.remove = async (req, res) => {
   const id = req.params.id;
-  const db = load();
-  const i = db.menu.findIndex(m => String(m.id) === String(id));
-  if (i === -1) {
-    console.log('[MENU] Delete: item not found', id);
-    return res.status(404).json({ error: "Not found" });
-  }
-
-  const removed = db.menu.splice(i, 1)[0];
-  save(db);
-  // remove associated image file
+  
   try {
-    const fs = require('fs');
-    const path = require('path');
-    if (removed && removed.img && removed.img.includes('/uploads/')) {
-      const fname = path.basename(removed.img);
-      const fp = path.join(__dirname, '..', 'uploads', fname);
-      if (fs.existsSync(fp)) fs.unlinkSync(fp);
-    }
-  } catch (e) {}
+    if (mongoose && mongoose.connection && mongoose.connection.readyState === 1) {
+      const db = mongoose.connection.db;
+      const col = db.collection("menu");
+      
+      // Update instead of delete - set deleted flag and timestamp
+      const result = await col.updateOne(
+        { _id: new mongoose.Types.ObjectId(id) },
+        { 
+          $set: { 
+            deleted: true,
+            deletedAt: new Date().toISOString(),
+            visible: false // Ensure it's hidden from menu
+          } 
+        }
+      );
 
-  console.log('[MENU] Delete: item deleted', id);
-  res.json(removed);
+      if (result.modifiedCount === 0) {
+        return res.status(404).json({ error: "Item not found" });
+      }
+
+      // Return success
+      return res.json({ success: true });
+    }
+
+    // File DB fallback with soft delete
+    const db = load();
+    const idx = db.menu.findIndex(m => String(m.id) === String(id));
+    if (idx === -1) {
+      console.log('[MENU] Delete: item not found', id);
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    // Mark as deleted instead of removing
+    db.menu[idx] = {
+      ...db.menu[idx],
+      deleted: true,
+      deletedAt: new Date().toISOString(),
+      visible: false
+    };
+
+    save(db);
+    console.log('[MENU] Soft delete: item marked as deleted', id);
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("[MENU] delete error:", err);
+    return res.status(500).json({ error: "Failed to delete item" });
+  }
 };

@@ -129,7 +129,7 @@ export default function AdminReports() {
         if (year !== "all") qp.push(`year=${year}`);
         const reportUrl = qp.length ? `/reports/monthly?${qp.join("&")}` : `/reports/monthly`;
         const [mres, rres, tres, dres, repres] = await Promise.all([
-          api.get("/menu").catch(() => []),
+          api.getMenu(true), // Include deleted items
           api.get("/reservations/admin").catch(() => []),
           api.get("/admin/topups").catch(() => []),
           api.get("/admin/dashboard").catch(() => ({})),

@@ -1,5 +1,5 @@
 // src/pages/admin/adminEditItems.jsx
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from '../../lib/auth';
 import Navbar from "../../components/adminavbar";
@@ -224,11 +224,16 @@ export default function AdminEditItems() {
     }
   };
 
+  // Update the deleteItem function
   const deleteItem = async (id) => {
+    if (!window.confirm("Delete this product? It will be removed from the menu but preserved in reports.")) return;
+    
     setDeletingId(id);
     try {
-      await api.del(`/admin/menu/${id}`);
+      await api.delete(`/menu/${id}`);
+      // Remove from local state
       setItems((prev) => prev.filter((it) => it.id !== id));
+      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
     } catch (e) {
       alert(e?.message || "Failed to delete item.");
     } finally {

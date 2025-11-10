@@ -29,7 +29,7 @@ export default function AdminShop() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await api.get("/menu");
+      const data = await api.getMenu(false); // Don't include deleted items
       setItems(Array.isArray(data) ? data : []);
       // notify other tabs/pages (public shop) to refresh
       try { window.dispatchEvent(new Event("menu:updated")); } catch {}

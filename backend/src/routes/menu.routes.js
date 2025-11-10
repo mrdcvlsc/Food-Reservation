@@ -26,4 +26,7 @@ router.get("/", C.list);
 // ensure update route accepts single image field named "image"
 router.put("/:id", requireAuth, requireAdmin, upload.single("image"), C.update);
 
+// Add this delete route so frontend can call DELETE /api/menu/:id
+router.delete("/:id", requireAuth, requireAdmin, C.remove);
+
 module.exports = router;

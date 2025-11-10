@@ -85,5 +85,11 @@ export const api = {
   put: async (p, b, o) => await request(p, { ...(o || {}), method: "PUT", body: b }),
   putForm: async (p, form) => await request(p, { method: "PUT", body: form }),
   del: async (p, o) => await request(p, { ...(o || {}), method: "DELETE" }),
+  // alias for compatibility with code that calls api.delete(...)
+  delete: async (p, o) => await request(p, { ...(o || {}), method: "DELETE" }),
   patch: async (p, b, o) => await request(p, { ...(o || {}), method: "PATCH", body: b }),
+  getMenu: async (includeDeleted = false) => {
+    const url = includeDeleted ? '/menu?includeDeleted=true' : '/menu';
+    return await api.get(url);
+  }
 };

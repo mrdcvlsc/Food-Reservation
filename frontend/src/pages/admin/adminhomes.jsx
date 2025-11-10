@@ -244,25 +244,16 @@ export default function AdminHome() {
 
   // delete product (try DELETE, fallback to hide)
   const deleteProduct = async (id) => {
-    if (!window.confirm("Delete this product? This action cannot be undone.")) return;
+    if (!window.confirm("Delete this product? It will be removed from the menu but preserved in reports.")) return;
+    
     setBusyId(id);
     try {
-      // try hard delete first
       await api.delete(`/menu/${id}`);
-      setCurrentProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
-      try { window.dispatchEvent(new Event("menu:updated")); } catch {}
-      return;
-    } catch (e) {
-      console.warn("DELETE failed, trying to hide instead", e);
-    }
-
-    // fallback: mark as not visible
-    try {
-      await api.put(`/menu/${id}`, { visible: false });
+      // Remove from local state to hide from UI
       setCurrentProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
       try { window.dispatchEvent(new Event("menu:updated")); } catch {}
     } catch (err) {
-      console.error("Delete/hide failed", err);
+      console.error("Delete failed", err);
       alert("Failed to delete product.");
     } finally {
       setBusyId(null);
