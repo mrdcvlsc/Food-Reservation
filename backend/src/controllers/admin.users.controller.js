@@ -34,7 +34,9 @@ exports.list = async (req, res) => {
     // file-db fallback
     const db = await load();
     const users = Array.isArray(db.users) ? db.users : [];
+    console.log("Second element:", users[1]);
     const safe = users.map(u => ({
+      balance: u.balance,
       id: u.id,
       name: u.name,
       email: u.email,

@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { api } from "../../lib/api";
-import { Pencil, X } from 'lucide-react';
+import { Pencil, X, Trash } from "lucide-react";
+
+// Peso formatter
+const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
 const USER_PROFILE_UPDATED = 'USER_PROFILE_UPDATED';
 
@@ -17,12 +21,31 @@ export default function AdminUsers() {
   });
   const [photoFile, setPhotoFile] = useState(null);
   const [removePhoto, setRemovePhoto] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
+  // Load users + their wallet balances
   const load = async () => {
     setLoading(true);
     try {
       const data = await api.get("/admin/users");
-      setUsers(data || []);
+      const usersArr = Array.isArray(data) ? data : (data?.data || []);
+
+      // Fetch each user's wallet balance using admin endpoint
+      // const balances = await Promise.all(
+      //   usersArr.map(async (u) => {
+      //     try {
+      //       const meRes = await api.get(`/admin/wallets/${u.id}`);
+      //       const me = meRes?.data ?? meRes;
+      //       return Number(me?.balance ?? me?.wallet ?? 0);
+      //     } catch (err) {
+      //       console.error(`Failed to load wallet for user ${u.id}:`, err);
+      //       return 0;
+      //     }
+      //   })
+      // );
+
+      const merged = usersArr.map((u, i) => ({ ...u,  }));
+      setUsers(merged);
     } catch (e) {
       console.error("load users failed", e);
       setUsers([]);
@@ -70,17 +93,19 @@ export default function AdminUsers() {
 
       const res = await api.patch(`/admin/users/${editUser.id}`, formData);
       
-      if (res.ok) {
-        // Update local state
+      if (res && (res.ok || res.user)) {
+        // Update local state with returned user object if provided
+        console.log ('adminuserrequest1')
+        const updated = res.user || res;
         setUsers(users.map(u => 
-          u.id === editUser.id ? { ...u, ...res.user } : u
+          u.id === editUser.id ? { ...u, ...updated } : u
         ));
         
         // Emit custom event for profile update
         const event = new CustomEvent(USER_PROFILE_UPDATED, {
           detail: {
             userId: editUser.id,
-            updates: res.user
+            updates: updated
           }
         });
         window.dispatchEvent(event);
@@ -90,6 +115,35 @@ export default function AdminUsers() {
     } catch (err) {
       console.error('Update failed:', err);
       alert(err.response?.data?.error || 'Failed to update user');
+    }
+  };
+
+  const deleteUser = async (id) => {
+    const u = users.find(x => String(x.id) === String(id));
+    if (!u) return;
+
+    // Prevent deleting admin accounts
+    if (String(u.role || '').toLowerCase() === 'admin' || u.isAdmin) {
+      alert("Administrator accounts cannot be deleted.");
+      return;
+    }
+
+    if ((u.balance || 0) !== 0) {
+      alert("User must have zero balance before deletion.");
+      return;
+    }
+    if (!window.confirm(`Delete user "${u.name}"? This will remove the account from the system but keep their historical records for reports.`)) return;
+    setDeletingId(id);
+    try {
+      await api.delete(`/admin/users/${id}`);
+      // remove from local list
+      console.log ('adminuserrequest2')
+      setUsers(prev => prev.filter(x => String(x.id) !== String(id)));
+    } catch (err) {
+      console.error("delete user failed", err);
+      alert(err.message || "Failed to delete user");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -112,6 +166,7 @@ export default function AdminUsers() {
                   <th className="px-4 py-3">Full name</th>
                   <th className="px-4 py-3">Email</th>
                   <th className="px-4 py-3">Phone</th>
+                  <th className="px-4 py-3">Balance</th>
                   <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Actions</th>
                 </tr>
@@ -125,6 +180,7 @@ export default function AdminUsers() {
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-48" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-56" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-36" /></td>
+                      <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-28" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-20" /></td>
                       <td className="px-4 py-4"><div className="h-4 bg-gray-200 rounded w-24" /></td>
                     </tr>
@@ -141,7 +197,6 @@ export default function AdminUsers() {
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.target.onerror = null;
-                                // Fallback to initials if image fails to load
                                 e.target.style.display = 'none';
                                 e.target.parentElement.innerHTML = `
                                   <div class="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 font-medium">
@@ -161,14 +216,31 @@ export default function AdminUsers() {
                       <td className="px-4 py-3">{u.name}</td>
                       <td className="px-4 py-3 break-words">{u.email}</td>
                       <td className="px-4 py-3">{u.phone || "—"}</td>
-                      <td className="px-4 py-3">{u.role}</td>
                       <td className="px-4 py-3">
+                        {peso.format(Number(u.balance || 0))}
+                      </td>
+                      <td className="px-4 py-3">{u.role}</td>
+                      <td className="px-4 py-3 flex gap-2">
                         <button 
                           onClick={() => handleEdit(u)}
                           className="px-3 py-1 bg-blue-600 text-white rounded-md text-xs hover:bg-blue-700 flex items-center gap-1"
                         >
                           <Pencil className="w-3 h-3" />
                           Edit
+                        </button>
+
+                        <button
+                          onClick={() => deleteUser(u.id)}
+                          disabled={deletingId === u.id || (Number(u.balance || 0) !== 0) || String(u.role || '').toLowerCase() === 'admin' || u.isAdmin}
+                          className={`px-3 py-1 rounded-md text-xs border flex items-center gap-1 ${
+                            (Number(u.balance || 0) === 0 && String(u.role || '').toLowerCase() !== 'admin' && !u.isAdmin)
+                              ? "bg-red-600 text-white hover:bg-red-700 border-red-600"
+                              : "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                          }`}r
+                          title={String(u.role || '').toLowerCase() === 'admin' || u.isAdmin ? "Cannot delete administrator" : (Number(u.balance || 0) === 0 ? "Delete user" : "Cannot delete user with non-zero balance")}
+                        >
+                          <Trash className="w-3 h-3" />
+                          {deletingId === u.id ? "Deleting…" : "Delete"}
                         </button>
                       </td>
                     </tr>
