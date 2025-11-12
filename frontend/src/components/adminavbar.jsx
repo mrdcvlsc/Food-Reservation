@@ -441,6 +441,58 @@ export default function AdminAvbar() {
 
               {previewNotif.data ? (
                 <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
+                  {/* Student Registration Details */}
+                  {previewNotif.data.userId && previewNotif.data.studentName && (
+                    <div className="space-y-3">
+                      {/* Student Info Card */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Name */}
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Name</span>
+                            <div className="font-medium text-gray-900 mt-1">{previewNotif.data.studentName}</div>
+                          </div>
+
+                          {/* Student ID */}
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Student ID</span>
+                            <div className="font-mono font-medium text-gray-900 mt-1">{previewNotif.data.studentId}</div>
+                          </div>
+
+                          {/* Email */}
+                          <div className="col-span-2">
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Email</span>
+                            <div className="font-medium text-gray-900 mt-1 break-all">{previewNotif.data.email}</div>
+                          </div>
+
+                          {/* Phone */}
+                          <div className="col-span-2">
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Phone</span>
+                            <div className="font-medium text-gray-900 mt-1">{previewNotif.data.phone}</div>
+                          </div>
+
+                          {/* Grade & Section */}
+                          {(previewNotif.data.grade || previewNotif.data.section) && (
+                            <>
+                              {previewNotif.data.grade && (
+                                <div>
+                                  <span className="text-xs text-gray-500 uppercase font-semibold">Grade</span>
+                                  <div className="font-medium text-gray-900 mt-1">{previewNotif.data.grade}</div>
+                                </div>
+                              )}
+                              {previewNotif.data.section && (
+                                <div>
+                                  <span className="text-xs text-gray-500 uppercase font-semibold">Section</span>
+                                  <div className="font-medium text-gray-900 mt-1">{previewNotif.data.section}</div>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Reservation Details */}
                   {previewNotif.data.reservationId && (
                     <div className="space-y-3">

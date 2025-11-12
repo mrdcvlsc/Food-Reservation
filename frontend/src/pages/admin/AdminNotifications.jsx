@@ -259,6 +259,58 @@ export default function AdminNotifications() {
 
               {preview.data ? (
                 <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
+                  {/* Student Registration Details */}
+                  {preview.data.userId && preview.data.studentName && (
+                    <div className="space-y-3">
+                      {/* Student Info Card */}
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Name */}
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Name</span>
+                            <div className="font-medium text-gray-900 mt-1">{preview.data.studentName}</div>
+                          </div>
+
+                          {/* Student ID */}
+                          <div>
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Student ID</span>
+                            <div className="font-mono font-medium text-gray-900 mt-1">{preview.data.studentId}</div>
+                          </div>
+
+                          {/* Email */}
+                          <div className="col-span-2">
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Email</span>
+                            <div className="font-medium text-gray-900 mt-1 break-all">{preview.data.email}</div>
+                          </div>
+
+                          {/* Phone */}
+                          <div className="col-span-2">
+                            <span className="text-xs text-gray-500 uppercase font-semibold">Phone</span>
+                            <div className="font-medium text-gray-900 mt-1">{preview.data.phone}</div>
+                          </div>
+
+                          {/* Grade & Section */}
+                          {(preview.data.grade || preview.data.section) && (
+                            <>
+                              {preview.data.grade && (
+                                <div>
+                                  <span className="text-xs text-gray-500 uppercase font-semibold">Grade</span>
+                                  <div className="font-medium text-gray-900 mt-1">{preview.data.grade}</div>
+                                </div>
+                              )}
+                              {preview.data.section && (
+                                <div>
+                                  <span className="text-xs text-gray-500 uppercase font-semibold">Section</span>
+                                  <div className="font-medium text-gray-900 mt-1">{preview.data.section}</div>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Reservation Details */}
                   {preview.data.reservationId && (
                     <div className="space-y-3">

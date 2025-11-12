@@ -4795,6 +4795,19 @@
       "phone": "09777622846",
       "profilePictureUrl": "/uploads/profile-usr_mhlthc2o-1762336246735.jpg",
       "updatedAt": "2025-11-05T09:50:46.738Z"
+    },
+    {
+      "id": "usr_mhvoh1zp",
+      "name": "Syantut ARABO",
+      "email": "syant@cunt.com",
+      "passwordHash": "$2a$10$v0OQRZWrgorAvPdBi7m.GuNLpZDvEtBpOgraU8IwO2inP8BGMJEYi",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "202080189",
+      "phone": "09690636652",
+      "createdAt": "2025-11-12T07:27:47.922Z"
     }
   ],
   "transactions": [
@@ -6675,6 +6688,44 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhvoh23j",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Syantut ARABO",
+      "body": "A new student account has been created.\n\nName: Syantut ARABO\nStudent ID: 202080189\nEmail: syant@cunt.com\nPhone: 09690636652",
+      "data": {
+        "userId": "usr_mhvoh1zp",
+        "studentName": "Syantut ARABO",
+        "studentId": "202080189",
+        "email": "syant@cunt.com",
+        "phone": "09690636652",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-12T07:27:47.935Z"
+    },
+    {
+      "id": "notif_mhvnvwgi",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Syantut NIGGATRON",
+      "body": "A new student account has been created.\n\nName: Syantut NIGGATRON\nStudent ID: 202080189\nEmail: syant@cunt.com\nPhone: 09690636652",
+      "data": {
+        "userId": "usr_mhvnvwc4",
+        "studentName": "Syantut NIGGATRON",
+        "studentId": "202080189",
+        "email": "syant@cunt.com",
+        "phone": "09690636652",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-12T07:11:20.850Z"
+    },
     {
       "id": "notif_mhvm72d6",
       "for": "usr_mhbem19p",

@@ -1,6 +1,7 @@
 ﻿const bcrypt = require("bcryptjs");
 const { load, save } = require("../lib/db");
 const { sign } = require("../lib/auth");
+const Notifications = require("./notifications.controller");
 const path = require("path");
 const fs = require("fs-extra");
 
@@ -67,7 +68,8 @@ exports.register = (req, res) => {
     grade, section,
     balance: 0,
     studentId: String(studentId).trim(),
-    phone: String(phone).trim()
+    phone: String(phone).trim(),
+    createdAt: new Date().toISOString()
   };
   
   console.log('[AUTH] Creating new user:', { 
@@ -81,6 +83,33 @@ exports.register = (req, res) => {
   
   console.log('[AUTH] Saving database...');
   save(db);
+  
+  // Send notification to admin about new registration
+  try {
+    Notifications.addNotification({
+      id: "notif_" + Date.now().toString(36),
+      for: "admin",
+      actor: null, // System notification
+      type: "student:registered",
+      title: `New Student Registration: ${name}`,
+      body: `A new student account has been created.\n\nName: ${name}\nStudent ID: ${String(studentId).trim()}\nEmail: ${email}\nPhone: ${String(phone).trim()}`,
+      data: {
+        userId: newUser.id,
+        studentName: name,
+        studentId: String(studentId).trim(),
+        email: email,
+        phone: String(phone).trim(),
+        grade: grade || "",
+        section: section || ""
+      },
+      read: false,
+      createdAt: new Date().toISOString()
+    });
+    console.log('[AUTH] Admin notification sent for new registration:', newUser.id);
+  } catch (err) {
+    console.error('[AUTH] Failed to send admin notification:', err && err.message);
+  }
+  
   console.log('[AUTH] Registration successful for user:', newUser.id);
   
   res.json({ ok: true });
