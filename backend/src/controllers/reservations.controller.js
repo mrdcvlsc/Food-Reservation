@@ -342,7 +342,18 @@ exports.setStatus = async (req, res) => {
               type: "reservation:status",
               title: `Reservation ${row.id} Approved`,
               body: `Your reservation ${row.id} has been approved.`,
-              data: { reservationId: row.id, status: "Approved" },
+              data: { 
+                reservationId: row.id, 
+                status: "Approved",
+                items: row.items,
+                total: row.total,
+                note: row.note || "",
+                slot: row.when || row.slot || "",
+                grade: row.grade,
+                section: row.section,
+                student: row.student,
+                transactionId: existingTx.id
+              },
               read: false,
               createdAt: new Date().toISOString(),
             });
@@ -436,7 +447,18 @@ exports.setStatus = async (req, res) => {
             type: "reservation:status",
             title: `Reservation ${row.id} Approved`,
             body: `Your reservation ${row.id} has been approved.`,
-            data: { reservationId: row.id, status: "Approved", transactionId: tx.id },
+            data: { 
+              reservationId: row.id, 
+              status: "Approved",
+              items: row.items,
+              total: row.total,
+              note: row.note || "",
+              slot: row.when || row.slot || "",
+              grade: row.grade,
+              section: row.section,
+              student: row.student,
+              transactionId: tx.id
+            },
             read: false,
             createdAt: new Date().toISOString(),
           });
@@ -467,7 +489,7 @@ exports.setStatus = async (req, res) => {
 
       // Best-effort resolve from student field
       if (!targetUserId && row.student) {
-        const studentNorm = String(row.student || "").trim().toLowerCase();
+        const studentNorm = String(row.student).trim().toLowerCase();
         if (studentNorm) {
           const found = (db.users || []).find((u) => {
             const name = String(u.name || "").trim().toLowerCase();
@@ -533,7 +555,7 @@ exports.setStatus = async (req, res) => {
 
       await save(db);
 
-      // Send notification (best-effort)
+      // Send notification with FULL details (best-effort)
       try {
         if (row.userId) {
           Notifications.addNotification({
@@ -543,7 +565,17 @@ exports.setStatus = async (req, res) => {
             type: "reservation:status",
             title: `Reservation ${row.id} Rejected`,
             body: `Your reservation ${row.id} has been rejected.`,
-            data: { reservationId: row.id, status: "Rejected" },
+            data: { 
+              reservationId: row.id, 
+              status: "Rejected",
+              items: row.items,
+              total: row.total,
+              note: row.note || "",
+              slot: row.when || row.slot || "",
+              grade: row.grade,
+              section: row.section,
+              student: row.student
+            },
             read: false,
             createdAt: new Date().toISOString(),
           });

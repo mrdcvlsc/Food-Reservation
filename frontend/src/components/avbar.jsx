@@ -512,94 +512,129 @@ export default function Navbar() {
               </div>
 
               {/* Body Content */}
-              <div className="p-4">
+              <div className="p-4 max-h-[calc(100vh-200px)] overflow-y-auto">
                 <p className="text-sm text-gray-600 mb-4">{previewNotif.body}</p>
 
                 {/* Notification Details */}
                 {previewNotif.data ? (
                   <div className="mt-4 bg-gray-50 rounded-lg p-4 space-y-4">
-                    {/* Top-up */}
-                    {previewNotif.data.amount && !previewNotif.data.items && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Amount:</span>
-                          <span className="font-medium">{peso.format(previewNotif.data.amount)}</span>
-                        </div>
-                        {previewNotif.data.provider && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Method:</span>
-                            <span className="capitalize">{previewNotif.data.provider}</span>
-                          </div>
-                        )}
-                        {(previewNotif.data.reference || previewNotif.data.txId) && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Reference:</span>
-                            <span className="font-mono">{previewNotif.data.reference || previewNotif.data.txId}</span>
-                          </div>
-                        )}
-                        {previewNotif.data.status && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Status:</span>
-                            <span className={`font-medium ${
-                              String(previewNotif.data.status).toLowerCase() === "approved" ? "text-green-600" :
-                              String(previewNotif.data.status).toLowerCase() === "pending" ? "text-yellow-600" : "text-gray-900"
-                            }`}>{previewNotif.data.status}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
                     {/* Reservation */}
-                    {previewNotif.data.items && previewNotif.data.items.length > 0 && (
-                      <div>
-                        <div className="text-xs font-medium text-gray-500 uppercase">Items</div>
-                        <div className="rounded-md border bg-white mt-2">
-                          {previewNotif.data.items.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between px-4 py-2 text-sm">
-                              <div className="text-gray-700">
-                                <span className="font-medium">{item.qty || 1}×</span>
-                                <span className="ml-2 truncate">{item.name}</span>
-                                <div className="text-xs text-gray-400">ID: {item.id}</div>
-                              </div>
-                              <div className="font-medium text-gray-900">{peso.format(item.price || 0)}</div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="pt-2 mt-2 border-t flex justify-between font-medium">
-                          <span>Total:</span>
-                          <span>{peso.format(previewNotif.data.total ?? previewNotif.data.amount ?? 0)}</span>
+                    {previewNotif.data.reservationId && (
+                      <div className="space-y-3">
+                        {/* Reservation ID */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="text-sm">
+                            <span className="text-gray-500">reservationId</span>
+                            <div className="font-medium text-gray-900">{previewNotif.data.reservationId}</div>
+                          </div>
                         </div>
 
+                        {/* Items Table */}
+                        {previewNotif.data.items?.length > 0 && (
+                          <div className="space-y-2">
+                            <div className="text-xs font-medium text-gray-500 uppercase">Items</div>
+                            <div className="rounded-md border bg-white overflow-hidden">
+                              {previewNotif.data.items.map((item, idx) => (
+                                <div key={idx} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 text-sm">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-gray-900">{item.qty || 1}×</span>
+                                      <span className="text-gray-700">{item.name}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">ID: {item.id}</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm text-gray-600">{peso.format(item.price || 0)}</div>
+                                    <div className="text-xs text-gray-500">{peso.format((item.price || 0) * (item.qty || 1))}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            {/* Total */}
+                            <div className="pt-2 border-t flex justify-between items-center">
+                              <span className="font-semibold text-gray-900">Total</span>
+                              <span className="text-lg font-bold text-blue-600">{peso.format(previewNotif.data.total || 0)}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Student Details */}
                         {(previewNotif.data.grade || previewNotif.data.section || previewNotif.data.student) && (
                           <div className="pt-3 border-t">
-                            <div className="text-xs font-medium text-gray-500 uppercase">Student Details</div>
-                            <div className="mt-1 text-sm text-gray-900">
-                              {previewNotif.data.student && <div>{previewNotif.data.student}</div>}
-                              {(previewNotif.data.grade || previewNotif.data.section) && (
-                                <div className="text-sm text-gray-700">Grade {previewNotif.data.grade} - {previewNotif.data.section}</div>
+                            <div className="text-xs font-medium text-gray-500 uppercase mb-2">Student Details</div>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              {previewNotif.data.student && (
+                                <div>
+                                  <span className="text-gray-500">name</span>
+                                  <div className="font-medium text-gray-900">{previewNotif.data.student}</div>
+                                </div>
+                              )}
+                              {previewNotif.data.grade && (
+                                <div>
+                                  <span className="text-gray-500">grade</span>
+                                  <div className="font-medium text-gray-900">{previewNotif.data.grade}</div>
+                                </div>
+                              )}
+                              {previewNotif.data.section && (
+                                <div>
+                                  <span className="text-gray-500">section</span>
+                                  <div className="font-medium text-gray-900">{previewNotif.data.section}</div>
+                                </div>
                               )}
                             </div>
                           </div>
                         )}
-                        {/* Note and pickup slot */}
+
+                        {/* Note */}
                         {previewNotif.data.note && (
-                          <div className="pt-3">
-                            <div className="text-xs font-medium text-gray-500 uppercase">Note</div>
-                            <div className="mt-1 text-sm font-medium text-gray-900">{previewNotif.data.note}</div>
+                          <div className="pt-3 border-t">
+                            <div className="text-xs font-medium text-gray-500 uppercase mb-1">Note</div>
+                            <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-sm text-gray-900">{previewNotif.data.note}</div>
                           </div>
                         )}
+
+                        {/* Pickup Slot */}
                         {previewNotif.data.slot && (
                           <div className="pt-2">
-                            <div className="text-xs font-medium text-gray-500 uppercase">Pickup</div>
-                            <div className="mt-1 text-sm font-medium text-gray-900">{previewNotif.data.slot}</div>
+                            <div className="text-xs font-medium text-gray-500 uppercase mb-1">Pickup</div>
+                            <div className="font-medium text-gray-900">{previewNotif.data.slot}</div>
                           </div>
                         )}
                       </div>
                     )}
 
-                    {/* Fallback structured data */}
-                    {!previewNotif.data.amount && !previewNotif.data.items && (
-                      <div className="text-sm text-gray-700">{renderPreviewData(previewNotif.data)}</div>
+                    {/* Top-up Details */}
+                    {previewNotif.data.amount && !previewNotif.data.items && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Amount</span>
+                          <span className="font-medium text-gray-900">{peso.format(previewNotif.data.amount)}</span>
+                        </div>
+                        {previewNotif.data.provider && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Method</span>
+                            <span className="font-medium capitalize text-gray-900">{previewNotif.data.provider}</span>
+                          </div>
+                        )}
+                        {(previewNotif.data.reference || previewNotif.data.txId) && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Reference</span>
+                            <span className="font-mono font-medium text-gray-900">{previewNotif.data.reference || previewNotif.data.txId}</span>
+                          </div>
+                        )}
+                        {previewNotif.data.status && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Status</span>
+                            <span className={`font-medium ${
+                              String(previewNotif.data.status).toLowerCase() === "approved" ? "text-green-600" :
+                              String(previewNotif.data.status).toLowerCase() === "pending" ? "text-yellow-600" :
+                              String(previewNotif.data.status).toLowerCase() === "rejected" ? "text-red-600" :
+                              "text-gray-900"
+                            }`}>{previewNotif.data.status}</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 ) : (

@@ -396,79 +396,134 @@ export default function AdminAvbar() {
       {/* Notification preview modal */}
       {previewNotif && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
-          <div className="max-w-xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="max-w-2xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Header */}
-            <div className="flex items-start p-4 border-b">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <img 
-                    src={previewNotif.actor?.profilePictureUrl || "/jckl-192.png"}
-                    alt=""
-                    className="w-8 h-8 rounded-full"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        previewNotif.actor?.name || "U"
-                      )}&background=random`;
-                    }}
-                  />
-                  <div>
-                    <div className="text-sm text-gray-600">From {previewNotif.actor?.name || "System"}</div>
-                    <div className="text-sm text-gray-400">{new Date(previewNotif.createdAt).toLocaleString()}</div>
-                  </div>
-                </div>
-                <h3 className="text-lg font-medium mt-2">{previewNotif.title}</h3>
+            <div className="flex items-start gap-4 p-5 border-b">
+              <div className="flex-shrink-0">
+                {(() => {
+                  const adminFallback = { name: "Canteen Admin", profilePictureUrl: "/jckl-192.png" };
+                  const display = previewNotif.actor || adminFallback;
+                  return display.profilePictureUrl ? (
+                    <img
+                      src={display.profilePictureUrl}
+                      alt=""
+                      className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
+                      onError={(e) => { 
+                        e.target.onerror = null; 
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(display.name || 'CA')}&background=random`; 
+                      }}
+                    />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-lg font-medium text-blue-600">
+                      {(display.name || "C").charAt(0)}
+                    </div>
+                  );
+                })()}
               </div>
+
+              <div className="flex-1 pr-8">
+                <div className="text-xs text-gray-500">From {(previewNotif.actor && previewNotif.actor.name) || "Canteen Admin"}</div>
+                <h3 className="text-xl font-semibold text-gray-900">{previewNotif.title}</h3>
+                <div className="text-xs text-gray-400 mt-1">{new Date(previewNotif.createdAt).toLocaleString()}</div>
+              </div>
+
               <button 
                 onClick={() => setPreviewNotif(null)} 
-                className="ml-4 text-gray-400 hover:text-gray-600"
+                className="ml-3 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-4">
-              <p className="text-sm text-gray-600 mb-4">{previewNotif.body}</p>
+            {/* Body */}
+            <div className="p-6 max-h-[calc(100vh-250px)] overflow-y-auto">
+              <p className="text-sm text-gray-700 mb-4">{previewNotif.body}</p>
 
-              {previewNotif.data && (
-                <div className="bg-gray-50 rounded-lg border p-4">
+              {previewNotif.data ? (
+                <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
                   {/* Reservation Details */}
                   {previewNotif.data.reservationId && (
                     <div className="space-y-3">
-                      <div className="text-sm">
-                        <span className="text-gray-500">Reservation ID</span>
-                        <div className="font-medium">{previewNotif.data.reservationId}</div>
+                      {/* Reservation ID */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-sm">
+                          <span className="text-gray-500">reservationId</span>
+                          <div className="font-medium text-gray-900">{previewNotif.data.reservationId}</div>
+                        </div>
                       </div>
 
                       {/* Items */}
-                      {previewNotif.data.items?.length > 0 && (
+                      {Array.isArray(previewNotif.data.items) && previewNotif.data.items.length > 0 ? (
                         <div className="space-y-2">
-                          <span className="text-xs font-medium text-gray-500 uppercase">Items</span>
-                          {previewNotif.data.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-sm">
-                              <span className="text-gray-600">
-                                {item.qty || 1}× {item.name}
-                              </span>
-                              <span className="font-medium">
-                                {peso.format((item.price || 0) * (item.qty || 1))}
-                              </span>
-                            </div>
-                          ))}
-                          <div className="pt-2 border-t flex justify-between text-sm font-medium">
-                            <span>Total</span>
-                            <span>{peso.format(previewNotif.data.total || 0)}</span>
+                          <div className="text-xs font-medium text-gray-500 uppercase">Items</div>
+                          <div className="rounded-md border bg-white overflow-hidden">
+                            {previewNotif.data.items.map((it, i) => (
+                              <div key={i} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 text-sm">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-semibold text-gray-900">{it.qty || 1}×</span>
+                                    <span className="text-gray-700">{it.name}</span>
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">ID: {it.id}</div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-sm text-gray-600">{peso.format(it.price || 0)}</div>
+                                  <div className="text-xs text-gray-500">{peso.format((it.price || 0) * (it.qty || 1))}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Total */}
+                          <div className="pt-2 border-t flex justify-between items-center">
+                            <span className="font-semibold text-gray-900">Total</span>
+                            <span className="text-lg font-bold text-blue-600">{peso.format(previewNotif.data.total ?? 0)}</span>
+                          </div>
+                        </div>
+                      ) : null}
+
+                      {/* Student Details */}
+                      {(previewNotif.data.grade || previewNotif.data.section || previewNotif.data.student) && (
+                        <div className="pt-3 border-t">
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-2">Student Details</div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            {previewNotif.data.student && (
+                              <div>
+                                <span className="text-gray-500">name</span>
+                                <div className="font-medium text-gray-900">
+                                  {typeof previewNotif.data.student === "string" ? previewNotif.data.student : previewNotif.data.student.name || "N/A"}
+                                </div>
+                              </div>
+                            )}
+                            {previewNotif.data.grade && (
+                              <div>
+                                <span className="text-gray-500">grade</span>
+                                <div className="font-medium text-gray-900">{previewNotif.data.grade}</div>
+                              </div>
+                            )}
+                            {previewNotif.data.section && (
+                              <div>
+                                <span className="text-gray-500">section</span>
+                                <div className="font-medium text-gray-900">{previewNotif.data.section}</div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
 
-                      {/* Student Details */}
-                      {(previewNotif.data.grade || previewNotif.data.section) && (
+                      {/* Note */}
+                      {previewNotif.data.note && (
                         <div className="pt-3 border-t">
-                          <span className="text-xs font-medium text-gray-500 uppercase">Student Details</span>
-                          <div className="mt-1 text-sm font-medium">
-                            Grade {previewNotif.data.grade} - {previewNotif.data.section}
-                          </div>
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-1">Note</div>
+                          <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-sm text-gray-900">{previewNotif.data.note}</div>
+                        </div>
+                      )}
+
+                      {/* Pickup Slot */}
+                      {previewNotif.data.slot && (
+                        <div className="pt-2">
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-1">Pickup</div>
+                          <div className="font-medium text-gray-900">{previewNotif.data.slot}</div>
                         </div>
                       )}
                     </div>
@@ -479,37 +534,50 @@ export default function AdminAvbar() {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-600">Amount</span>
-                        <span className="font-medium">{peso.format(previewNotif.data.amount)}</span>
+                        <span className="font-medium text-gray-900">{peso.format(previewNotif.data.amount)}</span>
                       </div>
                       {previewNotif.data.provider && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Method</span>
-                          <span className="font-medium capitalize">{previewNotif.data.provider}</span>
+                          <span className="font-medium capitalize text-gray-900">{previewNotif.data.provider}</span>
                         </div>
                       )}
-                      {previewNotif.data.reference && (
+                      {(previewNotif.data.reference || previewNotif.data.txId) && (
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Reference</span>
-                          <span className="font-medium font-mono">{previewNotif.data.reference}</span>
+                          <span className="font-mono font-medium text-gray-900">{previewNotif.data.reference || previewNotif.data.txId}</span>
+                        </div>
+                      )}
+                      {previewNotif.data.status && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Status</span>
+                          <span className={`font-medium ${
+                            String(previewNotif.data.status).toLowerCase() === "approved" ? "text-green-600" :
+                            String(previewNotif.data.status).toLowerCase() === "pending" ? "text-yellow-600" :
+                            String(previewNotif.data.status).toLowerCase() === "rejected" ? "text-red-600" :
+                            "text-gray-900"
+                          }`}>{previewNotif.data.status}</span>
                         </div>
                       )}
                     </div>
                   )}
                 </div>
+              ) : (
+                <div className="text-sm text-gray-500">No extra details.</div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-2 p-4 border-t">
+            <div className="p-4 border-t flex justify-end gap-3">
               <button
                 onClick={() => setPreviewNotif(null)}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50"
               >
                 Close
               </button>
               <button
                 onClick={() => deleteNotif(previewNotif.id)}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+                className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700"
               >
                 Delete
               </button>

@@ -11,6 +11,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [selected, setSelected] = useState(new Set());
   const [preview, setPreview] = useState(null);
+  const [reservationDetails, setReservationDetails] = useState({});
 
   const load = async () => {
     setLoading(true);
@@ -65,7 +66,26 @@ export default function Notifications() {
   };
 
   const openPreview = async (n) => {
+    console.log("Opening preview for notification:", n);
+    console.log("Notification data:", n.data);
+    
     setPreview(n);
+    
+    // If it's a reservation notification, fetch full details
+    if (n.data?.reservationId) {
+      try {
+        const res = await api.get(`/reservations/${n.data.reservationId}`);
+        const reservation = res?.data || res;
+        setReservationDetails(prev => ({
+          ...prev,
+          [n.data.reservationId]: reservation
+        }));
+        console.log("Fetched reservation:", reservation);
+      } catch (err) {
+        console.error("Failed to fetch reservation:", err);
+      }
+    }
+    
     if (!n.read) {
       try {
         await api.patch(`/notifications/${n.id}/read`);
@@ -85,7 +105,6 @@ export default function Notifications() {
     }
   };
 
-  // Render preview.data as user-friendly HTML instead of raw JSON
   const renderPreviewData = (data) => {
     if (data == null) return <div className="text-sm text-gray-500">No additional details.</div>;
     if (typeof data === "string" || typeof data === "number" || typeof data === "boolean") {
@@ -102,7 +121,6 @@ export default function Notifications() {
         </div>
       );
     }
-    // object
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {Object.entries(data).map(([k, v]) => (
@@ -216,6 +234,7 @@ export default function Notifications() {
       {preview && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
           <div className="max-w-3xl w-full bg-white rounded-lg shadow-lg overflow-hidden">
+            {/* Header */}
             <div className="flex items-start gap-4 p-5 border-b">
               <div className="flex-shrink-0">
                 {(() => {
@@ -225,108 +244,164 @@ export default function Notifications() {
                     <img
                       src={display.profilePictureUrl}
                       alt=""
-                      className="w-14 h-14 rounded-full object-cover"
-                      onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(display.name)}&background=random`; }}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-sm"
+                      onError={(e) => { 
+                        e.target.onerror = null; 
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(display.name || 'CA')}&background=random`; 
+                      }}
                     />
                   ) : (
-                    <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-lg text-gray-600">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-lg font-medium text-blue-600">
                       {(display.name || "C").charAt(0)}
                     </div>
                   );
                 })()}
               </div>
 
-              <div className="flex-1">
+              <div className="flex-1 pr-8">
                 <div className="text-xs text-gray-500">From {(preview.actor && preview.actor.name) || "Canteen Admin"}</div>
                 <h3 className="text-xl font-semibold text-gray-900">{preview.title}</h3>
                 <div className="text-xs text-gray-400 mt-1">{new Date(preview.createdAt).toLocaleString()}</div>
               </div>
 
-              <button onClick={() => setPreview(null)} className="ml-3 p-2 rounded-full text-gray-400 hover:text-gray-600">
-                <X />
+              <button onClick={() => setPreview(null)} className="ml-3 p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6">
+            {/* Body */}
+            <div className="p-6 max-h-[calc(100vh-250px)] overflow-y-auto">
               <p className="text-sm text-gray-700 mb-4">{preview.body}</p>
 
               {preview.data ? (
                 <div className="bg-gray-50 border rounded-lg p-5 space-y-4">
-                  {/* Reservation details (concise list format) */}
+                  {/* Reservation Details */}
                   {preview.data.reservationId && (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-500">Reservation ID</div>
-                        <div className="text-sm font-medium text-gray-900">{preview.data.reservationId}</div>
+                      {/* Reservation ID */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="text-sm">
+                          <span className="text-gray-500">reservationId</span>
+                          <div className="font-medium text-gray-900">{preview.data.reservationId}</div>
+                        </div>
                       </div>
 
-                      {Array.isArray(preview.data.items) && preview.data.items.length > 0 && (
-                        <div className="space-y-2">
-                          <div className="text-xs font-medium text-gray-500 uppercase">Items</div>
-                          <div className="rounded-md border bg-white">
-                            {preview.data.items.map((it, i) => (
-                              <div key={i} className="flex items-center justify-between px-4 py-2 text-sm">
-                                <div className="text-gray-700">
-                                  <span className="font-medium">{it.qty || 1}×</span>
-                                  <span className="ml-2 truncate">{it.name}</span>
+                      {/* Items - use fetched reservation data */}
+                      {(() => {
+                        const resData = reservationDetails[preview.data.reservationId];
+                        const items = resData?.items || preview.data.items;
+                        return Array.isArray(items) && items.length > 0 ? (
+                          <div className="space-y-2">
+                            <div className="text-xs font-medium text-gray-500 uppercase">Items</div>
+                            <div className="rounded-md border bg-white overflow-hidden">
+                              {items.map((it, i) => (
+                                <div key={i} className="flex items-center justify-between px-4 py-3 border-b last:border-b-0 text-sm">
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-gray-900">{it.qty || 1}×</span>
+                                      <span className="text-gray-700">{it.name}</span>
+                                    </div>
+                                    <div className="text-xs text-gray-500 mt-1">ID: {it.id}</div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-sm text-gray-600">{peso.format(it.price || 0)}</div>
+                                    <div className="text-xs text-gray-500">{peso.format((it.price || 0) * (it.qty || 1))}</div>
+                                  </div>
                                 </div>
-                                <div className="text-gray-900 font-medium">{peso.format(it.price || 0)}</div>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
 
-                          <div className="flex items-center justify-between pt-2">
-                            <div className="text-sm font-medium text-gray-700">Total</div>
-                            <div className="text-lg font-semibold text-gray-900">{peso.format(preview.data.total ?? preview.data.amount ?? 0)}</div>
+                              {/* Total */}
+                              <div className="pt-2 border-t flex justify-between items-center">
+                                <span className="font-semibold text-gray-900">Total</span>
+                                <span className="text-lg font-bold text-blue-600">{peso.format((resData?.total) || (preview.data.total) || 0)}</span>
+                              </div>
+                            </div>
                           </div>
+                        ) : null;
+                      })()}
+
+                      {/* Student Details */}
+                      {(preview.data.grade || preview.data.section || preview.data.student) && (
+                        <div className="pt-3 border-t">
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-2">Student Details</div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            {preview.data.student && (
+                              <div>
+                                <span className="text-gray-500">name</span>
+                                <div className="font-medium text-gray-900">{preview.data.student}</div>
+                              </div>
+                            )}
+                            {preview.data.grade && (
+                              <div>
+                                <span className="text-gray-500">grade</span>
+                                <div className="font-medium text-gray-900">{preview.data.grade}</div>
+                              </div>
+                            )}
+                            {preview.data.section && (
+                              <div>
+                                <span className="text-gray-500">section</span>
+                                <div className="font-medium text-gray-900">{preview.data.section}</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Note */}
+                      {preview.data.note && (
+                        <div className="pt-3 border-t">
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-1">Note</div>
+                          <div className="bg-yellow-50 border border-yellow-200 rounded p-2 text-sm text-gray-900">{preview.data.note}</div>
+                        </div>
+                      )}
+
+                      {/* Pickup Slot */}
+                      {preview.data.slot && (
+                        <div className="pt-2">
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-1">Pickup</div>
+                          <div className="font-medium text-gray-900">{preview.data.slot}</div>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Top-up details */}
+                  {/* Top-up Details */}
                   {preview.data.amount && !preview.data.items && (
                     <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <div className="text-sm text-gray-500">Amount</div>
-                        <div className="text-sm font-medium text-gray-900">{peso.format(preview.data.amount)}</div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Amount</span>
+                        <span className="font-medium text-gray-900">{peso.format(preview.data.amount)}</span>
                       </div>
                       {preview.data.provider && (
-                        <div className="flex justify-between">
-                          <div className="text-sm text-gray-500">Method</div>
-                          <div className="text-sm text-gray-900">{preview.data.provider}</div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Method</span>
+                          <span className="font-medium capitalize text-gray-900">{preview.data.provider}</span>
                         </div>
                       )}
                       {(preview.data.reference || preview.data.txId) && (
-                        <div className="flex justify-between">
-                          <div className="text-sm text-gray-500">Reference</div>
-                          <div className="text-sm font-mono text-gray-900">{preview.data.reference || preview.data.txId}</div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Reference</span>
+                          <span className="font-mono font-medium text-gray-900">{preview.data.reference || preview.data.txId}</span>
                         </div>
                       )}
                       {preview.data.status && (
-                        <div className="flex justify-between">
-                          <div className="text-sm text-gray-500">Status</div>
-                          <div className={`text-sm font-medium ${
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Status</span>
+                          <span className={`font-medium ${
                             String(preview.data.status).toLowerCase() === "approved" ? "text-green-600" :
-                            String(preview.data.status).toLowerCase() === "pending" ? "text-yellow-600" : "text-gray-900"
-                          }`}>{preview.data.status}</div>
+                            String(preview.data.status).toLowerCase() === "pending" ? "text-yellow-600" :
+                            String(preview.data.status).toLowerCase() === "rejected" ? "text-red-600" :
+                            "text-gray-900"
+                          }`}>{preview.data.status}</span>
                         </div>
                       )}
                     </div>
                   )}
 
-                  {/* Fallback / additional structured data */}
-                  {!preview.data.reservationId && !preview.data.amount && (
+                  {/* Metadata fallback for other data */}
+                  {!preview.data.reservationId && !preview.data.amount && preview.data && Object.keys(preview.data).length > 0 && (
                     <div className="text-sm text-gray-700">
                       {renderPreviewData(preview.data)}
-                    </div>
-                  )}
-
-                  {/* Metadata */}
-                  {preview.data.metadata && (
-                    <div className="pt-3 border-t border-gray-200">
-                      <div className="text-xs font-medium text-gray-500 uppercase mb-2">Additional Details</div>
-                      <pre className="text-xs text-gray-600 whitespace-pre-wrap bg-white p-2 rounded border">{JSON.stringify(preview.data.metadata, null, 2)}</pre>
                     </div>
                   )}
                 </div>
@@ -335,9 +410,10 @@ export default function Notifications() {
               )}
             </div>
 
+            {/* Footer */}
             <div className="p-4 border-t flex justify-end gap-3">
-              <button onClick={() => setPreview(null)} className="px-4 py-2 bg-white border rounded-md">Close</button>
-              <button onClick={() => deleteSingle(preview.id)} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
+              <button onClick={() => setPreview(null)} className="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50">Close</button>
+              <button onClick={() => deleteSingle(preview.id)} className="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Delete</button>
             </div>
           </div>
         </div>,
