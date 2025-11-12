@@ -98,7 +98,7 @@
       "name": "Bottled Water",
       "category": "Beverages",
       "price": 20,
-      "stock": 20,
+      "stock": 15,
       "img": "/uploads/1761538656602_927934.jpg",
       "visible": true,
       "updatedAt": "2025-11-10T10:51:46.126Z"
@@ -3492,13 +3492,13 @@
         }
       ],
       "total": 53,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-11-06T08:18:28.636Z",
       "transactionId": "txn_mhn5n4cn",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-06T08:18:28.679Z",
-      "updatedAt": "2025-11-06T08:18:52.889Z"
+      "updatedAt": "2025-11-12T05:15:50.589Z"
     },
     {
       "id": "RES_mhn5omdoh7",
@@ -3544,13 +3544,13 @@
         }
       ],
       "total": 20,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-11-06T08:23:47.524Z",
       "transactionId": "txn_mhn5tyeq",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-06T08:23:47.570Z",
-      "updatedAt": "2025-11-06T08:24:23.865Z"
+      "updatedAt": "2025-11-12T05:15:49.228Z"
     },
     {
       "id": "RES_mhqap0esbn",
@@ -3925,6 +3925,31 @@
       "charged": true,
       "chargedAt": "2025-11-11T13:34:57.765Z",
       "updatedAt": "2025-11-11T13:37:22.767Z"
+    },
+    {
+      "id": "RES_mhvjkza9of",
+      "userId": "usr_mhbem19p",
+      "student": "Sean",
+      "grade": "G9",
+      "section": "Lawrence",
+      "when": "after",
+      "note": "Tite ko malaki",
+      "items": [
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 5
+        }
+      ],
+      "total": 100,
+      "status": "Claimed",
+      "createdAt": "2025-11-12T05:10:52.833Z",
+      "transactionId": "txn_mhvjkzhf",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-12T05:10:53.091Z",
+      "updatedAt": "2025-11-12T05:15:34.748Z"
     }
   ],
   "topups": [
@@ -4421,6 +4446,24 @@
       "updatedAt": "2025-11-11T12:29:47.422Z",
       "credited": true,
       "creditedAt": "2025-11-11T12:29:47.422Z"
+    },
+    {
+      "id": "top_mhvitr5t",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "studentId": "1646523368",
+      "contact": "09688523253",
+      "email": "spadymold@gmail.com",
+      "provider": "gcash",
+      "amount": 1000,
+      "reference": "2432342525242",
+      "status": "Approved",
+      "proofUrl": "/uploads/mhvitr4y_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-11-12T04:49:42.593Z",
+      "createdAt": "2025-11-12T04:49:42.593Z",
+      "updatedAt": "2025-11-12T04:50:15.875Z",
+      "credited": true,
+      "creditedAt": "2025-11-12T04:50:15.875Z"
     }
   ],
   "users": [
@@ -4465,7 +4508,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 3337,
+      "balance": 4337,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -4481,7 +4524,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 927,
+      "balance": 827,
       "studentId": "387344410",
       "phone": "09692832578",
       "updatedAt": "2025-11-06T08:03:48.522Z",
@@ -6264,6 +6307,24 @@
       "ref": "RES_mhum5dp92s",
       "createdAt": "2025-11-11T13:34:57.765Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mhviugub",
+      "userId": "usr_mh0h1va7",
+      "type": "TopUp",
+      "amount": 1000,
+      "reference": "2432342525242",
+      "topupId": "top_mhvitr5t",
+      "createdAt": "2025-11-12T04:50:15.875Z"
+    },
+    {
+      "id": "txn_mhvjkzhf",
+      "userId": "usr_mhbem19p",
+      "type": "reservation",
+      "amount": 100,
+      "ref": "RES_mhvjkza9of",
+      "createdAt": "2025-11-12T05:10:53.091Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -6279,6 +6340,218 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhvjrd1i",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5n4bgmf Claimed",
+      "body": "Your reservation RES_mhn5n4bgmf is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhn5n4bgmf",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:15:50.598Z"
+    },
+    {
+      "id": "notif_mhvjrbzo",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5tydgdp Claimed",
+      "body": "Your reservation RES_mhn5tydgdp is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhn5tydgdp",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:15:49.236Z"
+    },
+    {
+      "id": "notif_mhvjraxn",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5n4bgmf Ready",
+      "body": "Your reservation RES_mhn5n4bgmf is now Ready.",
+      "data": {
+        "reservationId": "RES_mhn5n4bgmf",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:15:47.867Z"
+    },
+    {
+      "id": "notif_mhvjra92",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5tydgdp Ready",
+      "body": "Your reservation RES_mhn5tydgdp is now Ready.",
+      "data": {
+        "reservationId": "RES_mhn5tydgdp",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:15:46.982Z"
+    },
+    {
+      "id": "notif_mhvjr0ti",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvjkza9of Claimed",
+      "body": "Your reservation RES_mhvjkza9of is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhvjkza9of",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:15:34.758Z"
+    },
+    {
+      "id": "notif_mhvjqznu",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvjkza9of Ready",
+      "body": "Your reservation RES_mhvjkza9of is now Ready.",
+      "data": {
+        "reservationId": "RES_mhvjkza9of",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:15:33.258Z"
+    },
+    {
+      "id": "notif_mhvjphbh",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvjkza9of Preparing",
+      "body": "Your reservation RES_mhvjkza9of is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvjkza9of",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:14:22.829Z"
+    },
+    {
+      "id": "notif_mhvjpgke",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5tydgdp Preparing",
+      "body": "Your reservation RES_mhn5tydgdp is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhn5tydgdp",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:14:21.854Z"
+    },
+    {
+      "id": "notif_mhvjpfzc",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhn5n4bgmf Preparing",
+      "body": "Your reservation RES_mhn5n4bgmf is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhn5n4bgmf",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:14:21.096Z"
+    },
+    {
+      "id": "notif_mhvjoh4q",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvjkza9of Approved",
+      "body": "Your reservation RES_mhvjkza9of has been approved.",
+      "data": {
+        "reservationId": "RES_mhvjkza9of",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:13:35.930Z"
+    },
+    {
+      "id": "notif_mhvjkzaj",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mhbem19p",
+        "name": "Sean",
+        "email": "syantut0617@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhvjkza9of",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 5
+          }
+        ],
+        "total": 100,
+        "note": "Tite ko malaki",
+        "slot": "after",
+        "student": {
+          "grade": "G9",
+          "section": "Lawrence",
+          "name": "Sean"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-12T05:10:52.833Z"
+    },
+    {
+      "id": "notif_mhviugul",
+      "for": "usr_mh0h1va7",
+      "actor": {
+        "id": "u_admin",
+        "name": "Canteen Admin",
+        "email": "admin@school.test",
+        "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg"
+      },
+      "type": "topup:status",
+      "title": "Top-up Approved",
+      "body": "Your top-up request for ₱1,000.00 was approved",
+      "data": {
+        "topupId": "top_mhvitr5t",
+        "status": "Approved",
+        "amount": 1000,
+        "rejectionReason": null
+      },
+      "read": false,
+      "createdAt": "2025-11-12T04:50:15.885Z"
+    },
+    {
+      "id": "notif_mhvitr6r",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "topup:created",
+      "title": "New Top-up Request",
+      "body": "Anmol David Das submitted a top-up request for ₱1,000.00",
+      "data": {
+        "topupId": "top_mhvitr5t",
+        "amount": 1000,
+        "provider": "gcash",
+        "studentId": "1646523368",
+        "reference": "2432342525242",
+        "student": {
+          "name": "Anmol David Das",
+          "contact": "09688523253",
+          "email": "spadymold@gmail.com"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-12T04:49:42.593Z"
+    },
     {
       "id": "notif_mhum8jub",
       "for": "usr_mh0h1va7",
@@ -7511,7 +7784,7 @@
         "reservationId": "RES_mhn5tydgdp",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-06T08:24:23.871Z"
     },
     {
@@ -12360,7 +12633,7 @@
       "id": "cart_user_usr_mhbem19p",
       "userId": "usr_mhbem19p",
       "items": [],
-      "updatedAt": "2025-11-06T08:23:48.494Z"
+      "updatedAt": "2025-11-12T05:10:54.820Z"
     }
   ],
   "inventory": []
