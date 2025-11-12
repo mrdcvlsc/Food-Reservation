@@ -144,11 +144,9 @@ exports.create = async (req, res) => {
           total: reservation.total,
           note: reservation.note || "",
           slot: reservation.when || reservation.slot || "",
-          student: {
-            grade: reservation.grade,
-            section: reservation.section,
-            name: reservation.student || ""
-          }
+          grade: reservation.grade || "",
+          section: reservation.section || "",
+          student: reservation.student || ""
         },
         read: false,
         createdAt: reservation.createdAt
@@ -349,9 +347,9 @@ exports.setStatus = async (req, res) => {
                 total: row.total,
                 note: row.note || "",
                 slot: row.when || row.slot || "",
-                grade: row.grade,
-                section: row.section,
-                student: row.student,
+                grade: row.grade || "",
+                section: row.section || "",
+                student: row.student || "",
                 transactionId: existingTx.id
               },
               read: false,

@@ -98,7 +98,7 @@
       "name": "Bottled Water",
       "category": "Beverages",
       "price": 20,
-      "stock": 15,
+      "stock": 14,
       "img": "/uploads/1761538656602_927934.jpg",
       "visible": true,
       "updatedAt": "2025-11-10T10:51:46.126Z"
@@ -155,7 +155,7 @@
       "name": "Bravo",
       "category": "Snacks",
       "price": 10,
-      "stock": 8,
+      "stock": 7,
       "img": "/uploads/1761993657294_157996.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:40:33.466Z",
@@ -4156,6 +4156,37 @@
       "status": "Rejected",
       "createdAt": "2025-11-12T06:23:44.723Z",
       "updatedAt": "2025-11-12T06:24:02.481Z"
+    },
+    {
+      "id": "RES_mhvyqzgngv",
+      "userId": "usr_mhbem19p",
+      "student": "Sean",
+      "grade": "G7",
+      "section": "CE",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 10,
+          "qty": 1
+        },
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Approved",
+      "createdAt": "2025-11-12T12:15:27.239Z",
+      "transactionId": "txn_mhvyqznu",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-12T12:15:27.498Z",
+      "updatedAt": "2025-11-12T12:16:00.387Z"
     }
   ],
   "topups": [
@@ -4748,7 +4779,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 1624,
+      "balance": 1594,
       "studentId": "387344410",
       "phone": "09692832578",
       "updatedAt": "2025-11-06T08:03:48.522Z",
@@ -6673,6 +6704,15 @@
       "direction": "credit",
       "status": "Success",
       "createdAt": "2025-11-12T06:24:02.481Z"
+    },
+    {
+      "id": "txn_mhvyqznu",
+      "userId": "usr_mhbem19p",
+      "type": "reservation",
+      "amount": 30,
+      "ref": "RES_mhvyqzgngv",
+      "createdAt": "2025-11-12T12:15:27.498Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -6688,6 +6728,78 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhvyrp1o",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvyqzgngv Approved",
+      "body": "Your reservation RES_mhvyqzgngv has been approved.",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1761993633466934",
+            "name": "Bravo",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 30,
+        "note": "",
+        "slot": "recess",
+        "grade": "G7",
+        "section": "CE",
+        "student": "Sean",
+        "transactionId": "txn_mhvyqznu"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T12:16:00.396Z"
+    },
+    {
+      "id": "notif_mhvyqzh1",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mhbem19p",
+        "name": "Sean",
+        "email": "syantut0617@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mhbem19p-1762416228519.jpg"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "items": [
+          {
+            "id": "1761993633466934",
+            "name": "Bravo",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 30,
+        "note": "",
+        "slot": "recess",
+        "grade": "G7",
+        "section": "CE",
+        "student": "Sean"
+      },
+      "read": true,
+      "createdAt": "2025-11-12T12:15:27.239Z"
+    },
     {
       "id": "notif_mhvoh23j",
       "for": "admin",
@@ -7415,7 +7527,7 @@
         "amount": 1000,
         "rejectionReason": null
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-12T04:50:15.885Z"
     },
     {
@@ -13526,7 +13638,7 @@
       "id": "cart_user_usr_mhbem19p",
       "userId": "usr_mhbem19p",
       "items": [],
-      "updatedAt": "2025-11-12T06:23:45.895Z"
+      "updatedAt": "2025-11-12T12:15:28.856Z"
     }
   ],
   "inventory": []
