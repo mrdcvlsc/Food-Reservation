@@ -30,21 +30,26 @@ export default function AdminUsers() {
       const data = await api.get("/admin/users");
       const usersArr = Array.isArray(data) ? data : (data?.data || []);
 
-      // Fetch each user's wallet balance using admin endpoint
-      // const balances = await Promise.all(
-      //   usersArr.map(async (u) => {
-      //     try {
-      //       const meRes = await api.get(`/admin/wallets/${u.id}`);
-      //       const me = meRes?.data ?? meRes;
-      //       return Number(me?.balance ?? me?.wallet ?? 0);
-      //     } catch (err) {
-      //       console.error(`Failed to load wallet for user ${u.id}:`, err);
-      //       return 0;
-      //     }
-      //   })
-      // );
+      // Fetch each user's wallet balance
+      const balances = await Promise.all(
+        usersArr.map(async (u) => {
+          try {
+            // Try to get balance from user object first, otherwise fetch it
+            if (u.balance !== undefined) {
+              return Number(u.balance);
+            }
+            
+            const walletRes = await api.get(`/admin/users/${u.id}/wallet`);
+            const wallet = walletRes?.data ?? walletRes;
+            return Number(wallet?.balance ?? wallet?.wallet ?? 0);
+          } catch (err) {
+            console.error(`Failed to load wallet for user ${u.id}:`, err);
+            return 0;
+          }
+        })
+      );
 
-      const merged = usersArr.map((u, i) => ({ ...u,  }));
+      const merged = usersArr.map((u, i) => ({ ...u, balance: balances[i] }));
       setUsers(merged);
     } catch (e) {
       console.error("load users failed", e);

@@ -193,3 +193,49 @@ exports.updateUser = async (req, res) => {
     res.status(500).json({ error: 'Failed to update user' });
   }
 };
+
+// DELETE /admin/users/:id
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).json({ error: "Missing user id" });
+
+    const mongoose = require("mongoose");
+    if (mongoose && mongoose.connection && mongoose.connection.readyState === 1) {
+      const db = mongoose.connection.db;
+      const usersCol = db.collection("users");
+      const user = await usersCol.findOne({ $or: [{ id }, { _id: id }] });
+      
+      if (!user) return res.status(404).json({ error: "User not found" });
+      if (String(user.role || '').toLowerCase() === 'admin') {
+        return res.status(403).json({ error: "Cannot delete administrator accounts" });
+      }
+      if ((user.balance || 0) !== 0) {
+        return res.status(400).json({ error: "User must have zero balance before deletion" });
+      }
+
+      await usersCol.deleteOne({ $or: [{ id }, { _id: id }] });
+      return res.json({ ok: true });
+    }
+
+    // File-db fallback
+    const db = await load();
+    const idx = (db.users || []).findIndex(u => String(u.id) === String(id));
+    if (idx === -1) return res.status(404).json({ error: "User not found" });
+
+    const user = db.users[idx];
+    if (String(user.role || '').toLowerCase() === 'admin') {
+      return res.status(403).json({ error: "Cannot delete administrator accounts" });
+    }
+    if ((user.balance || 0) !== 0) {
+      return res.status(400).json({ error: "User must have zero balance before deletion" });
+    }
+
+    db.users.splice(idx, 1);
+    await save(db);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[ADMIN.USERS] deleteUser error:", err);
+    res.status(500).json({ error: "Failed to delete user" });
+  }
+};

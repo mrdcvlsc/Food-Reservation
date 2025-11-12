@@ -68,7 +68,7 @@
       "name": "Chicken Masala",
       "category": "Meals",
       "price": 170,
-      "stock": 19,
+      "stock": 18,
       "img": "/uploads/1761207705197_937291.jpg",
       "visible": true,
       "updatedAt": "2025-11-04T11:04:16.365Z"
@@ -3893,13 +3893,38 @@
         }
       ],
       "total": 10,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-11-11T08:40:26.195Z",
       "transactionId": "txn_mhubmmcg",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-11T08:40:26.272Z",
-      "updatedAt": "2025-11-11T08:41:26.786Z"
+      "updatedAt": "2025-11-11T13:37:25.610Z"
+    },
+    {
+      "id": "RES_mhum5dp92s",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-7",
+          "name": "Chicken Masala",
+          "price": 170,
+          "qty": 1
+        }
+      ],
+      "total": 170,
+      "status": "Claimed",
+      "createdAt": "2025-11-11T13:34:57.693Z",
+      "transactionId": "txn_mhum5dr9",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-11T13:34:57.765Z",
+      "updatedAt": "2025-11-11T13:37:22.767Z"
     }
   ],
   "topups": [
@@ -4440,7 +4465,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 3507,
+      "balance": 3337,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -4475,19 +4500,6 @@
       "phone": "09556234567",
       "profilePictureUrl": "/uploads/profile-usr_mhd5ixwi-1762362814368.jpg",
       "updatedAt": "2025-11-06T07:44:12.910Z"
-    },
-    {
-      "id": "usr_mhihxn69",
-      "name": "Syantut",
-      "email": "sean@gmail.com",
-      "passwordHash": "$2a$10$CrivM.8coTgoseiYm1F8feIHYpn5CQxuEe2oG0igvcVzmNvLLFbXe",
-      "role": "student",
-      "grade": "",
-      "section": "",
-      "balance": 0,
-      "studentId": "12345678",
-      "phone": "09692855347",
-      "updatedAt": "2025-11-06T07:43:49.102Z"
     },
     {
       "id": "usr_mhkms3f1",
@@ -6243,6 +6255,15 @@
       "reference": "3242342524234",
       "topupId": "top_mhujsy8t",
       "createdAt": "2025-11-11T12:29:47.422Z"
+    },
+    {
+      "id": "txn_mhum5dr9",
+      "userId": "usr_mh0h1va7",
+      "type": "reservation",
+      "amount": 170,
+      "ref": "RES_mhum5dp92s",
+      "createdAt": "2025-11-11T13:34:57.765Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -6258,6 +6279,131 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhum8jub",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhubmmabcl Claimed",
+      "body": "Your reservation RES_mhubmmabcl is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhubmmabcl",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:37:25.619Z"
+    },
+    {
+      "id": "notif_mhum8j4r",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhubmmabcl Ready",
+      "body": "Your reservation RES_mhubmmabcl is now Ready.",
+      "data": {
+        "reservationId": "RES_mhubmmabcl",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:37:24.699Z"
+    },
+    {
+      "id": "notif_mhum8is3",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhubmmabcl Preparing",
+      "body": "Your reservation RES_mhubmmabcl is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhubmmabcl",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:37:24.243Z"
+    },
+    {
+      "id": "notif_mhum8hnd",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhum5dp92s Claimed",
+      "body": "Your reservation RES_mhum5dp92s is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhum5dp92s",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:37:22.777Z"
+    },
+    {
+      "id": "notif_mhum8hb6",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhum5dp92s Ready",
+      "body": "Your reservation RES_mhum5dp92s is now Ready.",
+      "data": {
+        "reservationId": "RES_mhum5dp92s",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:37:22.338Z"
+    },
+    {
+      "id": "notif_mhum8gc4",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhum5dp92s Preparing",
+      "body": "Your reservation RES_mhum5dp92s is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhum5dp92s",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:37:21.076Z"
+    },
+    {
+      "id": "notif_mhum6cn0",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhum5dp92s Approved",
+      "body": "Your reservation RES_mhum5dp92s has been approved.",
+      "data": {
+        "reservationId": "RES_mhum5dp92s",
+        "status": "Approved"
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:35:42.973Z"
+    },
+    {
+      "id": "notif_mhum5dpl",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhum5dp92s",
+        "items": [
+          {
+            "id": "ITM-7",
+            "name": "Chicken Masala",
+            "price": 170,
+            "qty": 1
+          }
+        ],
+        "total": 170,
+        "note": "",
+        "slot": "lunch",
+        "student": {
+          "grade": "G10",
+          "section": "R",
+          "name": "Anmol David Das"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-11T13:34:57.693Z"
+    },
     {
       "id": "notif_mhujtkj1",
       "for": "usr_mh0h1va7",
@@ -6276,7 +6422,7 @@
         "amount": 1000,
         "rejectionReason": null
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-11T12:29:47.437Z"
     },
     {
@@ -12177,7 +12323,7 @@
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
       "items": [],
-      "updatedAt": "2025-11-11T12:28:38.551Z"
+      "updatedAt": "2025-11-11T13:34:59.676Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
