@@ -79,7 +79,7 @@ export default function AdminNotifications() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data: d } = await api.get("/notifications/admin");
+      const d = await api.get("/notifications/admin");
       setNotifications(Array.isArray(d) ? d : []);
     } catch {
       setNotifications([]);

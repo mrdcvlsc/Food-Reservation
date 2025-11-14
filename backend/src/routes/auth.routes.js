@@ -1,6 +1,7 @@
 ﻿const router = require("express").Router();
 const C = require("../controllers/auth.controller");
 const P = require("../controllers/password.controller");
+const { requireAuth } = require("../lib/auth");
 
 /**
  * @swagger
@@ -66,8 +67,39 @@ router.post("/login", C.login);
  */
 router.post("/register", C.register);
 
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user details
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/me", requireAuth, C.me);
+
 // add change-password endpoint (POST)
 router.post("/change-password", P.changePassword);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ */
+router.post("/logout", (req, res) => {
+  // Client-side handles token removal, just confirm logout
+  res.json({ ok: true, message: "Logged out successfully" });
+});
 
 /**
  * @swagger

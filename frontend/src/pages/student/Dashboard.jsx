@@ -206,7 +206,7 @@ export default function Dashboard() {
 
   const fetchArr = async (path, signal) => {
     try {
-      const { data } = await api.get(path, { signal });
+      const data = await api.get(path, { signal });
       if (Array.isArray(data)) return data;
       return [];
     } catch(e) {
@@ -302,7 +302,7 @@ export default function Dashboard() {
     try {
       // Prefer full user object from server. Some endpoints return { balance } only.
       // SERVER IS SOURCE OF TRUTH - always trust the API response
-      const { data: me } = await api.get("/wallets/me", { signal });
+      const me = await api.get("/wallets/me", { signal });
       
       if (!signal?.aborted && me && (me.id || me.balance != null)) {
         const curLocal = getUserFromStorage() || {};

@@ -56,6 +56,7 @@ export default function AdminAvbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [previewNotif, setPreviewNotif] = useState(null); // <-- new
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const links = [
     { name: "Dashboard",    to: "/admin",            Icon: LayoutDashboard },
@@ -74,8 +75,10 @@ export default function AdminAvbar() {
     "text-blue-700 bg-blue-100 font-semibold shadow-[inset_0_-2px_0_0_theme(colors.blue.600)]";
 
   const logout = () => {
-    const ok = window.confirm("Log out of the admin console?");
-    if (!ok) return;
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     try {
       localStorage.removeItem("user");
       localStorage.removeItem("token");
@@ -87,7 +90,7 @@ export default function AdminAvbar() {
     let mounted = true;
     const load = async () => {
       try {
-        const { data: d } = await api.get("/notifications/admin");
+        const d = await api.get("/notifications/admin");
         if (!mounted) return;
         setNotifications(Array.isArray(d) ? d : []);
       } catch (e) {}
@@ -638,6 +641,36 @@ export default function AdminAvbar() {
         </div>,
         document.body
       )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm &&
+        ReactDOM.createPortal(
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 w-full">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Log Out?
+              </h3>
+              <p className="text-gray-600 mb-8">
+                You'll need to sign in again to access the admin dashboard.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 px-5 py-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 px-5 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold shadow-lg"
+                >
+                  Log Out
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
     </nav>
   );
 }

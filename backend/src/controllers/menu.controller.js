@@ -17,7 +17,7 @@ exports.list = (req, res) => {
   });
 
   console.log('[MENU] List: returning', items.length, 'items');
-  res.json(items);
+  res.json({ status: 200, data: items });
 };
 
 exports.create = async (req, res) => {

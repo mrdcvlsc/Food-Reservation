@@ -138,7 +138,7 @@ exports.getMyTransactions = (req, res) => {
   const merged = [...persisted, ...resRows];
   merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     console.log('[TRANSACTION] GetMyTransactions: returning', merged.length, 'transactions for user', userId);
-  return res.json(merged);
+  return res.json({ status: 200, data: merged });
 };
 
 // Alias `mine` to match route import: `const { mine } = require(...);`

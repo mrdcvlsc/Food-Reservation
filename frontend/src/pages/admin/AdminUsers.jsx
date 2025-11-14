@@ -35,7 +35,7 @@ export default function AdminUsers() {
   const load = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/admin/users");
+      const data = await api.get("/admin/users");
       const usersArr = Array.isArray(data) ? data : [];
 
       // Fetch each user's wallet balance
@@ -47,7 +47,7 @@ export default function AdminUsers() {
               return Number(u.balance);
             }
             
-            const { data: walletRes } = await api.get(`/admin/users/${u.id}/wallet`);
+            const walletRes = await api.get(`/admin/users/${u.id}/wallet`);
             const wallet = walletRes;
             return Number(wallet?.balance ?? wallet?.wallet ?? 0);
           } catch (err) {

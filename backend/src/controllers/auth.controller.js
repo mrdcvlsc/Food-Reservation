@@ -18,6 +18,16 @@ function saveProfilePicture(file, userId) {
   return `/uploads/${filename}`;
 }
 
+exports.me = (req, res) => {
+  const db = load();
+  const user = db.users.find(u => u.id === req.user.id);
+  if (!user) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  const { passwordHash, ...safeUser } = user;
+  res.json({ status: 200, data: safeUser });
+};
+
 exports.register = (req, res) => {
   console.log('[AUTH] Register endpoint called');
   const { name, email, password, grade = "", section = "", studentId, phone } = req.body || {};
@@ -145,37 +155,7 @@ exports.login = (req, res) => {
     studentId: u.studentId || null,
     phone: u.phone || null
   };
-  res.json({ token, user });
-};
-
-exports.me = (req, res) => {
-  try {
-    const db = load();
-    const uid = req.user && req.user.id;
-    if (!uid) return res.status(401).json({ error: 'Unauthorized' });
-
-    const user = (db.users || []).find(u => String(u.id) === String(uid));
-    if (!user) return res.status(404).json({ error: 'User not found' });
-
-    // Include phone in response
-    res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      grade: user.grade,
-      section: user.section,
-      balance: user.balance,
-      studentId: user.studentId,
-      phone: user.phone || null,
-      profilePictureUrl: user.profilePictureUrl || null,
-      createdAt: user.createdAt || null,
-      updatedAt: user.updatedAt || null
-    });
-  } catch (err) {
-    console.error('[AUTH] me failed:', err);
-    res.status(500).json({ error: 'Failed to load user data' });
-  }
+  res.json({ status: 200, data: { token, user } });
 };
 
 // Add new PATCH endpoint for profile updates

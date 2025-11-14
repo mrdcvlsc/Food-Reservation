@@ -30,14 +30,14 @@ exports.get = async (req, res) => {
     if (usingMongo() && CartModel) {
       const doc = await CartModel.findOne({ userId: String(uid) }).lean();
       const items = doc ? doc.items : [];
-      return res.json({ items, cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) });
+      return res.json({ status: 200, data: { items, cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) } });
     }
 
     const db = await load();
     db.carts = Array.isArray(db.carts) ? db.carts : [];
     const rec = db.carts.find((c) => String(c.userId) === String(uid));
     const items = rec ? (rec.items || []) : [];
-    return res.json({ items, cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) });
+    return res.json({ status: 200, data: { items, cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) } });
   } catch (err) {
     console.error("[CART] get error:", err && err.message);
     return res.status(500).json({ error: "Failed to load cart" });
@@ -64,7 +64,7 @@ exports.addItem = async (req, res) => {
       if (!doc) {
         const created = new CartModel({ userId: String(uid), items: [{ itemId: String(itemId), qty: q, name, price }] });
         await created.save();
-        return res.json({ ok: true, items: created.items });
+        return res.json({ status: 200, data: { ok: true, items: created.items } });
       }
       const idx = doc.items.findIndex((it) => String(it.itemId) === String(itemId));
       if (idx === -1) {
@@ -74,7 +74,7 @@ exports.addItem = async (req, res) => {
       }
       doc.updatedAt = new Date();
       await doc.save();
-      return res.json({ ok: true, items: doc.items });
+      return res.json({ status: 200, data: { ok: true, items: doc.items } });
     }
 
     // file DB fallback
@@ -92,7 +92,7 @@ exports.addItem = async (req, res) => {
       rec.updatedAt = new Date().toISOString();
     }
     await save(db);
-    return res.json({ ok: true, items: rec.items });
+    return res.json({ status: 200, data: { ok: true, items: rec.items } });
   } catch (err) {
     console.error("[CART] addItem error:", err && err.message);
     return res.status(500).json({ error: "Failed to add to cart" });
@@ -121,7 +121,7 @@ exports.updateItem = async (req, res) => {
       else doc.items[idx].qty = q;
       doc.updatedAt = new Date();
       await doc.save();
-      return res.json({ ok: true, items: doc.items });
+      return res.json({ status: 200, data: { ok: true, items: doc.items } });
     }
 
     // file DB fallback
@@ -135,7 +135,7 @@ exports.updateItem = async (req, res) => {
     else rec.items[idx].qty = q;
     rec.updatedAt = new Date().toISOString();
     await save(db);
-    return res.json({ ok: true, items: rec.items });
+    return res.json({ status: 200, data: { ok: true, items: rec.items } });
   } catch (err) {
     console.error("[CART] updateItem error:", err && err.message);
     return res.status(500).json({ error: "Failed to update cart" });
@@ -186,7 +186,7 @@ exports.clear = async (req, res) => {
 
     if (usingMongo() && CartModel) {
       await CartModel.findOneAndUpdate({ userId: String(uid) }, { $set: { items: [], updatedAt: new Date() } }, { upsert: true });
-      return res.json({ ok: true, items: [] });
+      return res.json({ status: 200, data: { ok: true, items: [] } });
     }
 
     const db = await load();
@@ -197,7 +197,7 @@ exports.clear = async (req, res) => {
       rec.updatedAt = new Date().toISOString();
       await save(db);
     }
-    return res.json({ ok: true, items: [] });
+    return res.json({ status: 200, data: { ok: true, items: [] } });
   } catch (err) {
     console.error("[CART] clear error:", err && err.message);
     return res.status(500).json({ error: "Failed to clear cart" });

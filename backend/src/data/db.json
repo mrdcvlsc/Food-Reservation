@@ -68,7 +68,7 @@
       "name": "Chicken Masala",
       "category": "Meals",
       "price": 170,
-      "stock": 18,
+      "stock": 17,
       "img": "/uploads/1761207705197_937291.jpg",
       "visible": true,
       "updatedAt": "2025-11-04T11:04:16.365Z"
@@ -98,7 +98,7 @@
       "name": "Bottled Water",
       "category": "Beverages",
       "price": 20,
-      "stock": 14,
+      "stock": 13,
       "img": "/uploads/1761538656602_927934.jpg",
       "visible": true,
       "updatedAt": "2025-11-10T10:51:46.126Z"
@@ -4005,13 +4005,13 @@
         }
       ],
       "total": 80,
-      "status": "Approved",
+      "status": "Preparing",
       "createdAt": "2025-11-12T05:53:25.667Z",
       "transactionId": "txn_mhvl3p43",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-12T05:53:25.731Z",
-      "updatedAt": "2025-11-12T05:53:42.803Z"
+      "updatedAt": "2025-11-14T12:48:14.631Z"
     },
     {
       "id": "RES_mhvljh2upd",
@@ -4055,13 +4055,13 @@
         }
       ],
       "total": 10,
-      "status": "Approved",
+      "status": "Preparing",
       "createdAt": "2025-11-12T06:12:30.578Z",
       "transactionId": "txn_mhvls8ok",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-12T06:12:30.836Z",
-      "updatedAt": "2025-11-12T06:13:28.133Z"
+      "updatedAt": "2025-11-14T12:45:06.212Z"
     },
     {
       "id": "RES_mhvlsl76n3",
@@ -4122,13 +4122,13 @@
         }
       ],
       "total": 10,
-      "status": "Approved",
+      "status": "Preparing",
       "createdAt": "2025-11-12T06:20:56.807Z",
       "transactionId": "txn_mhvm3356",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-12T06:20:56.874Z",
-      "updatedAt": "2025-11-12T06:21:11.955Z"
+      "updatedAt": "2025-11-14T12:39:18.738Z"
     },
     {
       "id": "RES_mhvm6onnam",
@@ -4180,13 +4180,63 @@
         }
       ],
       "total": 30,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-11-12T12:15:27.239Z",
       "transactionId": "txn_mhvyqznu",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-12T12:15:27.498Z",
-      "updatedAt": "2025-11-12T12:16:00.387Z"
+      "updatedAt": "2025-11-14T12:48:11.645Z"
+    },
+    {
+      "id": "RES_mhytqaefae",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G1",
+      "section": "12",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-7",
+          "name": "Chicken Masala",
+          "price": 170,
+          "qty": 1
+        }
+      ],
+      "total": 170,
+      "status": "Approved",
+      "createdAt": "2025-11-14T12:18:15.207Z",
+      "transactionId": "txn_mhytqalg",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-14T12:18:15.460Z",
+      "updatedAt": "2025-11-14T12:19:11.116Z"
+    },
+    {
+      "id": "RES_mhyvr8qj8w",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G1",
+      "section": "1",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Ready",
+      "createdAt": "2025-11-14T13:14:58.939Z",
+      "transactionId": "txn_mhyvr8rs",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-14T13:14:58.984Z",
+      "updatedAt": "2025-11-14T13:25:47.317Z"
     }
   ],
   "topups": [
@@ -4752,7 +4802,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 582,
+      "balance": 392,
       "studentId": "344667121"
     },
     {
@@ -6713,6 +6763,24 @@
       "ref": "RES_mhvyqzgngv",
       "createdAt": "2025-11-12T12:15:27.498Z",
       "status": "Success"
+    },
+    {
+      "id": "txn_mhytqalg",
+      "userId": "usr_meusxal8",
+      "type": "reservation",
+      "amount": 170,
+      "ref": "RES_mhytqaefae",
+      "createdAt": "2025-11-14T12:18:15.460Z",
+      "status": "Success"
+    },
+    {
+      "id": "txn_mhyvr8rs",
+      "userId": "usr_meusxal8",
+      "type": "reservation",
+      "amount": 20,
+      "ref": "RES_mhyvr8qj8w",
+      "createdAt": "2025-11-14T13:14:58.984Z",
+      "status": "Success"
     }
   ],
   "wallets": [
@@ -6728,6 +6796,254 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhyw5516",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhyvr8qj8w Ready",
+      "body": "Your reservation RES_mhyvr8qj8w is now Ready.",
+      "data": {
+        "reservationId": "RES_mhyvr8qj8w",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-14T13:25:47.322Z"
+    },
+    {
+      "id": "notif_mhyw541w",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhyvr8qj8w Preparing",
+      "body": "Your reservation RES_mhyvr8qj8w is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhyvr8qj8w",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-14T13:25:46.052Z"
+    },
+    {
+      "id": "notif_mhyvs1mt",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhyvr8qj8w Approved",
+      "body": "Your reservation RES_mhyvr8qj8w has been approved.",
+      "data": {
+        "reservationId": "RES_mhyvr8qj8w",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G1",
+        "section": "1",
+        "student": "Jessica Bertud",
+        "transactionId": "txn_mhyvr8rs"
+      },
+      "read": true,
+      "createdAt": "2025-11-14T13:15:36.389Z"
+    },
+    {
+      "id": "notif_mhyvr8qo",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meusxal8",
+        "name": "Jessica Bertud",
+        "email": "jbertud32@gmail.com"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhyvr8qj8w",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G1",
+        "section": "1",
+        "student": "Jessica Bertud"
+      },
+      "read": true,
+      "createdAt": "2025-11-14T13:14:58.939Z"
+    },
+    {
+      "id": "notif_mhyusuuj",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvl3p2baf Preparing",
+      "body": "Your reservation RES_mhvl3p2baf is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvl3p2baf",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:48:14.635Z"
+    },
+    {
+      "id": "notif_mhyussjk",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvyqzgngv Claimed",
+      "body": "Your reservation RES_mhvyqzgngv is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "status": "Claimed"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:48:11.648Z"
+    },
+    {
+      "id": "notif_mhyusrgo",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvyqzgngv Ready",
+      "body": "Your reservation RES_mhvyqzgngv is now Ready.",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:48:10.248Z"
+    },
+    {
+      "id": "notif_mhyuotgq",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvls8he3m Preparing",
+      "body": "Your reservation RES_mhvls8he3m is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvls8he3m",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:45:06.218Z"
+    },
+    {
+      "id": "notif_mhyuhdcm",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvm333bgr Preparing",
+      "body": "Your reservation RES_mhvm333bgr is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvm333bgr",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:39:18.742Z"
+    },
+    {
+      "id": "notif_mhyu6it7",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvyqzgngv Preparing",
+      "body": "Your reservation RES_mhvyqzgngv is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:30:52.603Z"
+    },
+    {
+      "id": "notif_mhyu6gcy",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvyqzgngv Preparing",
+      "body": "Your reservation RES_mhvyqzgngv is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:30:49.426Z"
+    },
+    {
+      "id": "notif_mhyu6evh",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvyqzgngv Preparing",
+      "body": "Your reservation RES_mhvyqzgngv is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhvyqzgngv",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-14T12:30:47.501Z"
+    },
+    {
+      "id": "notif_mhytrhjj",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhytqaefae Approved",
+      "body": "Your reservation RES_mhytqaefae has been approved.",
+      "data": {
+        "reservationId": "RES_mhytqaefae",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-7",
+            "name": "Chicken Masala",
+            "price": 170,
+            "qty": 1
+          }
+        ],
+        "total": 170,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G1",
+        "section": "12",
+        "student": "Jessica Bertud",
+        "transactionId": "txn_mhytqalg"
+      },
+      "read": true,
+      "createdAt": "2025-11-14T12:19:11.119Z"
+    },
+    {
+      "id": "notif_mhytqael",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meusxal8",
+        "name": "Jessica Bertud",
+        "email": "jbertud32@gmail.com"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mhytqaefae",
+        "items": [
+          {
+            "id": "ITM-7",
+            "name": "Chicken Masala",
+            "price": 170,
+            "qty": 1
+          }
+        ],
+        "total": 170,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G1",
+        "section": "12",
+        "student": "Jessica Bertud"
+      },
+      "read": true,
+      "createdAt": "2025-11-14T12:18:15.207Z"
+    },
     {
       "id": "notif_mhvyrp1o",
       "for": "usr_mhbem19p",
@@ -13614,13 +13930,13 @@
       "userId": "usr_meusxal8",
       "items": [
         {
-          "itemId": "ITM-7",
+          "itemId": "ITM-10",
           "qty": 1,
           "name": "",
           "price": 0
         }
       ],
-      "updatedAt": "2025-11-04T06:28:48.585Z"
+      "updatedAt": "2025-11-14T13:44:28.377Z"
     },
     {
       "id": "cart_user_usr_mhkms3f1",
@@ -13639,6 +13955,25 @@
       "userId": "usr_mhbem19p",
       "items": [],
       "updatedAt": "2025-11-12T12:15:28.856Z"
+    },
+    {
+      "id": "cart_user_u_admin",
+      "userId": "u_admin",
+      "items": [
+        {
+          "itemId": "ITM-7",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        },
+        {
+          "itemId": "ITM-2",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        }
+      ],
+      "updatedAt": "2025-11-14T13:00:02.149Z"
     }
   ],
   "inventory": []

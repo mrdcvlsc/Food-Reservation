@@ -17,7 +17,7 @@ exports.list = async (req, res) => {
     ? db.wallets.filter(w => w.active !== false)
     : [];
   console.log('[WALLET] List: returning', wallets.length, 'wallets');
-  res.json(wallets);
+  res.json({ status: 200, data: wallets });
 };
 
 // Public: get one by provider (e.g., "gcash", "maya")
@@ -37,7 +37,7 @@ exports.getOne = async (req, res) => {
     return res.status(404).json({ error: 'Wallet not found' });
   }
   console.log('[WALLET] GetOne: wallet found', provider);
-  res.json(found);
+  res.json({ status: 200, data: found });
 };
 
 // Authenticated: return current user's wallet/balance information
@@ -58,16 +58,19 @@ exports.me = async (req, res) => {
 
     console.log('[WALLET] Me: returning wallet for user', uid);
     return res.json({
-      balance: Number(user.balance) || 0,
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      user: user.studentId || user.sid || null,
-      studentId: user.studentId || user.sid || user.student_id || null,
-      phone: user.phone || user.contact || null,
-      // Add profile picture URL to the response
-      profilePictureUrl: user.profilePictureUrl || null
+      status: 200,
+      data: {
+        balance: Number(user.balance) || 0,
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        user: user.studentId || user.sid || null,
+        studentId: user.studentId || user.sid || user.student_id || null,
+        phone: user.phone || user.contact || null,
+        // Add profile picture URL to the response
+        profilePictureUrl: user.profilePictureUrl || null
+      }
     });
   } catch (e) {
     console.error(e);

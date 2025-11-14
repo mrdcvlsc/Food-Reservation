@@ -62,7 +62,7 @@ export default function Cart() {
     let m = true;
     setMenuLoading(true);
     api.get('/menu')
-      .then(({ data: d }) => { if (!m) return; setProducts(d || []); })
+      .then((d) => { if (!m) return; setProducts(d || []); })
       .catch(() => { if (!m) return; setProducts([]); })
       .finally(() => { if (!m) return; setMenuLoading(false); });
     return () => (m = false);
@@ -73,7 +73,7 @@ export default function Cart() {
     setLoadingWallet(true);
     setWalletError("");
     try {
-      const { data: w } = await api.get("/wallets/me");
+      const w = await api.get("/wallets/me");
       const val = w || {};
       const bal = Number(val.balance) || 0;
       setWallet({ balance: bal });

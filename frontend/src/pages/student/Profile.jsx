@@ -35,7 +35,7 @@ function safeDateLabel(isoLike) {
 // Add this helper function near the top with other helpers
 const fetchArr = async (path) => {
   try {
-    const { data: d } = await api.get(path);
+    const d = await api.get(path);
     if (Array.isArray(d)) return d;
     return [];
   } catch {
@@ -140,7 +140,7 @@ export default function Profile() {
         setActivity(rows);
 
         // Get user's wallet info
-        const { data: meRes } = await api.get("/wallets/me");
+        const meRes = await api.get("/wallets/me");
         const me = meRes;
         
         if (me && typeof me === "object") {
@@ -181,7 +181,7 @@ export default function Profile() {
   useEffect(() => {
     const loadProfilePicture = async () => {
       try {
-        const { data: meRes } = await api.get("/wallets/me");
+        const meRes = await api.get("/wallets/me");
         const data = meRes;
         
         if (data?.profilePictureUrl) {

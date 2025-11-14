@@ -11,7 +11,7 @@ function safeName(name = "") {
 
 exports.listMenu = async (_req, res) => {
   const db = await load();
-  res.json(db.menu || []);
+  res.json({ status: 200, data: db.menu || [] });
 };
 
 exports.addMenu = async (req, res) => {
@@ -52,7 +52,7 @@ exports.addMenu = async (req, res) => {
 
   db.menu.push(item);
   await save(db);
-  res.json(item);
+  res.json({ status: 200, data: item });
 };
 
 exports.updateMenu = async (req, res) => {
@@ -80,7 +80,7 @@ exports.updateMenu = async (req, res) => {
   db.menu[idx] = { ...db.menu[idx], ...patch };
   await save(db);
   console.log('[ADMIN] Update menu: item updated', id);
-  res.json(db.menu[idx]);
+  res.json({ status: 200, data: db.menu[idx] });
 };
 
 exports.deleteMenu = async (req, res) => {
@@ -94,7 +94,7 @@ exports.deleteMenu = async (req, res) => {
   }
   await save(db);
   console.log('[ADMIN] Delete menu: item deleted', id);
-  res.json({ ok: true });
+  res.json({ status: 200, data: { ok: true } });
 };
 
 // Admin dashboard: aggregate simple stats and recent orders
@@ -130,7 +130,7 @@ exports.dashboard = async (req, res) => {
       }));
 
     console.log('[ADMIN] Dashboard: success');
-    res.json({ totalSales, ordersToday, newUsers, pending, recentOrders: recent });
+    res.json({ status: 200, data: { totalSales, ordersToday, newUsers, pending, recentOrders: recent } });
   } catch (e) {
     console.log('[ADMIN] Dashboard: error', e.message);
     res.status(500).json({ error: 'Failed to compute dashboard' });

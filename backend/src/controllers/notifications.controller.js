@@ -49,7 +49,7 @@ exports.addNotification = (notif = {}) => {
 exports.listAdmin = (req, res) => {
   const db = load();
   const rows = (db.notifications || []).filter((x) => x.for === "admin");
-  res.json(rows);
+  res.json({ status: 200, data: rows });
 };
 
 exports.mine = (req, res) => {
@@ -57,7 +57,7 @@ exports.mine = (req, res) => {
   const uid = req.user && req.user.id;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
   const rows = (db.notifications || []).filter((n) => String(n.for) === String(uid));
-  res.json(rows);
+  res.json({ status: 200, data: rows });
 };
 
 exports.markRead = (req, res) => {

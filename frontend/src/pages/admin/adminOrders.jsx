@@ -87,7 +87,7 @@ export default function AdminOrders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/reservations/admin");
+      const data = await api.get("/reservations/admin");
       const arr = Array.isArray(data) ? data : [];
       setOrders(arr);
     } catch (e) {
@@ -231,11 +231,11 @@ export default function AdminOrders() {
   const transition = async (id, next) => {
     setBusyId(id);
     try {
-      const res = await api.patch(`/reservations/admin/${id}`, { status: next });
-      if (res && res.reservation) {
-        setOrders((list) => list.map((o) => (String(o.id) === String(id) ? res.reservation : o)));
-      } else if (res && (res.id || res.status)) {
-        setOrders((list) => list.map((o) => (String(o.id) === String(id) ? { ...o, ...res } : o)));
+      const data = await api.patch(`/reservations/admin/${id}`, { status: next });
+      if (data && data.reservation) {
+        setOrders((list) => list.map((o) => (String(o.id) === String(id) ? data.reservation : o)));
+      } else if (data && (data.id || data.status)) {
+        setOrders((list) => list.map((o) => (String(o.id) === String(id) ? { ...o, ...data } : o)));
       } else {
         await fetchOrders();
       }

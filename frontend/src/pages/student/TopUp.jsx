@@ -114,7 +114,7 @@ export default function TopUp() {
         setLoading(true);
 
         // ---- wallets ----
-        const { data: list } = await api.get("/wallets").catch((e) => {
+        const list = await api.get("/wallets").catch((e) => {
           if (e instanceof ApiError) {
             switch (e.status) {
               case ApiError.Maintenance:  navigate("/status/maintenance");  break;
@@ -142,7 +142,7 @@ export default function TopUp() {
 
         // ---- user (/me) ----
         // ensure we fetch authenticated user (so studentId is present)
-        const { data: meRes } = await api.get("/wallets/me").catch((e) => {
+        const meRes = await api.get("/wallets/me").catch((e) => {
           if (e instanceof ApiError) {
             switch (e.status) {
               case ApiError.Maintenance:

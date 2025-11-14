@@ -44,7 +44,7 @@ export default function AdminTopUpHistory() {
       let data = null;
       for (const ep of tryEndpoints) {
         try {
-          const { data: res } = await api.get(ep);
+          const res = await api.get(ep);
           const arr = Array.isArray(res) ? res : res;
           if (Array.isArray(arr) && arr.length >= 0) {
             data = arr;

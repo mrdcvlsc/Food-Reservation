@@ -23,13 +23,17 @@ const peso = new Intl.NumberFormat("en-PH", {
 const CANON = ["Pending", "Approved", "Rejected", "Claimed"];
 
 function normalizeStatus(raw) {
-  const s = String(raw || "").trim().toLowerCase();
+  const s = String(raw || "").trim();
   if (!s) return "Pending";
-  if (["pending"].includes(s)) return "Pending";
-  if (["approved", "approve"].includes(s)) return "Approved";
-  if (["rejected", "declined"].includes(s)) return "Rejected";
-  if (["claimed", "pickedup", "picked_up", "picked-up"].includes(s)) return "Claimed";
-  return "Pending";
+  // Return the actual status - don't default everything to Pending!
+  // Only normalize known variations
+  const lower = s.toLowerCase();
+  if (["pending"].includes(lower)) return "Pending";
+  if (["approved", "approve"].includes(lower)) return "Approved";
+  if (["rejected", "declined", "cancelled"].includes(lower)) return "Rejected";
+  if (["claimed", "pickedup", "picked_up", "picked-up"].includes(lower)) return "Claimed";
+  // Return original status for Preparing, Ready, etc.
+  return s;
 }
 
 const Pill = ({ status }) => {
@@ -66,7 +70,7 @@ export default function AdminReservations() {
   const fetchReservations = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/reservations/admin");
+      const data = await api.get("/reservations/admin");
       const arr = Array.isArray(data) ? data : [];
       setRows(arr);
     } catch (e) {
@@ -157,9 +161,9 @@ export default function AdminReservations() {
   const updateStatus = async (id, status) => {
     setBusyId(id);
     try {
-      const res = await api.patch(`/reservations/admin/${id}`, { status });
+      const data = await api.patch(`/reservations/admin/${id}`, { status });
       // optimistic fallback if server doesn't echo the obj
-      const patch = res && (res.reservation || res);
+      const patch = data && (data.reservation || data);
       if (patch && (patch.id || patch.status)) {
         setRows((rs) => rs.map((r) => (String(r.id) === String(id) ? { ...r, ...patch } : r)));
       } else {

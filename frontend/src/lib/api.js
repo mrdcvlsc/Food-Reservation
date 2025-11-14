@@ -43,9 +43,7 @@ const toApi = (path) => {
 async function request(path, { method = "GET", body, headers, signal } = {}) {
   // MIGRATION FALLBACK: Check localStorage for legacy token (development only)
   // TODO: Remove this after backend fully implements cookie-based auth
-  const legacyToken = process.env.NODE_ENV === 'development' 
-    ? localStorage.getItem("token") 
-    : null;
+  const legacyToken = localStorage.getItem("token");
 
   // Detect FormData
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
@@ -110,12 +108,13 @@ async function request(path, { method = "GET", body, headers, signal } = {}) {
     throw new ApiError(msg, res.status, data, res);
   }
 
-  // Always return consistent shape: { status, data }
-  // This allows callers to check response.status even on success
-  return {
-    status: res.status,
-    data: data
-  };
+  // Backend responses are inconsistent - some return { status, data }, some return raw data
+  // Unwrap if wrapped, otherwise return as-is
+  if (isJson && data && typeof data === 'object' && 'data' in data && 'status' in data) {
+    return data.data;
+  }
+
+  return data;
 }
 
 export class ApiError extends Error {

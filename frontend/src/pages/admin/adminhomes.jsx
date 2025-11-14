@@ -150,7 +150,7 @@ export default function AdminHome() {
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
     try {
-      const { data } = await api.get("/menu");
+      const data = await api.get("/menu");
       const rows = Array.isArray(data) ? data : [];
       const mapped = rows.map(mapMenuToRow);
       // Optional: sort by name asc

@@ -38,7 +38,27 @@ const router = express.Router();
  *       400:
  *         description: Invalid input
  */
-router.post("/", requireAuth, R.create) 
+router.post("/", requireAuth, R.create);
+
+/**
+ * @swagger
+ * /reservations/checkout:
+ *   post:
+ *     summary: Create a reservation (checkout alias)
+ *     tags: [Reservations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Reservation created
+ *       400:
+ *         description: Invalid input
+ */
+router.post("/checkout", requireAuth, R.create);
 
 /**
  * @swagger

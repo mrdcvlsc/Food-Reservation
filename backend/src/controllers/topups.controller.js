@@ -85,7 +85,7 @@ exports.mine = (req, res) => {
   const db = load();
   const rows = db.topups.filter(t => t.userId === req.user.id);
   console.log('[TOPUP] Mine: returning', rows.length, 'topups for user', req.user && req.user.id);
-  res.json(rows);
+  res.json({ status: 200, data: rows });
 };
 
 // Admin: list all topups
@@ -101,7 +101,7 @@ exports.listAdmin = (req, res) => {
     };
   });
   console.log('[TOPUP] ListAdmin: returning', topups.length, 'topups');
-  res.json(topups);
+  res.json({ status: 200, data: topups });
 };
 
 // Admin: set status for a topup (Approved|Rejected)

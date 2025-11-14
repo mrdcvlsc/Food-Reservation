@@ -57,7 +57,7 @@ function normalizeUser(me) {
 export async function getCurrentUser() {
   try {
     // Primary: Call /auth/me which validates httpOnly cookie
-    const { data: me } = await api.get('/auth/me');
+    const me = await api.get('/auth/me');
     
     if (!me || !me.role) {
       // No valid session

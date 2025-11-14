@@ -95,7 +95,7 @@ export default function Shop({ publicView = false }) {
   const fetchMenu = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get("/menu");
+      const data = await api.get("/menu");
       const rows = Array.isArray(data) ? data : [];
       // only show items that are visible (visible !== false)
       const visibleRows = rows.filter((r) => r.visible !== false);
@@ -127,7 +127,7 @@ export default function Shop({ publicView = false }) {
         setWalletError("Public view – log in to see wallet and place orders.");
         return;
       }
-      const { data: w } = await api.get("/wallets/me");
+      const w = await api.get("/wallets/me");
       const val = w || {};
       const bal = Number(val.balance) || 0;
       setWallet({ balance: bal });

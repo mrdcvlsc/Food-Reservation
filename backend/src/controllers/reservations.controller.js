@@ -198,7 +198,7 @@ exports.mine = async (req, res) => {
     }
 
     rows.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    res.json(rows);
+    res.json({ status: 200, data: rows });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to fetch reservations" });
@@ -218,7 +218,7 @@ exports.listAdmin = async (req, res) => {
     }
     rows.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     console.log(rows)
-    res.json(rows);
+    res.json({ status: 200, data: rows });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to list reservations" });
@@ -255,8 +255,10 @@ exports.setStatus = async (req, res) => {
 
     // Approve flow (ensure userId is attached if resolved)
     if (newStatus === "Approved") {
-      if (prev !== "Pending") {
-        return res.status(400).json({ error: "Only pending reservations can be approved" });
+      const prevNorm = String(prev || "").trim();
+      if (prevNorm !== "Pending") {
+        console.log(`[RESERVATION] Cannot approve: status is "${prevNorm}" (expected "Pending") for reservation ${id}`);
+        return res.status(400).json({ error: `Cannot approve: current status is "${prevNorm}". Only pending reservations can be approved.` });
       }
 
       // Resolve user from reservation.userId or student (legacy)
@@ -361,7 +363,7 @@ exports.setStatus = async (req, res) => {
         }
 
         const user = (db.users || []).find((u) => String(u.id) === String(existingTx.userId));
-        return res.json({ reservation: row, transaction: existingTx, user });
+        return res.json({ status: 200, data: { reservation: row, transaction: existingTx, user } });
       }
 
       // Resolve user from the reservation 'student' field (legacy/guest resolution)
@@ -465,7 +467,7 @@ exports.setStatus = async (req, res) => {
         console.error("Notification publish failed", e && e.message);
       }
 
-      return res.json({ reservation: row, transaction: tx, user });
+      return res.json({ status: 200, data: { reservation: row, transaction: tx, user } });
     }
 
     if (newStatus === "Rejected") {
@@ -584,7 +586,7 @@ exports.setStatus = async (req, res) => {
         console.error("Notification publish failed", e && e.message);
       }
 
-      return res.json(row);
+      return res.json({ status: 200, data: { reservation: row } });
     }
 
     // Preparing / Ready / Claimed
@@ -612,7 +614,7 @@ exports.setStatus = async (req, res) => {
       console.error("Notification publish failed", e && e.message);
     }
 
-    res.json(row);
+    res.json({ status: 200, data: { reservation: row } });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to update reservation" });

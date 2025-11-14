@@ -45,8 +45,8 @@ export default function Login() {
     setErrors({});
 
     try {
-      const { data } = await api.post("/auth/login", {
-        email: creds.email.trim(),
+      const data = await api.post("/auth/login", {
+        email: creds.email,
         password: creds.password,
       });
 

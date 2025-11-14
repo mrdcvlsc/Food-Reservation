@@ -28,7 +28,7 @@ exports.list = async (req, res) => {
         phone: u.phone || null,
         profilePictureUrl: u.profilePictureUrl || null // Add this line
       }));
-      return res.json(safe);
+      return res.json({ status: 200, data: safe });
     }
 
     // file-db fallback
@@ -48,7 +48,7 @@ exports.list = async (req, res) => {
       phone: u.phone || null,
       profilePictureUrl: u.profilePictureUrl || null // Add this line
     }));
-    res.json(safe);
+    res.json({ status: 200, data: safe });
   } catch (err) {
     console.error("[ADMIN.USERS] list error:", err);
     res.status(500).json({ error: "Failed to list users" });

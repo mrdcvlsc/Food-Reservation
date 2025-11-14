@@ -30,7 +30,7 @@ export default function EditProfile() {
     (async () => {
       try {
         setLoading(true);
-        const { data: meRes } = await api.get("/wallets/me");
+        const meRes = await api.get("/wallets/me");
         const data = meRes;
         
         if (data && typeof data === "object") {

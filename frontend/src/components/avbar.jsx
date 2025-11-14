@@ -5,6 +5,7 @@ import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, ShoppingCart, User, Bell, LogOut, Wallet, FileText, Home } from "lucide-react";
 import { api } from "../lib/api";
 import NotificationItem from './NotificationItem';
+import { useCart } from "../contexts/CartContext";
 
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
@@ -31,16 +32,24 @@ const LINKS = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
+  const { cart } = useCart();
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [previewNotif, setPreviewNotif] = useState(null); // <-- new
   const [topupsOpen, setTopupsOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const topupsRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Calculate cart count from CartContext
+  const cartCount = Object.values(cart || {}).reduce((sum, qty) => sum + (qty || 0), 0);
  
   const doLogout = async () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = async () => {
     try {
       // try server logout if available
       await api.post("/auth/logout");
@@ -49,6 +58,7 @@ export default function Navbar() {
     }
     // clear token and redirect to login
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/login");
   };
 
@@ -60,31 +70,11 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Cart badge from localStorage (works with object or array carts)
-  useEffect(() => {
-    const compute = (raw) => {
-      try {
-        const saved = JSON.parse(raw ?? "{}");
-        return Array.isArray(saved)
-          ? saved.reduce((a, b) => a + (b?.qty || 0), 0)
-          : Object.values(saved || {}).reduce((a, b) => a + (b || 0), 0);
-      } catch {
-        return 0;
-      }
-    };
-    const load = () => setCartCount(compute(localStorage.getItem("cart")));
-    load();
-    window.addEventListener("storage", (e) => {
-      if (e.key === "cart") load();
-    });
-    return () => {};
-  }, []);
-
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
-        const { data: d } = await api.get("/notifications");
+        const d = await api.get("/notifications");
         if (!mounted) return;
         setNotifications(Array.isArray(d) ? d : []);
       } catch (e) {
@@ -655,6 +645,36 @@ export default function Navbar() {
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 >
                   Delete
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm &&
+        ReactDOM.createPortal(
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md mx-4 w-full">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                Log Out?
+              </h3>
+              <p className="text-gray-600 mb-8">
+                You'll need to sign in again to continue using the app.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 px-5 py-3 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmLogout}
+                  className="flex-1 px-5 py-3 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-semibold shadow-lg"
+                >
+                  Log Out
                 </button>
               </div>
             </div>

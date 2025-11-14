@@ -76,7 +76,7 @@ export default function Register() {
         phone: form.phone.trim(),
       });
 
-      const { data } = await api.post("/auth/login", {
+      const data = await api.post("/auth/login", {
         email: form.email.trim(),
         password: form.password,
       });
