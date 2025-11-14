@@ -2,3 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   Accessibility: Focus Styles
+   ============================================
+   Consistent, visible focus indicators for keyboard navigation.
+   Use .focus-ring on interactive elements (buttons, links, cards).
+   Follows WCAG 2.1 Level AA guidelines for focus visibility.
+*/
+
+@layer utilities {
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500;
+  }
+  
+  .focus-ring-white {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white;
+  }
+}
+
+/* Ensure default focus styles are hidden, only focus-visible shows */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Ensure focus-visible has a clear, accessible outline for all elements */
+*:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}

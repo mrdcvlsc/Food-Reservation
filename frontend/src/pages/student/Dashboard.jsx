@@ -274,7 +274,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={handleRetry}
-              className="ml-4 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-medium text-sm"
+              className="ml-4 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-medium text-sm focus-ring-white"
             >
               Retry
             </button>
@@ -295,19 +295,19 @@ export default function Dashboard() {
           ) : (
             <button
               onClick={() => navigate("/profile")}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition font-medium text-gray-800"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition font-medium text-gray-800 focus-ring"
             >
               <Wallet className="w-4 h-4 text-emerald-600" />
               Wallet: <span className="font-semibold">{peso.format(balance)}</span>
             </button>
-          )}
+          )})
         </header>
 
         {/* Quick Actions */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => navigate("/shop")}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left"
+            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
@@ -322,7 +322,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => navigate("/topup")}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left"
+            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
@@ -337,7 +337,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => navigate("/transactions")}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left"
+            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
@@ -352,7 +352,7 @@ export default function Dashboard() {
 
           <button
             onClick={handleLogout}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left"
+            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
@@ -405,7 +405,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={() => navigate("/transactions")}
-              className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1"
+              className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 focus-ring"
             >
               See all <ArrowRight className="w-4 h-4" />
             </button>
@@ -467,7 +467,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
             <button
               onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
               <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                 <UtensilsCrossed className="w-5 h-5 text-gray-700" />
@@ -476,7 +476,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
               <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                 <UtensilsCrossed className="w-5 h-5 text-gray-700" />
@@ -485,7 +485,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
               <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                 <Cookie className="w-5 h-5 text-gray-700" />
@@ -494,7 +494,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
               <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                 <CupSoda className="w-5 h-5 text-gray-700" />
@@ -503,7 +503,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
               <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                 <Cookie className="w-5 h-5 text-gray-700" />
@@ -512,7 +512,7 @@ export default function Dashboard() {
             </button>
             <button
               onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center"
+              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
               <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                 <UtensilsCrossed className="w-5 h-5 text-gray-700" />
