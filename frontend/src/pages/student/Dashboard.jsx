@@ -170,23 +170,11 @@ const ActivityItem = ({ activity, onClick }) => {
 export default function Dashboard() {
   const navigate = useNavigate();
   
-  // --- localStorage token security warning ---
-  const [showTokenWarning, setShowTokenWarning] = useState(false);
-  
   // --- Ready orders notification ---
   const [dismissedReadyOrders, setDismissedReadyOrders] = useState(() => {
     // Session-based dismissal (cleared on page refresh)
     return sessionStorage.getItem('dismissedReadyOrders') === 'true';
   });
-  
-  useEffect(() => {
-    // Check if token is still in localStorage (should migrate to httpOnly cookies)
-    const hasLocalStorageToken = !!localStorage.getItem("token");
-    if (hasLocalStorageToken) {
-      setShowTokenWarning(true);
-      console.warn("SECURITY: Tokens detected in localStorage. Production should use httpOnly cookies.");
-    }
-  }, []);
 
   useEffect(() => {
     (async () => {
@@ -599,24 +587,6 @@ export default function Dashboard() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Security Warning - Token in localStorage (Development Only) */}
-        {showTokenWarning && process.env.NODE_ENV === 'development' && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start justify-between">
-            <div className="flex-1">
-              <h3 className="font-semibold text-amber-900 mb-1">⚠️ Development Security Notice</h3>
-              <p className="text-sm text-amber-700">
-                Auth tokens are stored in localStorage. For production, migrate to httpOnly cookies to prevent XSS attacks.
-              </p>
-            </div>
-            <button
-              onClick={() => setShowTokenWarning(false)}
-              className="ml-4 px-3 py-1 text-amber-700 hover:text-amber-900 text-sm font-medium"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-
         {/* Error Banner */}
         {error && (
           <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start justify-between" role="alert">
@@ -657,7 +627,7 @@ export default function Dashboard() {
               <Wallet className="w-4 h-4 text-emerald-600" />
               Wallet: <span className="font-semibold">{peso.format(balance)}</span>
             </button>
-          )})
+          )}
         </header>
 
         {/* Quick Actions */}

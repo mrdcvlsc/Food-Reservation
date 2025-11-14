@@ -11,12 +11,13 @@
     "start": "node -r dotenv/config src/index.js",
     "dev": "nodemon -r dotenv/config src/index.js",
     "seed": "node -r dotenv/config -e \"require('./src/lib/seed').ensureSeed(); console.log('✅ Seed complete');\"",
-    "dev-seed": "node scripts/dev-seed.js"
+    "dev-seed": "node scripts/dev-seed.js",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "fs-extra": "^11.2.0",

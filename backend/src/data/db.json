@@ -9796,7 +9796,7 @@
         "reservationId": "RES_mhk6fycsjl",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-04T09:57:22.181Z"
     },
     {
@@ -9810,7 +9810,7 @@
         "reservationId": "RES_mhk6qn3h69",
         "status": "Approved"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-04T09:57:21.935Z"
     },
     {

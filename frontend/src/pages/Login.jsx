@@ -145,16 +145,26 @@ export default function Login() {
               error={errors.email}
               autoComplete="username"
             />
-            <Input
-              label="Password"
-              name="password"
-              type="password"
-              value={creds.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              error={errors.password}
-              autoComplete="current-password"
-            />
+            <div>
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                value={creds.password}
+                onChange={handleChange}
+                placeholder="••••••••"
+                error={errors.password}
+                autoComplete="current-password"
+              />
+              <div className="text-right mt-1">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
             <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
               {isLoading ? "Signing In..." : "Log In"}
             </Button>
