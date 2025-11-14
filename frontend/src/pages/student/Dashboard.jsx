@@ -1,6 +1,7 @@
 // src/pages/Dashboard.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow, isValid, parseISO } from "date-fns";
 import Navbar from "../../components/avbar";
 import { api, ApiError } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
@@ -14,15 +15,169 @@ import {
   UtensilsCrossed,
   Cookie,
   CupSoda,
+  CheckCircle2,
+  X,
 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+
+// Canonical status mapping for consistency
+const STATUS = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  CLAIMED: 'CLAIMED',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  REJECTED: 'REJECTED',
+};
+
+const canonicalizeStatus = (rawStatus) => {
+  const normalized = String(rawStatus || '').toUpperCase().trim();
+  
+  // Map backend variants to canonical statuses
+  if (['PENDING', 'QUEUED', 'WAITING'].includes(normalized)) return STATUS.PENDING;
+  if (['APPROVED', 'CONFIRMED', 'ACCEPTED'].includes(normalized)) return STATUS.APPROVED;
+  if (['PREPARING', 'COOKING', 'IN_PROGRESS'].includes(normalized)) return STATUS.PREPARING;
+  if (['READY', 'READY_FOR_PICKUP', 'DONE'].includes(normalized)) return STATUS.READY;
+  if (['CLAIMED', 'PICKED_UP', 'COMPLETED'].includes(normalized)) return STATUS.CLAIMED;
+  if (['SUCCESS', 'SUCCESSFUL', 'PAID'].includes(normalized)) return STATUS.SUCCESS;
+  if (['FAILED', 'FAILURE', 'ERROR'].includes(normalized)) return STATUS.FAILED;
+  if (['REJECTED', 'DECLINED', 'CANCELLED'].includes(normalized)) return STATUS.REJECTED;
+  
+  return STATUS.PENDING; // default fallback
+};
+
+const getStatusConfig = (status) => {
+  const configs = {
+    [STATUS.PENDING]: {
+      label: 'Pending',
+      className: 'bg-amber-50 text-amber-700 border-amber-200',
+      ariaLabel: 'Order status: Pending approval',
+    },
+    [STATUS.APPROVED]: {
+      label: 'Approved',
+      className: 'bg-blue-50 text-blue-700 border-blue-200',
+      ariaLabel: 'Order status: Approved, being prepared',
+    },
+    [STATUS.PREPARING]: {
+      label: 'Preparing',
+      className: 'bg-violet-50 text-violet-700 border-violet-200',
+      ariaLabel: 'Order status: Currently being prepared',
+    },
+    [STATUS.READY]: {
+      label: 'Ready',
+      className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      ariaLabel: 'Order status: Ready for pickup',
+    },
+    [STATUS.CLAIMED]: {
+      label: 'Claimed',
+      className: 'bg-gray-100 text-gray-700 border-gray-200',
+      ariaLabel: 'Order status: Claimed and completed',
+    },
+    [STATUS.SUCCESS]: {
+      label: 'Success',
+      className: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      ariaLabel: 'Transaction status: Successful',
+    },
+    [STATUS.FAILED]: {
+      label: 'Failed',
+      className: 'bg-rose-50 text-rose-700 border-rose-200',
+      ariaLabel: 'Transaction status: Failed',
+    },
+    [STATUS.REJECTED]: {
+      label: 'Rejected',
+      className: 'bg-rose-50 text-rose-700 border-rose-200',
+      ariaLabel: 'Order status: Rejected',
+    },
+  };
+  
+  return configs[status] || configs[STATUS.PENDING];
+};
+
+// Format relative time with fallback for invalid dates
+const formatRelativeTime = (timestamp) => {
+  try {
+    const date = typeof timestamp === 'string' ? parseISO(timestamp) : new Date(timestamp);
+    if (!isValid(date)) {
+      return { relative: 'Recently', full: 'Invalid date' };
+    }
+    return {
+      relative: formatDistanceToNow(date, { addSuffix: true }),
+      full: date.toLocaleString('en-PH', { 
+        dateStyle: 'full', 
+        timeStyle: 'medium' 
+      }),
+    };
+  } catch (e) {
+    console.warn('Invalid timestamp:', timestamp, e);
+    return { relative: 'Recently', full: String(timestamp) };
+  }
+};
+
+// ActivityItem Component - Clickable and keyboard accessible
+const ActivityItem = ({ activity, onClick }) => {
+  const canonical = canonicalizeStatus(activity.status);
+  const statusConfig = getStatusConfig(canonical);
+  const timeData = formatRelativeTime(activity.time);
+  
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onClick(activity);
+    }
+  };
+  
+  return (
+    <li>
+      <button
+        onClick={() => onClick(activity)}
+        onKeyDown={handleKeyDown}
+        className="w-full py-3 flex items-center justify-between text-left hover:bg-gray-50 rounded-lg px-2 -mx-2 transition focus-ring"
+        aria-label={`View details for ${activity.title}, ${statusConfig.ariaLabel}, ${timeData.relative}`}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-gray-900 truncate">
+            {activity.title}
+          </div>
+          <div className="mt-1 text-xs text-gray-500 flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1" title={timeData.full}>
+              <Clock className="w-3 h-3" />
+              {timeData.relative}
+            </span>
+            <span 
+              className={`inline-flex items-center px-2 py-0.5 rounded-full border ${statusConfig.className}`}
+              aria-label={statusConfig.ariaLabel}
+            >
+              {statusConfig.label}
+            </span>
+            {activity.reference && (
+              <span className="inline-flex items-center text-xs text-gray-400 font-mono" title="Transaction Reference">
+                #{activity.reference}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="text-sm font-semibold text-gray-900 ml-4">
+          {peso.format(activity.amount || 0)}
+        </div>
+      </button>
+    </li>
+  );
+};
 
 export default function Dashboard() {
   const navigate = useNavigate();
   
   // --- localStorage token security warning ---
   const [showTokenWarning, setShowTokenWarning] = useState(false);
+  
+  // --- Ready orders notification ---
+  const [dismissedReadyOrders, setDismissedReadyOrders] = useState(() => {
+    // Session-based dismissal (cleared on page refresh)
+    return sessionStorage.getItem('dismissedReadyOrders') === 'true';
+  });
   
   useEffect(() => {
     // Check if token is still in localStorage (should migrate to httpOnly cookies)
@@ -325,10 +480,32 @@ export default function Dashboard() {
     const totalSpent = validOrders.reduce((s, a) => s + (a.amount || 0), 0);
 
     // Count orders ready for pickup
-    const readyCount = activity.filter((a) => a.status === "Ready").length;
+    const readyCount = activity.filter((a) => canonicalizeStatus(a.status) === STATUS.READY).length;
 
     return { ordersCount, totalSpent, readyCount };
   }, [activity]);
+  
+  // Ready orders for callout
+  const readyOrders = useMemo(() => {
+    return activity.filter((a) => canonicalizeStatus(a.status) === STATUS.READY);
+  }, [activity]);
+  
+  const showReadyOrdersBanner = readyOrders.length > 0 && !dismissedReadyOrders;
+  
+  const handleDismissReadyOrders = () => {
+    setDismissedReadyOrders(true);
+    sessionStorage.setItem('dismissedReadyOrders', 'true');
+  };
+  
+  // Handle activity item click
+  const handleActivityClick = (activity) => {
+    if (activity.type === 'reservation') {
+      navigate(`/orders/${activity.id}`);
+    } else {
+      // For transactions, you can navigate to transaction details or transactions page
+      navigate(`/transactions#${activity.id}`);
+    }
+  };
 
   // --- greeting ---
   const hour = new Date().getHours();
@@ -349,14 +526,25 @@ export default function Dashboard() {
 
   // --- Skeleton Components ---
   const SkeletonWalletButton = () => (
-    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm" role="status" aria-live="polite" aria-label="Loading wallet">
+    <div 
+      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm" 
+      role="status" 
+      aria-live="polite" 
+      aria-label="Loading wallet"
+      aria-hidden={!loading}
+    >
       <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
       <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
     </div>
   );
 
   const SkeletonStatsCard = () => (
-    <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white" role="status" aria-live="polite">
+    <div 
+      className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white" 
+      role="status" 
+      aria-live="polite"
+      aria-hidden={!loading}
+    >
       <div className="w-32 h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
       <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
     </div>
@@ -563,6 +751,53 @@ export default function Dashboard() {
           )}
         </section>
 
+        {/* Ready Orders Callout Banner */}
+        {showReadyOrdersBanner && (
+          <section 
+            className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 shadow-sm"
+            role="status"
+            aria-live="polite"
+            aria-label={`You have ${readyOrders.length} order${readyOrders.length > 1 ? 's' : ''} ready for pickup`}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-emerald-900 mb-1">
+                    🎉 {readyOrders.length} Order{readyOrders.length > 1 ? 's' : ''} Ready for Pickup!
+                  </h3>
+                  <p className="text-sm text-emerald-700">
+                    Your food is ready. Please proceed to the canteen counter to claim your order.
+                  </p>
+                  {readyOrders.length > 0 && (
+                    <ul className="mt-2 space-y-1">
+                      {readyOrders.slice(0, 3).map((order) => (
+                        <li key={order.id} className="text-xs text-emerald-600">
+                          • {order.title} - {peso.format(order.amount)}
+                        </li>
+                      ))}
+                      {readyOrders.length > 3 && (
+                        <li className="text-xs text-emerald-600">
+                          • And {readyOrders.length - 3} more...
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={handleDismissReadyOrders}
+                className="text-emerald-700 hover:text-emerald-900 p-1 rounded focus-ring"
+                aria-label="Dismiss ready orders notification"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </section>
+        )}
+
         {/* Recent Activity */}
         <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -581,7 +816,7 @@ export default function Dashboard() {
           </div>
 
           {loading ? (
-            <ul className="divide-y divide-gray-100" role="status" aria-live="polite" aria-label="Loading recent activity">
+            <ul className="divide-y divide-gray-100" role="status" aria-live="polite" aria-label="Loading recent activity" aria-hidden={!loading}>
               <SkeletonActivityRow />
               <SkeletonActivityRow />
               <SkeletonActivityRow />
@@ -594,43 +829,13 @@ export default function Dashboard() {
              </div>
            ) : (
              <ul className="divide-y divide-gray-100">
-              {recentPreview.map((a) => {
-                 let statusCls = "bg-gray-100 text-gray-700 border-gray-200";
-                 if (a.status === "Success" || a.status === "Claimed") statusCls = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                 else if (a.status === "Pending" || a.status === "Approved" || a.status === "Preparing")
-                   statusCls = "bg-amber-50 text-amber-700 border-amber-200";
-                 else if (a.status === "Ready")
-                   statusCls = "bg-blue-50 text-blue-700 border-blue-200";
-                 else if (a.status === "Rejected")
-                   statusCls = "bg-rose-50 text-rose-700 border-rose-200";
- 
-                 return (
-                   <li key={a.id} className="py-3 flex items-center justify-between">
-                     <div className="min-w-0">
-                       <div className="text-sm font-medium text-gray-900 truncate">
-                         {a.title}
-                       </div>
-                       <div className="mt-1 text-xs text-gray-500 flex items-center gap-2 flex-wrap">
-                         <span className="inline-flex items-center gap-1">
-                           <Clock className="w-3 h-3" />
-                           {a.time}
-                         </span>
-                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full border ${statusCls}`}>
-                           {a.status}
-                         </span>
-                         {a.reference && (
-                           <span className="inline-flex items-center text-xs text-gray-400 font-mono" title="Transaction Reference">
-                             #{a.reference}
-                           </span>
-                         )}
-                       </div>
-                     </div>
-                     <div className="text-sm font-semibold text-gray-900">
-                       {peso.format(a.amount || 0)}
-                     </div>
-                   </li>
-                 );
-              })}
+              {recentPreview.map((a) => (
+                <ActivityItem 
+                  key={a.id} 
+                  activity={a} 
+                  onClick={handleActivityClick}
+                />
+              ))}
              </ul>
            )}
         </section>
