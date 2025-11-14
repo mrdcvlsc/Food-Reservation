@@ -26,6 +26,10 @@ export default function Dashboard() {
     })();
   }, [navigate]);
 
+  // --- loading & error states ---
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   // --- user & balance ---
   const [user, setUser] = useState(() => {
     try { return JSON.parse(localStorage.getItem("user") || "{}"); }
@@ -142,10 +146,19 @@ export default function Dashboard() {
 
   useEffect(() => {
     const loadData = async () => {
-      await Promise.all([
-        loadActivity(),
-        syncWallet()
-      ]);
+      setLoading(true);
+      setError(null);
+      try {
+        await Promise.all([
+          loadActivity(),
+          syncWallet()
+        ]);
+      } catch (err) {
+        console.error("Failed to load dashboard data:", err);
+        setError(err.message || "Failed to load dashboard data. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     };
     
     loadData();
@@ -208,11 +221,66 @@ export default function Dashboard() {
   // slice for dashboard preview (show only latest RECENT_LIMIT)
   const recentPreview = activity.slice(0, RECENT_LIMIT);
 
+  // --- Skeleton Components ---
+  const SkeletonWalletButton = () => (
+    <div className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm" role="status" aria-live="polite" aria-label="Loading wallet">
+      <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
+      <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  );
+
+  const SkeletonStatsCard = () => (
+    <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white" role="status" aria-live="polite">
+      <div className="w-32 h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+      <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
+    </div>
+  );
+
+  const SkeletonActivityRow = () => (
+    <li className="py-3 flex items-center justify-between">
+      <div className="min-w-0 flex-1">
+        <div className="w-48 h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
+        <div className="w-32 h-3 bg-gray-200 rounded animate-pulse"></div>
+      </div>
+      <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
+    </li>
+  );
+
+  // --- Retry function ---
+  const handleRetry = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await Promise.all([loadActivity(), syncWallet()]);
+    } catch (err) {
+      console.error("Retry failed:", err);
+      setError(err.message || "Failed to load dashboard data. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Error Banner */}
+        {error && (
+          <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start justify-between" role="alert">
+            <div className="flex-1">
+              <h3 className="font-semibold text-rose-900 mb-1">Error Loading Dashboard</h3>
+              <p className="text-sm text-rose-700">{error}</p>
+            </div>
+            <button
+              onClick={handleRetry}
+              className="ml-4 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-medium text-sm"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Header */}
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -222,13 +290,17 @@ export default function Dashboard() {
             <p className="text-gray-600">Reserve ahead and skip the line.</p>
           </div>
 
-          <button
-            onClick={() => navigate("/profile")}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition font-medium text-gray-800"
-          >
-            <Wallet className="w-4 h-4 text-emerald-600" />
-            Wallet: <span className="font-semibold">{peso.format(balance)}</span>
-          </button>
+          {loading ? (
+            <SkeletonWalletButton />
+          ) : (
+            <button
+              onClick={() => navigate("/profile")}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition font-medium text-gray-800"
+            >
+              <Wallet className="w-4 h-4 text-emerald-600" />
+              Wallet: <span className="font-semibold">{peso.format(balance)}</span>
+            </button>
+          )}
         </header>
 
         {/* Quick Actions */}
@@ -296,20 +368,30 @@ export default function Dashboard() {
 
         {/* Stats (neutral, no "member status") */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <p className="text-sm text-gray-600">Orders this month</p>
-            <p className="mt-1 text-3xl font-bold text-gray-900">{stats.ordersCount}</p>
-          </div>
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <p className="text-sm text-gray-600">Total spent this month</p>
-            <p className="mt-1 text-3xl font-bold text-gray-900">
-              {peso.format(stats.totalSpent)}
-            </p>
-          </div>
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <p className="text-sm text-gray-600">Ready for pickup</p>
-            <p className="mt-1 text-3xl font-bold text-gray-900">{stats.readyCount}</p>
-          </div>
+          {loading ? (
+            <>
+              <SkeletonStatsCard />
+              <SkeletonStatsCard />
+              <SkeletonStatsCard />
+            </>
+          ) : (
+            <>
+              <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+                <p className="text-sm text-gray-600">Orders this month</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.ordersCount}</p>
+              </div>
+              <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+                <p className="text-sm text-gray-600">Total spent this month</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">
+                  {peso.format(stats.totalSpent)}
+                </p>
+              </div>
+              <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
+                <p className="text-sm text-gray-600">Ready for pickup</p>
+                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.readyCount}</p>
+              </div>
+            </>
+          )}
         </section>
 
         {/* Recent Activity */}
@@ -317,7 +399,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
-              <div className="text-sm text-gray-500">Showing {recentPreview.length} of {activity.length} recent items</div>
+              {!loading && (
+                <div className="text-sm text-gray-500">Showing {recentPreview.length} of {activity.length} recent items</div>
+              )}
             </div>
             <button
               onClick={() => navigate("/transactions")}
@@ -327,7 +411,15 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {activity.length === 0 ? (
+          {loading ? (
+            <ul className="divide-y divide-gray-100" role="status" aria-live="polite" aria-label="Loading recent activity">
+              <SkeletonActivityRow />
+              <SkeletonActivityRow />
+              <SkeletonActivityRow />
+              <SkeletonActivityRow />
+              <SkeletonActivityRow />
+            </ul>
+          ) : activity.length === 0 ? (
              <div className="text-sm text-gray-500 py-8 text-center">
                No recent activity. Start by reserving from the <b>Shop</b>.
              </div>
