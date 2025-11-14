@@ -150,8 +150,8 @@ export default function AdminHome() {
   const loadProducts = useCallback(async () => {
     setLoadingProducts(true);
     try {
-      const data = await api.get("/menu");
-      const rows = Array.isArray(data) ? data : data?.data || [];
+      const { data } = await api.get("/menu");
+      const rows = Array.isArray(data) ? data : [];
       const mapped = rows.map(mapMenuToRow);
       // Optional: sort by name asc
       mapped.sort((a, b) => a.name.localeCompare(b.name));

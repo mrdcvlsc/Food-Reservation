@@ -87,7 +87,7 @@ export default function AdminAvbar() {
     let mounted = true;
     const load = async () => {
       try {
-        const d = await api.get("/notifications/admin");
+        const { data: d } = await api.get("/notifications/admin");
         if (!mounted) return;
         setNotifications(Array.isArray(d) ? d : []);
       } catch (e) {}

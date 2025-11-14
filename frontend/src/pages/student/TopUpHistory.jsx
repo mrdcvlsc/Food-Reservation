@@ -56,11 +56,11 @@ export default function TopUpHistory() {
     setLoading(true);
     setError("");
     try {
-      const d = await api.get("/topups/mine");
+      const { data: d } = await api.get("/topups/mine");
       const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:4000";
       const norm = (u) => (u && u.startsWith("/") ? API_BASE + u : u);
 
-      const mapped = (Array.isArray(d) ? d : d?.data || []).map((t) => ({
+      const mapped = (Array.isArray(d) ? d : []).map((t) => ({
         id: t.id,
         submittedAt: t.submittedAt || t.createdAt,
         provider: String(t.provider || "").toLowerCase(), // store lowercase for filters

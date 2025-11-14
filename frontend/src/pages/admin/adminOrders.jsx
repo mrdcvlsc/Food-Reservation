@@ -87,8 +87,8 @@ export default function AdminOrders() {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const data = await api.get("/reservations/admin");
-      const arr = Array.isArray(data) ? data : data?.reservations || [];
+      const { data } = await api.get("/reservations/admin");
+      const arr = Array.isArray(data) ? data : [];
       setOrders(arr);
     } catch (e) {
       console.error("Load orders failed:", e);

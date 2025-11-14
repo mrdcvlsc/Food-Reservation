@@ -83,16 +83,15 @@ export default function AdminStats() {
         // - topups (admin): GET /api/admin/topups
         // - dashboard (admin): GET /api/admin/dashboard
         const [mres, rres, tres, dres] = await Promise.all([
-          api.get("/menu").catch(() => []),
-          api.get("/reservations/admin").catch(() => []),
-          api.get("/admin/topups").catch(() => []),
-          api.get("/admin/dashboard").catch(() => ({})),
+          api.get("/menu").catch(() => ({ data: [] })),
+          api.get("/reservations/admin").catch(() => ({ data: [] })),
+          api.get("/admin/topups").catch(() => ({ data: [] })),
+          api.get("/admin/dashboard").catch(() => ({ data: {} })),
         ]);
 
         const unwrap = (res) => {
           if (res == null) return null;
-          if (Array.isArray(res)) return res;
-          if (typeof res === "object" && Object.prototype.hasOwnProperty.call(res, "data")) return res.data;
+          if (res.data !== undefined) return res.data;
           return res;
         };
 

@@ -66,12 +66,8 @@ export default function AdminReservations() {
   const fetchReservations = async () => {
     setLoading(true);
     try {
-      const data = await api.get("/reservations/admin");
-      const arr = Array.isArray(data)
-        ? data
-        : data && Array.isArray(data.reservations)
-        ? data.reservations
-        : [];
+      const { data } = await api.get("/reservations/admin");
+      const arr = Array.isArray(data) ? data : [];
       setRows(arr);
     } catch (e) {
       console.error("Load reservations failed:", e);

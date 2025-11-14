@@ -50,11 +50,11 @@ export default function AdminSummary() {
         setReservations(db.reservations || []);
       } else {
         const [m, r] = await Promise.all([
-          api.get("/menu").catch(() => []),
-          api.get("/admin/reservations").catch(() => []),
+          api.get("/menu").catch(() => ({ data: [] })),
+          api.get("/admin/reservations").catch(() => ({ data: [] })),
         ]);
-        setMenu(Array.isArray(m) ? m : []);
-        setReservations(Array.isArray(r) ? r : []);
+        setMenu(Array.isArray(m.data) ? m.data : []);
+        setReservations(Array.isArray(r.data) ? r.data : []);
       }
     } finally {
       setLoading(false);

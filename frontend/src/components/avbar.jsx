@@ -84,7 +84,7 @@ export default function Navbar() {
     let mounted = true;
     const load = async () => {
       try {
-        const d = await api.get("/notifications");
+        const { data: d } = await api.get("/notifications");
         if (!mounted) return;
         setNotifications(Array.isArray(d) ? d : []);
       } catch (e) {

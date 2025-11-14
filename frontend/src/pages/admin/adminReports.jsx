@@ -130,16 +130,15 @@ export default function AdminReports() {
         const reportUrl = qp.length ? `/reports/monthly?${qp.join("&")}` : `/reports/monthly`;
         const [mres, rres, tres, dres, repres] = await Promise.all([
           api.getMenu(true), // Include deleted items
-          api.get("/reservations/admin").catch(() => []),
-          api.get("/admin/topups").catch(() => []),
-          api.get("/admin/dashboard").catch(() => ({})),
-          api.get(reportUrl).catch(() => null),
+          api.get("/reservations/admin").catch(() => ({ data: [] })),
+          api.get("/admin/topups").catch(() => ({ data: [] })),
+          api.get("/admin/dashboard").catch(() => ({ data: {} })),
+          api.get(reportUrl).catch(() => ({ data: null })),
         ]);
 
         const unwrap = (res) => {
           if (res == null) return null;
-          if (Array.isArray(res)) return res;
-          if (typeof res === "object" && Object.prototype.hasOwnProperty.call(res, "data")) return res.data;
+          if (res.data !== undefined) return res.data;
           return res;
         };
 

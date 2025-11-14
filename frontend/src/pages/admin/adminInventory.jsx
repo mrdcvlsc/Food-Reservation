@@ -30,8 +30,8 @@ export default function AdminInventory() {
   const load = async () => {
     setLoading(true);
     try {
-      const data = await api.get("/menu");
-      const rows = Array.isArray(data) ? data : data?.data || [];
+      const { data } = await api.get("/menu");
+      const rows = Array.isArray(data) ? data : [];
       const mapped = rows.map((r) => ({
         id: r.id ?? r._id,
         name: r.name,

@@ -114,7 +114,7 @@ export default function TopUp() {
         setLoading(true);
 
         // ---- wallets ----
-        const list = await api.get("/wallets").catch((e) => {
+        const { data: list } = await api.get("/wallets").catch((e) => {
           if (e instanceof ApiError) {
             switch (e.status) {
               case ApiError.Maintenance:  navigate("/status/maintenance");  break;
@@ -126,7 +126,7 @@ export default function TopUp() {
             }
           }    
           
-          return []
+          return { data: [] }
         });
         const nextQr = { gcash: null, maya: null };
         const nextMeta = { gcash: { accountName: "", mobile: "" }, maya: { accountName: "", mobile: "" } };
@@ -142,7 +142,7 @@ export default function TopUp() {
 
         // ---- user (/me) ----
         // ensure we fetch authenticated user (so studentId is present)
-        const meRes = await api.get("/wallets/me").catch((e) => {
+        const { data: meRes } = await api.get("/wallets/me").catch((e) => {
           if (e instanceof ApiError) {
             switch (e.status) {
               case ApiError.Maintenance:

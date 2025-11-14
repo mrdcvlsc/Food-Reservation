@@ -7,6 +7,7 @@ import Landing      from "./pages/Landing";
 import Register     from "./pages/Register";
 import Login        from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import About        from "./pages/About";
 
 /* ---------- student-facing ---------- */
 import Dashboard    from "./pages/student/Dashboard";
@@ -65,6 +66,7 @@ function App() {
         <Routes>
           {/* ---------- Public routes ---------- */}
           <Route path="/"               element={<Landing />} />
+          <Route path="/about"          element={<About />} />
           <Route path="/loading"        element={<Loading />} />
           <Route path="/register"       element={<Register />} />
           <Route path="/login"          element={<Login />} />

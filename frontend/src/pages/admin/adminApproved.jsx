@@ -37,7 +37,7 @@ export default function AdminApproved() {
     let m = true;
     setLoading(true);
     api.get('/reservations/admin')
-      .then(d => { if (!m) return; setRows((d || []).filter(r => r.status === 'Approved' || r.status === 'Preparing' || r.status === 'Ready')); })
+      .then(({ data: d }) => { if (!m) return; setRows((d || []).filter(r => r.status === 'Approved' || r.status === 'Preparing' || r.status === 'Ready')); })
       .catch(() => setRows([]))
       .finally(() => m && setLoading(false));
     return () => (m = false);

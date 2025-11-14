@@ -38,7 +38,7 @@ export function CartProvider({ children }) {
         const token = localStorage.getItem("token");
         if (!token) return;
         setMeta((m) => ({ ...m, syncing: true, lastError: null }));
-        const res = await api.get("/cart").catch(() => null);
+        const { data: res } = await api.get("/cart").catch(() => ({ data: null }));
         if (!mounted) return;
 
         // normalize server response
@@ -50,12 +50,8 @@ export function CartProvider({ children }) {
           serverItems = res;
         } else if (Array.isArray(res.items)) {
           serverItems = res.items;
-        } else if (res.data && Array.isArray(res.data.items)) {
-          serverItems = res.data.items;
         } else if (res.cart && typeof res.cart === "object") {
           serverCartMap = res.cart;
-        } else if (res.data && res.data.cart && typeof res.data.cart === "object") {
-          serverCartMap = res.data.cart;
         }
 
         if (serverItems && serverItems.length > 0) {
@@ -83,8 +79,8 @@ export function CartProvider({ children }) {
               await api.post("/cart/add", { itemId: id, qty }).catch(() => null);
             } catch {}
           }
-          const refreshed = await api.get("/cart").catch(() => null);
-          const refreshedItems = refreshed && (Array.isArray(refreshed.items) ? refreshed.items : Array.isArray(refreshed) ? refreshed : (refreshed.data && Array.isArray(refreshed.data.items) ? refreshed.data.items : null));
+          const { data: refreshed } = await api.get("/cart").catch(() => ({ data: null }));
+          const refreshedItems = refreshed && (Array.isArray(refreshed.items) ? refreshed.items : Array.isArray(refreshed) ? refreshed : null);
           if (refreshedItems && refreshedItems.length > 0) {
             const next = {};
             for (const it of refreshedItems) if (it && it.itemId) next[String(it.itemId)] = Number(it.qty || 0);
@@ -140,7 +136,7 @@ export function CartProvider({ children }) {
     try {
       await api.post("/cart/add", { itemId: key, qty }).catch(() => null);
       // refresh authoritative cart
-      const data = await api.get("/cart");
+      const { data } = await api.get("/cart");
       if (data && Array.isArray(data.items)) {
         const serverCart = {};
         for (const it of data.items) if (it && it.itemId) serverCart[String(it.itemId)] = Number(it.qty || 0);
@@ -166,7 +162,7 @@ export function CartProvider({ children }) {
     if (!token) return;
     try {
       await api.post('/cart/update', { itemId: key, qty }).catch(() => null);
-      const data = await api.get('/cart');
+      const { data } = await api.get('/cart');
       if (data && Array.isArray(data.items)) {
         const serverCart = {};
         for (const it of data.items) if (it && it.itemId) serverCart[String(it.itemId)] = Number(it.qty || 0);
@@ -210,7 +206,7 @@ export function CartProvider({ children }) {
   const sync = useCallback(async () => {
     setMeta((m) => ({ ...m, syncing: true }));
     try {
-      const data = await api.get('/cart');
+      const { data } = await api.get('/cart');
       if (data && Array.isArray(data.items)) {
         const serverCart = {};
         for (const it of data.items) if (it && it.itemId) serverCart[String(it.itemId)] = Number(it.qty || 0);

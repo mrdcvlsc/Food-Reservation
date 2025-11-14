@@ -144,13 +144,8 @@ export default function TxHistory() {
   // try-to-array helper
   const fetchArr = async (path) => {
     try {
-      const d = await api.get(path);
+      const { data: d } = await api.get(path);
       if (Array.isArray(d)) return d;
-      if (d && Array.isArray(d.data)) return d.data;
-      if (d && typeof d === "object") {
-        const vals = Object.values(d).find((v) => Array.isArray(v));
-        if (Array.isArray(vals)) return vals;
-      }
       return [];
     } catch {
       return [];

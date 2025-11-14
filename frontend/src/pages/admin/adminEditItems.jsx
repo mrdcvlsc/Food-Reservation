@@ -64,7 +64,7 @@ export default function AdminEditItems() {
     setLoading(true);
     setListError("");
     try {
-      const data = await api.get("/menu");
+      const { data } = await api.get("/menu");
       setItems(Array.isArray(data) ? data : []);
     } catch (e) {
       setListError(e?.message || "Failed to load menu.");

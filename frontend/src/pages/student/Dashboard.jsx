@@ -5,6 +5,7 @@ import { formatDistanceToNow, isValid, parseISO } from "date-fns";
 import Navbar from "../../components/avbar";
 import { api, ApiError } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
+import { getUserFromStorage, setUserToStorage, clearAllAuthStorage } from "../../lib/storage";
 import {
   ShoppingBag,
   Wallet,
@@ -188,8 +189,7 @@ export default function Dashboard() {
 
   // --- user & balance ---
   const [user, setUser] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("user") || "{}"); }
-    catch { return {}; }
+    return getUserFromStorage() || {};
   });
 
   const balance = useMemo(() => {
@@ -206,9 +206,8 @@ export default function Dashboard() {
 
   const fetchArr = async (path, signal) => {
     try {
-      const d = await api.get(path, { signal });
-      if (Array.isArray(d)) return d;
-      if (d && Array.isArray(d.data)) return d.data;
+      const { data } = await api.get(path, { signal });
+      if (Array.isArray(data)) return data;
       return [];
     } catch(e) {
       // Don't process errors if request was aborted
@@ -303,10 +302,10 @@ export default function Dashboard() {
     try {
       // Prefer full user object from server. Some endpoints return { balance } only.
       // SERVER IS SOURCE OF TRUTH - always trust the API response
-      const me = await api.get("/wallets/me", { signal });
+      const { data: me } = await api.get("/wallets/me", { signal });
       
       if (!signal?.aborted && me && (me.id || me.balance != null)) {
-        const curLocal = JSON.parse(localStorage.getItem("user") || "{}") || {};
+        const curLocal = getUserFromStorage() || {};
         const merged = { ...curLocal, ...(me || {}) };
         
         // Ensure balance is numeric - SERVER VALUE TAKES PRECEDENCE
@@ -315,7 +314,7 @@ export default function Dashboard() {
         }
         
         // Update localStorage as cache only
-        localStorage.setItem("user", JSON.stringify(merged));
+        setUserToStorage(merged);
         setUser(merged);
   
         // reload recent activity after wallet sync (user identity may have changed)
@@ -501,8 +500,7 @@ export default function Dashboard() {
 
   // --- actions ---
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
+    clearAllAuthStorage();
     navigate("/login");
   };
 

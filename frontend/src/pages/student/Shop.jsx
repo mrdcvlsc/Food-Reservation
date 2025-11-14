@@ -5,6 +5,7 @@ import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { useCart } from "../../contexts/CartContext";
+import { getUserFromStorage, setUserToStorage } from "../../lib/storage";
 import {
   Plus,
   Minus,
@@ -94,8 +95,8 @@ export default function Shop({ publicView = false }) {
   const fetchMenu = async () => {
     setLoading(true);
     try {
-      const data = await api.get("/menu");
-      const rows = Array.isArray(data) ? data : data?.data || [];
+      const { data } = await api.get("/menu");
+      const rows = Array.isArray(data) ? data : [];
       // only show items that are visible (visible !== false)
       const visibleRows = rows.filter((r) => r.visible !== false);
       setItems(
@@ -126,17 +127,15 @@ export default function Shop({ publicView = false }) {
         setWalletError("Public view – log in to see wallet and place orders.");
         return;
       }
-      const w = await api.get("/wallets/me");
-      const val = (w && (w.data || w)) || {};
+      const { data: w } = await api.get("/wallets/me");
+      const val = w || {};
       const bal = Number(val.balance) || 0;
       setWallet({ balance: bal });
-      try {
-        const u = JSON.parse(localStorage.getItem("user") || "{}");
-        if (u && u.id) {
-          u.balance = bal;
-          localStorage.setItem("user", JSON.stringify(u));
-        }
-      } catch {}
+      const u = getUserFromStorage();
+      if (u && u.id) {
+        u.balance = bal;
+        setUserToStorage(u);
+      }
     } catch (e) {
       setWallet({ balance: 0 });
       setWalletError("Unable to load wallet. You might not be logged in.");
@@ -164,14 +163,12 @@ export default function Shop({ publicView = false }) {
   // prefill grade/section from saved user when opening reserve
   useEffect(() => {
     if (!open) return;
-    try {
-      const u = JSON.parse(localStorage.getItem("user") || "{}");
-      setReserve((r) => ({
-        ...r,
-        grade: r.grade || u.grade || "",
-        section: r.section || u.section || "",
-      }));
-    } catch {}
+    const u = getUserFromStorage() || {};
+    setReserve((r) => ({
+      ...r,
+      grade: r.grade || u.grade || "",
+      section: r.section || u.section || "",
+    }));
   }, [open]);
 
   // ==== DERIVED ==============================================================

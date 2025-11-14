@@ -88,7 +88,7 @@ function TopUpManager() {
     (async () => {
       try {
         setLoading(true);
-        const list = await api.get("/wallets"); // [{provider, accountName, mobile, reference, qrImageUrl, active}]
+        const { data: list } = await api.get("/wallets"); // [{provider, accountName, mobile, reference, qrImageUrl, active}]
         const nextMeta = { gcash: { accountName: "", mobile: "", reference: "" }, maya: { accountName: "", mobile: "", reference: "" } };
         const nextPrev = { gcash: null, maya: null };
         (list || []).forEach((w) => {
@@ -312,7 +312,7 @@ function VerifyQueue() {
     setLoading(true);
     setError("");
     try {
-      const d = await api.get("/admin/topups");
+      const { data: d } = await api.get("/admin/topups");
       const list = (d || [])
         .map((r) => ({
           ...r,

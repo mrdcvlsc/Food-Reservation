@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
+import { getUserFromStorage, setUserToStorage } from "../../lib/storage";
 import { Camera } from 'lucide-react';
 
 export default function EditProfile() {
@@ -11,7 +12,7 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(false);
   
   // Get initial values from localStorage
-  const localUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const localUser = getUserFromStorage() || {};
   
   // Initialize form with localStorage values
   const [form, setForm] = useState({
@@ -29,8 +30,8 @@ export default function EditProfile() {
     (async () => {
       try {
         setLoading(true);
-        const meRes = await api.get("/wallets/me");
-        const data = meRes?.data ?? meRes;
+        const { data: meRes } = await api.get("/wallets/me");
+        const data = meRes;
         
         if (data && typeof data === "object") {
           // Debug log to see what we're getting from the server
@@ -51,7 +52,7 @@ export default function EditProfile() {
             studentId: data.user, // Changed to match Profile.jsx
             phone: data.phone // Changed to match Profile.jsx
           };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
+          setUserToStorage(updatedUser);
 
           if (data.profilePictureUrl) {
             setImagePreview(data.profilePictureUrl);
@@ -120,13 +121,13 @@ export default function EditProfile() {
         const profilePictureUrl = serverUser?.profilePictureUrl || imagePreview;
         
         const updatedUser = {
-          ...JSON.parse(localStorage.getItem("user") || "{}"),
+          ...getUserFromStorage(),
           ...(serverUser || {}),
           ...(!serverUser ? form : {}),
           profilePicture: profilePictureUrl,
           profilePictureUpdatedAt: new Date().toISOString() // Add timestamp to force refresh
         };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setUserToStorage(updatedUser);
 
         navigate("/profile");
         setTimeout(() => alert("Profile updated successfully"), 150);

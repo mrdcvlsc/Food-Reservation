@@ -16,7 +16,7 @@ export default function Notifications() {
   const load = async () => {
     setLoading(true);
     try {
-      const d = await api.get("/notifications");
+      const { data: d } = await api.get("/notifications");
       setNotifications(Array.isArray(d) ? d : []);
     } catch (e) {
       setNotifications([]);

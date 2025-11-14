@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useCart } from "../../contexts/CartContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
+import { getUserFromStorage, setUserToStorage } from "../../lib/storage";
 import Navbar from "../../components/avbar";
 import {
   Plus,
@@ -61,7 +62,7 @@ export default function Cart() {
     let m = true;
     setMenuLoading(true);
     api.get('/menu')
-      .then(d => { if (!m) return; setProducts(d || []); })
+      .then(({ data: d }) => { if (!m) return; setProducts(d || []); })
       .catch(() => { if (!m) return; setProducts([]); })
       .finally(() => { if (!m) return; setMenuLoading(false); });
     return () => (m = false);
@@ -72,17 +73,15 @@ export default function Cart() {
     setLoadingWallet(true);
     setWalletError("");
     try {
-      const w = await api.get("/wallets/me");
-      const val = (w && (w.data || w)) || {};
+      const { data: w } = await api.get("/wallets/me");
+      const val = w || {};
       const bal = Number(val.balance) || 0;
       setWallet({ balance: bal });
-      try {
-        const u = JSON.parse(localStorage.getItem("user") || "{}");
-        if (u && u.id) {
-          u.balance = bal;
-          localStorage.setItem("user", JSON.stringify(u));
-        }
-      } catch {}
+      const u = getUserFromStorage();
+      if (u && u.id) {
+        u.balance = bal;
+        setUserToStorage(u);
+      }
     } catch (e) {
       setWallet({ balance: 0 });
       setWalletError("Unable to load wallet. You might not be logged in.");

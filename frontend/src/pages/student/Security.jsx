@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
+import { getUserFromStorage } from "../../lib/storage";
 
 export default function Security() {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function Security() {
     })();
   }, [navigate]);
 
-  const localUser = JSON.parse(localStorage.getItem("user") || "{}") || {};
+  const localUser = getUserFromStorage() || {};
   const [form, setForm] = useState({
     currentPassword: "",
     newPassword: "",
