@@ -13,7 +13,7 @@ const toApi = (path) => {
   return API_BASE ? `${API_BASE}${p}` : p;
 };
 
-async function request(path, { method = "GET", body, headers } = {}) {
+async function request(path, { method = "GET", body, headers, signal } = {}) {
   const token = localStorage.getItem("token");
 
   // Detect FormData
@@ -36,6 +36,7 @@ async function request(path, { method = "GET", body, headers } = {}) {
     // important: send cookies when server uses session cookie auth
     credentials: "include",
     body: isFormData ? body : (body != null ? JSON.stringify(body) : undefined),
+    signal, // Pass AbortController signal to fetch
   });
 
   // Try to parse JSON only when content-type indicates JSON

@@ -20,6 +20,19 @@ const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP"
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  
+  // --- localStorage token security warning ---
+  const [showTokenWarning, setShowTokenWarning] = useState(false);
+  
+  useEffect(() => {
+    // Check if token is still in localStorage (should migrate to httpOnly cookies)
+    const hasLocalStorageToken = !!localStorage.getItem("token");
+    if (hasLocalStorageToken) {
+      setShowTokenWarning(true);
+      console.warn("SECURITY: Tokens detected in localStorage. Production should use httpOnly cookies.");
+    }
+  }, []);
+
   useEffect(() => {
     (async () => {
       await refreshSessionForProtected({ navigate, requiredRole: 'student', setUser });
@@ -45,13 +58,22 @@ export default function Dashboard() {
 
   // --- recent activity (orders / transactions) ---
   const [activity, setActivity] = useState([]);
-  const fetchArr = async (path) => {
+  const [retryCount, setRetryCount] = useState(0);
+  const abortControllerRef = React.useRef(null);
+
+  const fetchArr = async (path, signal) => {
     try {
-      const d = await api.get(path);
+      const d = await api.get(path, { signal });
       if (Array.isArray(d)) return d;
       if (d && Array.isArray(d.data)) return d.data;
       return [];
     } catch(e) {
+      // Don't process errors if request was aborted
+      if (e.name === 'AbortError') {
+        console.log(`Request to ${path} was aborted`);
+        return [];
+      }
+
       if (e instanceof ApiError) {
         switch (e.status) {
           case ApiError.Maintenance:  navigate("/status/maintenance");  break;
@@ -63,15 +85,15 @@ export default function Dashboard() {
         }
       }
 
-      return [];
+      throw e; // Re-throw for retry logic
     }
   };
 
-  const loadActivity = async () => {
+  const loadActivity = async (signal) => {
     try {
       const [reservations, txs] = await Promise.all([
-        fetchArr('/reservations/mine'), 
-        fetchArr('/transactions/mine')
+        fetchArr('/reservations/mine', signal), 
+        fetchArr('/transactions/mine', signal)
       ]);
 
       const rows = [];
@@ -86,7 +108,8 @@ export default function Dashboard() {
             status: r.status || 'Pending',
             direction: 'debit',
             type: 'reservation',
-            items: r.items || []
+            items: r.items || [],
+            reference: r.id // Add reference for auditability
           });
         }
       }
@@ -108,7 +131,7 @@ export default function Dashboard() {
               status: t.status || t.state || 'Success',
               direction,
               type: 'transaction',
-              reference: ref
+              reference: ref || id // Add reference for auditability
             });
           }
         }
@@ -116,48 +139,134 @@ export default function Dashboard() {
 
       // Sort by time desc
       rows.sort((a, b) => new Date(b.time) - new Date(a.time));
-      setActivity(rows);
+      
+      // Only update state if not aborted
+      if (!signal?.aborted) {
+        setActivity(rows);
+      }
     } catch (err) {
-      console.error("Failed to load activity:", err);
-      setActivity([]);
+      if (err.name !== 'AbortError') {
+        console.error("Failed to load activity:", err);
+        if (!signal?.aborted) {
+          setActivity([]);
+        }
+        throw err; // Re-throw for retry logic
+      }
     }
   };
 
-  // Keep wallet in sync with server
-  const syncWallet = async () => {
+  // Keep wallet in sync with server (SERVER-TRUTH)
+  const syncWallet = async (signal) => {
     try {
       // Prefer full user object from server. Some endpoints return { balance } only.
-      const me = await api.get("/wallets/me");
-      if (me && (me.id || me.balance != null)) {
+      // SERVER IS SOURCE OF TRUTH - always trust the API response
+      const me = await api.get("/wallets/me", { signal });
+      
+      if (!signal?.aborted && me && (me.id || me.balance != null)) {
         const curLocal = JSON.parse(localStorage.getItem("user") || "{}") || {};
         const merged = { ...curLocal, ...(me || {}) };
-        // ensure balance is numeric
-        if (merged.balance && typeof merged.balance !== "number") merged.balance = Number(merged.balance) || 0;
+        
+        // Ensure balance is numeric - SERVER VALUE TAKES PRECEDENCE
+        if (merged.balance && typeof merged.balance !== "number") {
+          merged.balance = Number(merged.balance) || 0;
+        }
+        
+        // Update localStorage as cache only
         localStorage.setItem("user", JSON.stringify(merged));
         setUser(merged);
   
         // reload recent activity after wallet sync (user identity may have changed)
-        await loadActivity();
+        await loadActivity(signal);
       }
     } catch (e) {
-      // ignore, keep local state
+      if (e.name !== 'AbortError') {
+        console.error("Failed to sync wallet:", e);
+        throw e; // Re-throw for retry logic
+      }
+      // Ignore abort errors, keep local cached state
+    }
+  };
+
+  // Exponential backoff retry logic
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  
+  const loadDataWithRetry = async (signal, attempt = 0) => {
+    const maxRetries = 3;
+    const baseDelay = 1000; // 1 second
+    
+    try {
+      await Promise.all([
+        loadActivity(signal),
+        syncWallet(signal)
+      ]);
+      
+      // Success - reset retry count
+      if (!signal?.aborted) {
+        setRetryCount(0);
+      }
+    } catch (err) {
+      if (err.name === 'AbortError' || signal?.aborted) {
+        return; // Don't retry if aborted
+      }
+
+      // Check if it's a 5xx server error that should be retried
+      const isServerError = err instanceof ApiError && 
+                           err.status >= 500 && 
+                           err.status < 600;
+      
+      if (isServerError && attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt); // Exponential backoff
+        console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms`);
+        
+        if (!signal?.aborted) {
+          setRetryCount(attempt + 1);
+        }
+        
+        await sleep(delay);
+        
+        if (!signal?.aborted) {
+          return loadDataWithRetry(signal, attempt + 1);
+        }
+      } else {
+        // Final failure or non-retryable error
+        throw err;
+      }
     }
   };
 
   useEffect(() => {
+    // Create new AbortController for this effect
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     const loadData = async () => {
       setLoading(true);
       setError(null);
+      
       try {
-        await Promise.all([
-          loadActivity(),
-          syncWallet()
-        ]);
+        await loadDataWithRetry(signal, 0);
       } catch (err) {
-        console.error("Failed to load dashboard data:", err);
-        setError(err.message || "Failed to load dashboard data. Please try again.");
+        if (err.name !== 'AbortError' && !signal.aborted) {
+          console.error("Failed to load dashboard data:", err);
+          
+          // User-friendly error messages
+          let errorMessage = "Failed to load dashboard data. Please try again.";
+          if (err instanceof ApiError) {
+            if (err.status >= 500) {
+              errorMessage = "Server is experiencing issues. We'll keep trying automatically.";
+            } else if (err.status === 401 || err.status === 403) {
+              errorMessage = "Session expired. Please log in again.";
+            }
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+          
+          setError(errorMessage);
+        }
       } finally {
-        setLoading(false);
+        if (!signal.aborted) {
+          setLoading(false);
+        }
       }
     };
     
@@ -166,15 +275,32 @@ export default function Dashboard() {
     const onStorage = (e) => {
       if (["transactions", "orders", "user"].includes(e.key)) {
         if (e.key === "user") {
-          try { setUser(JSON.parse(e.newValue || "{}")); } catch {}
+          try { 
+            const newUser = JSON.parse(e.newValue || "{}");
+            // Only update if not currently loading (avoid conflicts)
+            if (!loading) {
+              setUser(newUser);
+            }
+          } catch {}
         } else {
-          loadActivity();
+          // Re-fetch from server to get truth
+          if (!loading && abortControllerRef.current) {
+            loadActivity(abortControllerRef.current.signal);
+          }
         }
       }
     };
+    
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+    
+    // Cleanup: abort all pending requests on unmount
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // Empty deps - only run on mount/unmount
 
   // --- derived stats (simple, school-friendly) ---
   const stats = useMemo(() => {
@@ -248,15 +374,35 @@ export default function Dashboard() {
 
   // --- Retry function ---
   const handleRetry = async () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new controller for retry
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    
     setLoading(true);
     setError(null);
+    setRetryCount(0);
+    
     try {
-      await Promise.all([loadActivity(), syncWallet()]);
+      await loadDataWithRetry(signal, 0);
     } catch (err) {
-      console.error("Retry failed:", err);
-      setError(err.message || "Failed to load dashboard data. Please try again.");
+      if (err.name !== 'AbortError' && !signal.aborted) {
+        console.error("Retry failed:", err);
+        
+        let errorMessage = "Failed to load dashboard data. Please try again.";
+        if (err instanceof ApiError && err.status >= 500) {
+          errorMessage = "Server is still experiencing issues. Please try again later.";
+        }
+        
+        setError(errorMessage);
+      }
     } finally {
-      setLoading(false);
+      if (!signal.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -265,18 +411,41 @@ export default function Dashboard() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Security Warning - Token in localStorage (Development Only) */}
+        {showTokenWarning && process.env.NODE_ENV === 'development' && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start justify-between">
+            <div className="flex-1">
+              <h3 className="font-semibold text-amber-900 mb-1">⚠️ Development Security Notice</h3>
+              <p className="text-sm text-amber-700">
+                Auth tokens are stored in localStorage. For production, migrate to httpOnly cookies to prevent XSS attacks.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowTokenWarning(false)}
+              className="ml-4 px-3 py-1 text-amber-700 hover:text-amber-900 text-sm font-medium"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
+
         {/* Error Banner */}
         {error && (
           <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start justify-between" role="alert">
             <div className="flex-1">
               <h3 className="font-semibold text-rose-900 mb-1">Error Loading Dashboard</h3>
               <p className="text-sm text-rose-700">{error}</p>
+              {retryCount > 0 && (
+                <p className="text-xs text-rose-600 mt-1">
+                  Auto-retry attempt {retryCount}/3 failed
+                </p>
+              )}
             </div>
             <button
               onClick={handleRetry}
               className="ml-4 px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition font-medium text-sm focus-ring-white"
             >
-              Retry
+              Retry Now
             </button>
           </div>
         )}
@@ -449,6 +618,11 @@ export default function Dashboard() {
                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full border ${statusCls}`}>
                            {a.status}
                          </span>
+                         {a.reference && (
+                           <span className="inline-flex items-center text-xs text-gray-400 font-mono" title="Transaction Reference">
+                             #{a.reference}
+                           </span>
+                         )}
                        </div>
                      </div>
                      <div className="text-sm font-semibold text-gray-900">
