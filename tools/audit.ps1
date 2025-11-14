@@ -38,10 +38,10 @@ function Write-Section {
 function Write-Status {
     param($success, $message)
     if ($success) {
-        $status = "✓ $message"
+        $status = "[OK] $message"
         Write-Host $status -ForegroundColor Green
     } else {
-        $status = "✗ $message"
+        $status = "[FAIL] $message"
         Write-Host $status -ForegroundColor Red
         $script:issuesFound++
     }
@@ -144,7 +144,7 @@ if (Test-Path "scripts\find-secrets.js") {
     $script:report += $secretScan
     Write-Host $secretScan
 } else {
-    $script:report += "⚠ scripts/find-secrets.js not found`n"
+    $script:report += "[WARNING] scripts/find-secrets.js not found`n"
 }
 
 # ==================== CODE QUALITY ====================
@@ -169,7 +169,7 @@ if (-not $Quick) {
     
     $script:report += "Found $consoleLogs console.log statements`n"
     if ($consoleLogs -gt 20) {
-        $script:report += "⚠ Consider using proper logging instead of console.log`n"
+        $script:report += "[WARNING] Consider using proper logging instead of console.log`n"
     }
 
     # Large files
@@ -178,7 +178,7 @@ if (-not $Quick) {
         Where-Object { (Get-Content $_.FullName | Measure-Object -Line).Lines -gt 500 } |
         ForEach-Object {
             $lines = (Get-Content $_.FullName | Measure-Object -Line).Lines
-            $script:report += "⚠ Large file: $($_.FullName) ($lines lines)`n"
+            $script:report += "[WARNING] Large file: $($_.FullName) ($lines lines)`n"
         }
 }
 
@@ -189,11 +189,11 @@ $script:report += "Report saved to: $reportFile`n"
 $script:report += "Detailed logs available in: logs/`n`n"
 
 if ($issuesFound -eq 0) {
-    $summary = "✓ No critical issues found!"
+    $summary = "[OK] No critical issues found!"
     Write-Host $summary -ForegroundColor Green
     $script:report += $summary
 } else {
-    $summary = "✗ Found $issuesFound issue(s) requiring attention"
+    $summary = "[FAIL] Found $issuesFound issue(s) requiring attention"
     Write-Host $summary -ForegroundColor Red
     $script:report += "$summary`n`n"
     $script:report += "Review the logs and fix issues before production deployment.`n"
