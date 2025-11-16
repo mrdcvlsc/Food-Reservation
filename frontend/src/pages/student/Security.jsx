@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { getUserFromStorage } from "../../lib/storage";
@@ -70,9 +71,9 @@ export default function Security() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
-      <main className="max-w-md mx-auto px-4 py-12">
+      <main className="max-w-md mx-auto px-3 sm:px-4 py-6 sm:py-12">
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold mb-4 text-center text-blue-700">Change Password</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,6 +135,8 @@ export default function Security() {
           </form>
         </div>
       </main>
+      
+      <BottomNav />
     </div>
   );
 }

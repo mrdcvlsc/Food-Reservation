@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import { Edit, Trash2, PlusCircle, Search, Filter, RefreshCw } from "lucide-react";
+import AdminBottomNav from '../../components/mobile/AdminBottomNav';
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 
@@ -292,6 +293,8 @@ export default function AdminShop() {
           </div>
         </section>
       </main>
+      {/* ...existing code... */}
+      <AdminBottomNav />
     </div>
   );
 }

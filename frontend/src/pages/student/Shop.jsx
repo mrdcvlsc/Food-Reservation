@@ -1,8 +1,10 @@
-// src/pages/Shop.jsx
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// src/pages/Shop.jsx - FIXED VERSION
+import React, { useEffect, useMemo, useState, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
+import FullScreenLoader from "../../components/FullScreenLoader";
 import { api } from "../../lib/api";
 import { useCart } from "../../contexts/CartContext";
 import { getUserFromStorage, setUserToStorage } from "../../lib/storage";
@@ -18,7 +20,10 @@ import {
   Filter,
   Wallet,
   AlertTriangle,
-  Image as ImageIcon,
+  Eye,
+  ChevronDown,
+  TrendingUp,
+  Sparkles,
   ChevronRight,
 } from "lucide-react";
 
@@ -30,74 +35,173 @@ const SLOTS = [
   { id: "after", label: "After Class • 4:00–4:15 PM" },
 ];
 
-const selectStyles = {
-  scrollbarWidth: 'thin',
-  scrollbarColor: '#94A3B8 #E2E8F0'
+const CATEGORY_EMOJI = {
+  "Rice Meals": "🍚",
+  "Noodles": "🍜",
+  "Snacks": "🍪",
+  "Beverages": "🥤",
+  "Desserts": "🍰",
+  "Breakfast": "☕",
+  "Others": "🍽️",
 };
 
-// Compact guest header used when publicView === true
 function GuestHeader() {
   return (
-    <header className="bg-white border-b">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <a href="/" className="inline-flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">J</div>
-            <span className="font-semibold">Jesus Christ King of Kings and Lord of Lords Academy</span>
+    <header className="bg-white border-b sticky top-0 z-40 shadow-sm">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <div className="h-14 sm:h-16 flex items-center justify-between gap-2">
+          <a href="/" className="inline-flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink">
+            <img src="/jckl-192.png" alt="JCKL" className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg flex-shrink-0" />
+            <div className="min-w-0">
+              <span className="hidden xl:inline text-[15px] font-semibold text-gray-900">Jesus Christ King of Kings and Lord of Lords Academy Inc.</span>
+              <span className="hidden md:inline xl:hidden text-[15px] font-semibold text-gray-900 truncate max-w-[520px]">Jesus Christ King of Kings and Lord of Lords Academy Inc.</span>
+              <span className="md:hidden text-xs sm:text-sm font-semibold text-gray-900">JCKL Academy</span>
+            </div>
           </a>
-        </div>
-        <div className="flex items-center gap-3">
-          <a href="/login" className="text-sm text-blue-600 hover:underline">Student Login</a>
-          <a href="/register" className="text-sm text-gray-600 hover:underline">Create Account</a>
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <a href="/login" className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium">Student Login</a>
+            <a href="/register" className="hidden sm:inline text-xs sm:text-sm text-gray-600 hover:text-gray-900">Create Account</a>
+          </div>
         </div>
       </div>
     </header>
   );
 }
 
+function Toast({ message, visible, onClose }) {
+  useEffect(() => {
+    if (visible) {
+      const timer = setTimeout(onClose, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [visible, onClose]);
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed top-20 right-4 z-50 animate-slide-in-right">
+      <div className="bg-emerald-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+        <CheckCircle2 className="w-5 h-5" />
+        <span className="font-medium">{message}</span>
+      </div>
+    </div>
+  );
+}
+
+function EmptyCartSuggestions({ items, onAdd }) {
+  const popularItems = useMemo(() => {
+    return items
+      .filter(i => i.stock > 0)
+      .sort((a, b) => a.price - b.price)
+      .slice(0, 3);
+  }, [items]);
+
+  if (popularItems.length === 0) return null;
+
+  return (
+    <div className="py-4 space-y-3">
+      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+        Popular items
+      </div>
+      {popularItems.map(item => (
+        <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition">
+          <div className="w-12 h-12 rounded bg-gray-100 flex items-center justify-center flex-shrink-0">
+            {item.img ? (
+              <img src={item.img} alt={item.name} className="w-full h-full object-cover rounded" />
+            ) : (
+              <span className="text-xl">{CATEGORY_EMOJI[item.category] || "🍽️"}</span>
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-gray-900 truncate">{item.name}</div>
+            <div className="text-xs text-gray-500">{peso.format(item.price)}</div>
+          </div>
+          <button
+            onClick={() => onAdd(item.id)}
+            className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function Shop({ publicView = false }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
   useEffect(() => {
-    // In public view we skip auth / session refresh so visitors can browse menu.
     if (publicView) return;
     (async () => {
       await refreshSessionForProtected({ navigate, requiredRole: "student" });
     })();
   }, [navigate, publicView]);
 
-  // data
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
-  // wallet
   const [wallet, setWallet] = useState({ balance: 0 });
   const [loadingWallet, setLoadingWallet] = useState(true);
   const [walletError, setWalletError] = useState("");
 
-  // search + filters
+  const urlCategory = searchParams.get('category');
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState(urlCategory || "all");
   const [sort, setSort] = useState("featured");
 
-  // cart (from context)
-  const { cart, add, setQty, remove, clear, meta } = useCart();
+  const [scrolled, setScrolled] = useState(false);
+  const [toast, setToast] = useState({ visible: false, message: "" });
+  const [mobileCartOpen, setMobileCartOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
 
-  // reservation modal
+  const { cart, add, setQty, remove, clear } = useCart();
+
   const [open, setOpen] = useState(false);
   const [reserve, setReserve] = useState({ grade: "", section: "", slot: "", note: "" });
   const [submitting, setSubmitting] = useState(false);
 
-  // item preview modal
-  const [preview, setPreview] = useState(null); // item or null
+  const [preview, setPreview] = useState(null);
 
-  // ==== DATA LOADERS =========================================================
+  const filterBarRef = useRef(null);
+  const menuGridRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    setRecentlyViewed(viewed);
+    
+    const handleLogout = () => {
+      localStorage.removeItem('recentlyViewed');
+      setRecentlyViewed([]);
+    };
+    window.addEventListener('auth:logout', handleLogout);
+    return () => window.removeEventListener('auth:logout', handleLogout);
+  }, []);
+
+  const addToRecentlyViewed = (itemId) => {
+    const viewed = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+    const filtered = viewed.filter(id => id !== itemId);
+    const updated = [itemId, ...filtered].slice(0, 5);
+    localStorage.setItem('recentlyViewed', JSON.stringify(updated));
+    setRecentlyViewed(updated);
+  };
+
   const fetchMenu = async () => {
     setLoading(true);
     try {
       const data = await api.get("/menu");
       const rows = Array.isArray(data) ? data : [];
-      // only show items that are visible (visible !== false)
       const visibleRows = rows.filter((r) => r.visible !== false);
       setItems(
         visibleRows.map((r) => ({
@@ -114,6 +218,7 @@ export default function Shop({ publicView = false }) {
       setItems([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -122,7 +227,6 @@ export default function Shop({ publicView = false }) {
     setWalletError("");
     try {
       if (publicView) {
-        // public visitors don't have a wallet — show friendly hint instead of failing
         setWallet({ balance: 0 });
         setWalletError("Public view – log in to see wallet and place orders.");
         return;
@@ -152,15 +256,11 @@ export default function Shop({ publicView = false }) {
     return () => window.removeEventListener("menu:updated", onMenuUpdated);
   }, []);
 
-  // CartContext handles restore and persistence
-
-  // debounce search input
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim().toLowerCase()), 200);
     return () => clearTimeout(t);
   }, [q]);
 
-  // prefill grade/section from saved user when opening reserve
   useEffect(() => {
     if (!open) return;
     const u = getUserFromStorage() || {};
@@ -170,8 +270,6 @@ export default function Shop({ publicView = false }) {
       section: r.section || u.section || "",
     }));
   }, [open]);
-
-  // ==== DERIVED ==============================================================
 
   const categories = useMemo(() => {
     const set = new Set(items.map((i) => i.category).filter(Boolean));
@@ -241,7 +339,16 @@ export default function Shop({ publicView = false }) {
 
   const insufficient = total > (Number(wallet.balance) || 0);
 
-  // ==== CART OPS =============================================================
+  const recentlyViewedItems = useMemo(() => {
+    return recentlyViewed
+      .map(id => items.find(i => String(i.id) === String(id)))
+      .filter(Boolean);
+  }, [recentlyViewed, items]);
+
+  const showToast = (message) => {
+    setToast({ visible: true, message });
+  };
+
   const inc = (id) => {
     const item = items.find((x) => String(x.id) === String(id));
     if (!item) return;
@@ -252,19 +359,40 @@ export default function Shop({ publicView = false }) {
     }
 
     add(item.id, 1);
+    showToast(`Added ${item.name} to cart`);
+    
+    const cartIcon = document.getElementById('cart-icon');
+    if (cartIcon) {
+      cartIcon.classList.add('animate-bounce');
+      setTimeout(() => cartIcon.classList.remove('animate-bounce'), 500);
+    }
   };
+
   const dec = (id) =>
     setQty(id, Math.max((cart[String(id)] || 0) - 1, 0));
-  const removeFromCart = (id) =>
+  
+  const removeFromCart = (id) => {
     remove(id);
-  const clearCart = () => clear();
+    showToast("Item removed from cart");
+  };
+  
+  const clearCart = () => {
+    if (window.confirm("Clear all items from cart?")) {
+      clear();
+      showToast("Cart cleared");
+      setMobileCartOpen(false);
+    }
+  };
 
-  // ==== NAV / MODAL ==========================================================
   const goCart = () => navigate("/cart");
   const openReserve = () => setOpen(true);
   const closeReserve = () => setOpen(false);
 
-  // ==== SUBMIT ===============================================================
+  const openPreviewModal = (item) => {
+    setPreview(item);
+    addToRecentlyViewed(item.id);
+  };
+
   const submitReservation = async () => {
     if (!list.length) return alert("Your cart is empty.");
     if (!reserve.grade) return alert("Select grade level.");
@@ -284,27 +412,22 @@ export default function Shop({ publicView = false }) {
     setSubmitting(true);
     try {
       const payload = {
-        items: list.map(({ id, qty }) => ({ id, qty })), // server validates price/stock
+        items: list.map(({ id, qty }) => ({ id, qty })),
         grade: reserve.grade,
         section: reserve.section.trim(),
         slot: reserve.slot,
         note: reserve.note || "",
       };
-      console.log('payload = ', payload)
-      // Prefer atomic endpoint
+
       let r;
       try {
         r = await api.post("/reservations/checkout", payload);
-        console.log('r = ', r)
       } catch {
-        // Fallback 2-step
         const created = await api.post("/reservations", payload);
-        console.log('created = ', created)
-        console.log('items = ', items)
         const createdId = created?.id || created?.data?.id;
         const amount = created?.total ?? created?.data?.total ?? total;
 
-        if (!createdId) throw new Error("Reservation created without an id. Please check backend response.");
+        if (!createdId) throw new Error("Reservation created without an id.");
         await api.post("/wallets/charge", {
           amount: Number(amount),
           refType: "reservation",
@@ -314,8 +437,8 @@ export default function Shop({ publicView = false }) {
         r = created;
       }
 
-  alert("Reservation submitted and wallet charged.");
-  clear();
+      alert("Reservation submitted and wallet charged.");
+      clear();
       setReserve({ grade: "", section: "", slot: "", note: "" });
       closeReserve();
 
@@ -329,84 +452,128 @@ export default function Shop({ publicView = false }) {
     }
   };
 
-  // CartContext handles add/update/remove and multi-tab sync
+  if (loading && initialLoad) {
+    return <FullScreenLoader message="Loading menu..." />;
+  }
 
-  // ==== RENDER ===============================================================
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       {publicView ? <GuestHeader /> : <Navbar />}
 
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* filters */}
-        <div className="flex flex-wrap items-center gap-2 bg-white border border-gray-100 rounded-xl px-3 py-3">
-          <div className="inline-flex items-center gap-2 mr-2 text-gray-700">
-            <Filter className="w-4 h-4" />
-            <span className="text-sm font-medium">Filter</span>
-          </div>
+      <Toast 
+        message={toast.message} 
+        visible={toast.visible} 
+        onClose={() => setToast({ visible: false, message: "" })}
+      />
 
-          <div className="flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <button
-                key={c}
-                onClick={() => setCategory(c)}
-                className={`px-3 py-1.5 rounded-full border text-sm transition ${
-                  category === c
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-                aria-pressed={category === c}
-              >
-                {c === "all" ? "All" : c}{" "}
-                {c !== "all" && (
-                  <span className="ml-1 text-[10px] opacity-70">
-                    {catCounts.get(c) || 0}
-                  </span>
-                )}
-              </button>
-            ))}
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-6 space-y-3 sm:space-y-6">
+        {!publicView && items.length > 0 && (
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl overflow-hidden shadow-lg">
+            <div className="p-4 sm:p-6 lg:p-8">
+              <div className="flex flex-col text-white space-y-3 sm:space-y-4 max-w-2xl">
+                <div className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium">
+                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span>Today's Special</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold">Pre-order now and skip the lunch rush!</h2>
+                <p className="text-sm sm:text-base text-blue-100">Order your favorite meals ahead of time and enjoy more break time.</p>
+                <button
+                  onClick={() => {
+                    menuGridRef.current?.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'start' 
+                    });
+                  }}
+                  className="inline-flex items-center gap-2 bg-white text-blue-600 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-blue-50 transition w-fit text-sm sm:text-base shadow-md"
+                >
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                  Start Ordering
+                </button>
+              </div>
+            </div>
           </div>
+        )}
 
-          <div className="ml-auto flex items-center gap-2">
-            <label className="text-sm text-gray-600">Sort</label>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-              aria-label="Sort menu"
-            >
-              <option value="featured">Featured</option>
-              <option value="name-asc">Name (A–Z)</option>
-              <option value="name-desc">Name (Z–A)</option>
-              <option value="price-asc">Price (Low→High)</option>
-              <option value="price-desc">Price (High→Low)</option>
-              <option value="stock-desc">Stock (High→Low)</option>
-            </select>
-            {(debouncedQ || category !== "all" || sort !== "featured") && (
-              <button
-                onClick={() => {
-                  setQ("");
-                  setCategory("all");
-                  setSort("featured");
-                }}
-                className="text-sm text-gray-600 hover:text-gray-900 underline decoration-dotted"
+        <div 
+          ref={filterBarRef}
+          className={`sticky top-14 sm:top-16 z-30 transition-all duration-300 ${
+            scrolled ? 'bg-white shadow-md -mx-2 sm:-mx-4 px-2 sm:px-4 py-3' : 'bg-white border border-gray-100 rounded-lg sm:rounded-xl px-2 sm:px-4 py-3'
+          }`}
+        >
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <div className="inline-flex items-center gap-1 sm:gap-2 mr-1 text-gray-600">
+                <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="text-[10px] sm:text-xs font-medium uppercase tracking-wide">Categories</span>
+              </div>
+              <div className="flex flex-wrap gap-1 sm:gap-1.5">
+                {categories.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    className={`px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs sm:text-sm font-medium transition ${
+                      category === c
+                        ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                        : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    }`}
+                  >
+                    {c !== "all" && <span className="mr-1">{CATEGORY_EMOJI[c] || "🍽️"}</span>}
+                    {c === "all" ? "All Items" : c}
+                    {c !== "all" && (
+                      <span className="ml-1.5 text-[10px] opacity-70">
+                        ({catCounts.get(c) || 0})
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-[10px] sm:text-xs text-gray-600 font-medium uppercase tracking-wide">Sort by</label>
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="border border-gray-200 rounded-lg px-2 sm:px-3 py-1.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
-                Clear
-              </button>
-            )}
+                <option value="featured">Featured</option>
+                <option value="name-asc">Name (A–Z)</option>
+                <option value="name-desc">Name (Z–A)</option>
+                <option value="price-asc">Price (Low to High)</option>
+                <option value="price-desc">Price (High to Low)</option>
+                <option value="stock-desc">Stock (High to Low)</option>
+              </select>
+              {(debouncedQ || category !== "all" || sort !== "featured") && (
+                <button
+                  onClick={() => {
+                    setQ("");
+                    setCategory("all");
+                    setSort("featured");
+                  }}
+                  className="ml-auto inline-flex items-center gap-1 text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  <X className="w-3.5 h-3.5" />
+                  <span>Clear filters</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* header (moved below filters) */}
-        <div className="flex items-center justify-between gap-3 flex-wrap mt-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Canteen Menu</h1>
+        <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 flex-col sm:flex-row">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Canteen Menu</h1>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              {filtered.length} {filtered.length === 1 ? 'item' : 'items'} available
+            </p>
+          </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative flex-1 sm:flex-none">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Search menu…"
-                className="w-full sm:w-64 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Search menu"
+                className="w-full sm:w-72 border border-gray-200 rounded-lg pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
@@ -415,51 +582,56 @@ export default function Shop({ publicView = false }) {
                 fetchMenu();
                 fetchWallet();
               }}
-              className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
-              title="Refresh"
+              className="inline-flex items-center gap-2 border border-gray-200 px-3 py-2.5 rounded-lg text-sm hover:bg-gray-50 transition"
             >
               <RefreshCw className="w-4 h-4" />
-              Refresh
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* menu grid */}
-          <section className="lg:col-span-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <section className="lg:col-span-2 space-y-6">
+            <div ref={menuGridRef} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {loading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
                     key={`skeleton-${i}`}
-                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 animate-pulse"
+                    className="bg-white rounded-lg shadow-sm border border-gray-100 p-4"
                   >
-                    <div className="h-36 rounded bg-gray-200 mb-4" />
-                    <div className="h-4 w-1/2 bg-gray-200 rounded mb-2" />
-                    <div className="h-3 w-1/3 bg-gray-200 rounded mb-4" />
+                    <div className="h-36 rounded bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer mb-4" />
+                    <div className="h-4 w-1/2 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded mb-2" />
+                    <div className="h-3 w-1/3 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded mb-4" />
                     <div className="flex items-center justify-between">
-                      <div className="h-8 w-24 bg-gray-200 rounded" />
-                      <div className="h-8 w-20 bg-gray-200 rounded" />
+                      <div className="h-8 w-24 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded" />
+                      <div className="h-8 w-20 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 bg-[length:200%_100%] animate-shimmer rounded" />
                     </div>
                   </div>
                 ))
               ) : filtered.length === 0 ? (
-                <div className="col-span-full bg-white rounded-lg border border-gray-100 p-10 text-center text-sm text-gray-500">
-                  No items found.
+                <div className="col-span-full bg-white rounded-lg border border-gray-100 p-10 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <Search className="w-8 h-8 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500">No items found.</p>
                 </div>
               ) : (
                 filtered.map((it) => {
                   const soldOut = Number(it.stock) <= 0;
+                  const lowStock = Number(it.stock) > 0 && Number(it.stock) <= 5;
+
                   return (
-                    <div key={it.id} className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
-                      <div className="h-36 mb-4">
-                        {/* image / cover */}
+                    <div 
+                      key={it.id} 
+                      className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 hover:shadow-md transition-all duration-200 group"
+                    >
+                      <div className="relative h-36 mb-4 rounded-lg overflow-hidden bg-gray-100">
                         {it.img ? (
                           <img
                             src={it.img}
                             alt={it.name}
                             loading="lazy"
-                            className="h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                             onError={(e) => {
                               e.currentTarget.onerror = null;
                               e.currentTarget.style.display = "none";
@@ -467,51 +639,67 @@ export default function Shop({ publicView = false }) {
                           />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center text-gray-400">
-                            <ImageIcon className="w-8 h-8" />
+                            <span className="text-5xl">{CATEGORY_EMOJI[it.category] || "🍽️"}</span>
                           </div>
                         )}
+                        <button
+                          onClick={() => openPreviewModal(it)}
+                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center"
+                        >
+                          <div className="bg-white text-gray-900 px-4 py-2 rounded-lg font-medium inline-flex items-center gap-2">
+                            <Eye className="w-4 h-4" />
+                            Quick View
+                          </div>
+                        </button>
                       </div>
+                      
                       <div className="font-medium text-gray-900 truncate">{it.name}</div>
                       <div className="text-sm text-gray-600">{peso.format(it.price)}</div>
-                      {/* always show stock badge (public and logged-in users) */}
+                      
                       <div className="mt-2">
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            Number(it.stock) > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {Number(it.stock) > 0 ? `${it.stock} in stock` : "Out of stock"}
-                        </span>
-                      </div>
-                      <div className="mt-3 flex items-center gap-3">
-                        {/* PUBLIC VIEW: hide quantity and add controls; keep Preview only */}
-                        {publicView ? (
-                          <div className="flex items-center gap-2">
-                            <a href="#" onClick={(e) => { e.preventDefault(); setPreview(it); }} className="inline-flex items-center gap-2 text-sm text-gray-600 hover:underline">
-                              Preview &rsaquo;
-                            </a>
-                          </div>
+                        {soldOut ? (
+                          <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-medium">
+                            Out of stock
+                          </span>
+                        ) : lowStock ? (
+                          <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700 font-medium animate-pulse">
+                            ⚠️ Only {it.stock} left!
+                          </span>
                         ) : (
-                          // original logged-in controls (quantity, add, etc.)
-                          <div className="flex items-center gap-3">
+                          <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">
+                            ✓ {it.stock} in stock
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="mt-3 flex items-center gap-3">
+                        {publicView ? (
+                          <button
+                            onClick={() => openPreviewModal(it)}
+                            className="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                          >
+                            Preview <ChevronRight className="w-3 h-3" />
+                          </button>
+                        ) : (
+                          <>
                             <div className="inline-flex items-center border rounded-lg">
-                              <button onClick={() => dec(it.id)} className="px-2 py-1.5 hover:bg-gray-50">
-                                <Minus className="w-4 h-4" />
-                              </button>
-                              <span className="px-3 text-sm">{(cart[String(it.id)] || 0)}</span>
-                              <button onClick={() => inc(it.id)} className="px-2 py-1.5 hover:bg-gray-50" disabled={soldOut}>
+                              <button 
+                                onClick={() => inc(it.id)} 
+                                className="px-2 py-1.5 hover:bg-gray-50 transition disabled:opacity-50" 
+                                disabled={soldOut}
+                              >
                                 <Plus className="w-4 h-4" />
                               </button>
                             </div>
                             <button
-                              onClick={() => add(it.id, 1)}
+                              onClick={() => inc(it.id)}
                               disabled={soldOut}
-                              className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60"
+                              className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 text-sm disabled:opacity-60 transition-all duration-200 transform hover:scale-105"
                             >
                               <ShoppingCart className="w-4 h-4" />
                               Add
                             </button>
-                          </div>
+                          </>
                         )}
                       </div>
                     </div>
@@ -519,14 +707,44 @@ export default function Shop({ publicView = false }) {
                 })
               )}
             </div>
+
+            {!publicView && recentlyViewedItems.length > 0 && (
+              <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Eye className="w-5 h-5 text-gray-700" />
+                  <h3 className="font-semibold text-gray-900">Recently Viewed</h3>
+                </div>
+                <div className="flex gap-4 overflow-x-auto pb-2">
+                  {recentlyViewedItems.map(it => (
+                    <div 
+                      key={it.id} 
+                      className="flex-shrink-0 w-32 cursor-pointer hover:scale-105 transition-transform"
+                      onClick={() => openPreviewModal(it)}
+                    >
+                      <div className="w-32 h-32 rounded-lg overflow-hidden bg-gray-100 mb-2">
+                        {it.img ? (
+                          <img src={it.img} alt={it.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-4xl">
+                            {CATEGORY_EMOJI[it.category] || "🍽️"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs font-medium text-gray-900 truncate">{it.name}</div>
+                      <div className="text-xs text-gray-600">{peso.format(it.price)}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
 
-          {/* cart sidebar (hidden in public view) */}
           {!publicView && (
-            <aside className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 lg:h-[72vh] h-auto sticky top-24 flex flex-col min-h-[40vh]">
+            <aside className="hidden lg:flex bg-white rounded-lg shadow-sm border border-gray-100 p-4 h-[72vh] sticky top-24 flex-col">
               <div className="flex items-center justify-between">
                 <h2 className="font-semibold text-gray-900">Your Cart</h2>
-                <span className="text-xs text-gray-600">
+                <span id="cart-icon" className="text-xs text-gray-600 inline-flex items-center gap-1">
+                  <ShoppingCart className="w-3.5 h-3.5" />
                   {list.reduce((a, b) => a + b.qty, 0)} items
                 </span>
               </div>
@@ -544,55 +762,70 @@ export default function Shop({ publicView = false }) {
               {insufficient && list.length > 0 && (
                 <div className="mt-2 text-xs inline-flex items-center gap-2 text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
                   <AlertTriangle className="w-3.5 h-3.5" />
-                  Insufficient balance. Please top-up before reserving.
+                  Insufficient balance. Please top-up.
                 </div>
               )}
 
-              {/* scrollable list area */}
               <div className="mt-3 divide-y overflow-auto flex-1 min-h-0">
                 {list.length === 0 ? (
-                  <div className="py-6 text-sm text-gray-500 text-center">Your cart is empty.</div>
+                  <div className="py-6 text-center space-y-4">
+                    <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 flex items-center justify-center">
+                      <ShoppingCart className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <div className="text-sm text-gray-500">Your cart is empty.</div>
+                    <EmptyCartSuggestions items={items} onAdd={(id) => inc(id)} />
+                  </div>
                 ) : (
                   list.map((it) => (
-                    <div key={it.id} className="py-3 flex items-center justify-between gap-3">
-                      <div className="min-w-0">
+                    <div key={it.id} className="py-3 flex items-start gap-3">
+                      <div className="w-12 h-12 rounded bg-gray-100 flex-shrink-0">
+                        {it.img ? (
+                          <img src={it.img} alt={it.name} className="w-full h-full object-cover rounded" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xl">
+                            {CATEGORY_EMOJI[it.category] || "🍽️"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium text-gray-900 truncate">{it.name}</div>
                         <div className="text-xs text-gray-500">
                           {peso.format(Number(it.price) || 0)}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="inline-flex items-center border rounded-lg">
-                          <button onClick={() => dec(it.id)} className="px-2 py-1.5 hover:bg-gray-50">
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="px-3 text-sm">{it.qty}</span>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="inline-flex items-center border rounded">
+                            <button 
+                              onClick={() => dec(it.id)} 
+                              className="px-1.5 py-1 hover:bg-gray-50"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <span className="px-2 text-xs">{it.qty}</span>
+                            <button
+                              onClick={() => inc(it.id)}
+                              className="px-1.5 py-1 hover:bg-gray-50 disabled:opacity-50"
+                              disabled={it.qty >= it.stock}
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <div className="text-sm font-medium">
+                            {peso.format((Number(it.price) || 0) * it.qty)}
+                          </div>
                           <button
-                            onClick={() => inc(it.id)}
-                            className="px-2 py-1.5 hover:bg-gray-50 disabled:opacity-50"
-                            disabled={it.qty >= it.stock}
-                            title={it.qty >= it.stock ? "Max stock reached" : undefined}
+                            onClick={() => removeFromCart(it.id)}
+                            className="ml-auto text-xs text-gray-500 hover:text-red-600"
                           >
-                            <Plus className="w-4 h-4" />
+                            <X className="w-4 h-4" />
                           </button>
                         </div>
-                        <div className="text-sm font-medium">
-                          {peso.format((Number(it.price) || 0) * it.qty)}
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(it.id)}
-                          className="text-xs text-gray-500 hover:text-red-600"
-                          title="Remove"
-                        >
-                          Remove
-                        </button>
                       </div>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
+              <div className="mt-4 flex items-center justify-between border-t pt-3">
                 <span className="text-sm text-gray-600">Total</span>
                 <span className="text-lg font-semibold">{peso.format(total)}</span>
               </div>
@@ -601,7 +834,7 @@ export default function Shop({ publicView = false }) {
                 <button
                   onClick={goCart}
                   disabled={!list.length}
-                  className="w-full inline-flex items-center justify-center gap-2 border px-4 py-3 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60"
+                  className="w-full inline-flex items-center justify-center gap-2 border px-4 py-3 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60 transition"
                 >
                   <ShoppingCart className="w-4 h-4" />
                   Go to Cart
@@ -609,7 +842,7 @@ export default function Shop({ publicView = false }) {
                 <button
                   onClick={openReserve}
                   disabled={!list.length}
-                  className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black text-sm disabled:opacity-60"
+                  className="w-full inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-4 py-3 rounded-lg hover:bg-black text-sm disabled:opacity-60 transition"
                 >
                   <Clock className="w-4 h-4" />
                   Reserve for Pickup
@@ -617,7 +850,7 @@ export default function Shop({ publicView = false }) {
                 {list.length > 0 && (
                   <button
                     onClick={clearCart}
-                    className="w-full inline-flex items-center justify-center gap-2 text-sm text-gray-600 hover:underline"
+                    className="w-full text-sm text-gray-600 hover:underline"
                   >
                     Clear cart
                   </button>
@@ -628,48 +861,131 @@ export default function Shop({ publicView = false }) {
         </div>
       </main>
 
-      {/* mobile sticky checkout bar */}
-      {!publicView && list.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden">
-          <div className="mx-3 mb-3 rounded-xl shadow-lg bg-white border border-gray-200 p-3 flex items-center justify-between">
-            <div className="text-sm">
-              <div className="font-semibold">{peso.format(total)}</div>
-              <div className="text-xs text-gray-500">{list.reduce((a, b) => a + b.qty, 0)} items</div>
+      {!publicView && (
+        <>
+          {list.length > 0 && (
+            <button
+              onClick={() => setMobileCartOpen(!mobileCartOpen)}
+              className="lg:hidden fixed bottom-20 right-4 z-40 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition"
+            >
+              <div className="relative">
+                <ShoppingCart className="w-6 h-6" />
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
+                  {list.reduce((a, b) => a + b.qty, 0)}
+                </span>
+              </div>
+            </button>
+          )}
+
+          {mobileCartOpen && (
+            <div className="lg:hidden fixed inset-0 z-[60]">
+              <div 
+                className="absolute inset-0 bg-black/40" 
+                onClick={() => setMobileCartOpen(false)}
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl max-h-[80vh] flex flex-col pb-20">
+                <div className="flex items-center justify-center py-3 border-b">
+                  <div className="w-12 h-1 bg-gray-300 rounded-full" />
+                </div>
+
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h3 className="font-semibold text-gray-900">Your Cart</h3>
+                  <button 
+                    onClick={() => setMobileCartOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <ChevronDown className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {list.map((it) => (
+                    <div key={it.id} className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+                      <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0">
+                        {it.img ? (
+                          <img src={it.img} alt={it.name} className="w-full h-full object-cover rounded" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-2xl">
+                            {CATEGORY_EMOJI[it.category] || "🍽️"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{it.name}</div>
+                        <div className="text-sm text-gray-600">{peso.format(it.price)}</div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <div className="inline-flex items-center border rounded">
+                            <button onClick={() => dec(it.id)} className="px-2 py-1">
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="px-3 text-sm">{it.qty}</span>
+                            <button 
+                              onClick={() => inc(it.id)} 
+                              className="px-2 py-1"
+                              disabled={it.qty >= it.stock}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                          <div className="font-medium">{peso.format(it.price * it.qty)}</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(it.id)}
+                        className="p-2 hover:bg-white rounded"
+                      >
+                        <X className="w-5 h-5 text-gray-500" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="p-4 border-t space-y-3">
+                  <div className="flex items-center justify-between text-lg font-semibold">
+                    <span>Total</span>
+                    <span>{peso.format(total)}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setMobileCartOpen(false);
+                        goCart();
+                      }}
+                      className="inline-flex items-center justify-center gap-2 border px-4 py-3 rounded-lg font-medium"
+                    >
+                      View Cart
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMobileCartOpen(false);
+                        openReserve();
+                      }}
+                      disabled={insufficient}
+                      className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg font-medium disabled:opacity-60"
+                    >
+                      <Clock className="w-4 h-4" />
+                      Reserve
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                onClick={goCart}
-                className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm"
-              >
-                <ShoppingCart className="w-4 h-4" />
-                Cart
-              </button>
-              <button
-                onClick={openReserve}
-                disabled={insufficient}
-                className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm disabled:opacity-60"
-              >
-                <Clock className="w-4 h-4" />
-                Reserve
-              </button>
-            </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
 
-      {/* reservation modal */}
       {!publicView && open && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="min-h-screen px-4 text-center flex items-center justify-center">
             <div className="fixed inset-0 bg-black/30" onClick={closeReserve} />
             
-            <div className="relative inline-block w-full max-w-2xl bg-white rounded-xl shadow-xl border border-gray-100 text-left align-middle">
-              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
+            <div className="relative inline-block w-full max-w-2xl bg-white rounded-xl shadow-xl border border-gray-100 text-left">
+              <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white rounded-t-xl">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-600" />
                   <h3 className="font-semibold">Confirm Reservation</h3>
                 </div>
-                <button onClick={closeReserve} className="p-2 rounded-lg hover:bg-gray-100" aria-label="Close">
+                <button onClick={closeReserve} className="p-2 rounded-lg hover:bg-gray-100">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -677,68 +993,44 @@ export default function Shop({ publicView = false }) {
               <div className="max-h-[80vh] flex flex-col">
                 <div className="flex-1 overflow-y-auto">
                   <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Left side form */}
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Grade Level
-                          </label>
-                          <div className="relative">
-                            <select
-                              value={reserve.grade}
-                              onChange={(e) => setReserve((r) => ({ ...r, grade: e.target.value }))}
-                              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
-                            >
-                              <option value="">Select grade</option>
-                              <option>Kindergarten</option>
-                              <option>G1</option>
-                              <option>G2</option>
-                              <option>G3</option>
-                              <option>G4</option>
-                              <option>G5</option>
-                              <option>G6</option>
-                              <option>G7</option>
-                              <option>G8</option>
-                              <option>G9</option>
-                              <option>G10</option>
-                              <option>G11</option>
-                              <option>G12</option>
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/>
-                              </svg>
-                            </div>
-                          </div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Grade Level</label>
+                          <select
+                            value={reserve.grade}
+                            onChange={(e) => setReserve((r) => ({ ...r, grade: e.target.value }))}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="">Select grade</option>
+                            <option>Kindergarten</option>
+                            {[...Array(12)].map((_, i) => (
+                              <option key={i}>G{i + 1}</option>
+                            ))}
+                          </select>
                         </div>
-                        
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Section
-                          </label>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
                           <input
                             value={reserve.section}
                             onChange={(e) => setReserve((r) => ({ ...r, section: e.target.value }))}
-                            placeholder="e.g., A / Rizal"
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., A"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Pickup Window
-                        </label>
-                        <div className="grid grid-cols-1 gap-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Window</label>
+                        <div className="grid gap-2">
                           {SLOTS.map((s) => (
                             <label
                               key={s.id}
-                              className="flex items-center gap-3 p-2 rounded-lg border hover:bg-gray-50 cursor-pointer"
+                              className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer"
                             >
                               <input
                                 type="radio"
-                                name="pickup-slot"
+                                name="slot"
                                 checked={reserve.slot === s.id}
                                 onChange={() => setReserve((r) => ({ ...r, slot: s.id }))}
                               />
@@ -749,97 +1041,66 @@ export default function Shop({ publicView = false }) {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Note (optional)
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Note (optional)</label>
                         <textarea
                           rows={3}
                           value={reserve.note}
                           onChange={(e) => setReserve((r) => ({ ...r, note: e.target.value }))}
-                          placeholder="e.g., Less sauce"
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Special requests..."
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                         />
                       </div>
                     </div>
 
-                    {/* Right side - Order Summary */}
-                    <div className="flex flex-col h-full">
-                      <h4 className="font-medium text-gray-900 mb-2">Order Summary</h4>
-                      <div className="border rounded-lg flex-1 flex flex-col">
-                        <div className="flex-1 overflow-y-auto divide-y">
-                          {list.map((it) => (
-                            <div key={it.id} className="p-3 flex items-center justify-between text-sm">
-                              <div className="min-w-0">
-                                <div className="font-medium text-gray-900 truncate">{it.name}</div>
-                                <div className="text-xs text-gray-500">{peso.format(it.price)}</div>
-                              </div>
-                              <div className="font-medium">{it.qty} × {peso.format(it.price)}</div>
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Order Summary</h4>
+                      <div className="border rounded-lg divide-y max-h-60 overflow-y-auto">
+                        {list.map((it) => (
+                          <div key={it.id} className="p-3 flex justify-between text-sm">
+                            <div>
+                              <div className="font-medium">{it.name}</div>
+                              <div className="text-xs text-gray-500">{it.qty} × {peso.format(it.price)}</div>
                             </div>
-                          ))}
-                        </div>
+                            <div className="font-medium">{peso.format(it.qty * it.price)}</div>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Sticky bottom section */}
-                <div className="sticky bottom-0 bg-white border-t">
-                  <div className="p-4 space-y-3">
-                    {/* Totals */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Total</span>
-                        <span className="text-lg font-semibold">{peso.format(total)}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="inline-flex items-center gap-2 text-gray-700">
-                          <Wallet className="w-4 h-4" />
-                          <span>Wallet Balance</span>
-                        </div>
-                        <div className="font-semibold">
-                          {loadingWallet ? "…" : peso.format(Number(wallet.balance) || 0)}
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Remaining</span>
-                        <span className={`font-semibold ${insufficient ? "text-red-700" : "text-emerald-700"}`}>
-                          {loadingWallet ? "…" : peso.format(Math.max(0, (Number(wallet.balance) || 0) - total))}
-                        </span>
-                      </div>
+                <div className="sticky bottom-0 bg-white border-t p-4 rounded-b-xl">
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Total</span>
+                      <span className="text-lg font-semibold">{peso.format(total)}</span>
                     </div>
-
-                    {walletError && (
-                      <div className="text-xs text-red-700 bg-red-50 border border-red-100 px-2 py-1 rounded">
-                        {walletError}
-                      </div>
-                    )}
-
-                    {/* Action buttons */}
-                    <div className="flex items-center justify-end gap-3">
-                      <button
-                        onClick={closeReserve}
-                        className="text-sm px-3 py-2 rounded-lg border hover:bg-gray-50"
-                      >
-                        Close
-                      </button>
-                      <button
-                        onClick={submitReservation}
-                        disabled={submitting || !list.length || insufficient}
-                        className="flex-1 inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition text-sm disabled:opacity-60"
-                      >
-                        {submitting ? (
-                          <span className="inline-flex items-center gap-2">
-                            <Clock className="w-4 h-4 animate-pulse" />
-                            Submitting…
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-2">
-                            <CheckCircle2 className="w-4 h-4" />
-                            Submit Reservation
-                          </span>
-                        )}
-                      </button>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Wallet Balance</span>
+                      <span className="font-semibold">{peso.format(wallet.balance)}</span>
                     </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Remaining</span>
+                      <span className={`font-semibold ${insufficient ? 'text-red-600' : 'text-emerald-600'}`}>
+                        {peso.format(Math.max(0, wallet.balance - total))}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={closeReserve}
+                      className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitReservation}
+                      disabled={submitting || insufficient}
+                      className="flex-1 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-60 font-medium"
+                    >
+                      {submitting ? "Submitting..." : "Submit Reservation"}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -848,77 +1109,91 @@ export default function Shop({ publicView = false }) {
         </div>
       )}
 
-      {/* item preview modal */}
       {preview && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={() => setPreview(null)} />
           <div className="absolute inset-0 flex items-center justify-center p-4">
-            <div className="w-full max-w-xl bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+            <div className="w-full max-w-xl bg-white rounded-xl shadow-xl overflow-hidden">
               <div className="relative h-56 bg-gray-100">
                 {preview.img ? (
-                  <img
-                    src={preview.img}
-                    alt={preview.name}
-                    className="h-full w-full object-cover"
-                    onError={(e) => (e.currentTarget.style.display = "none")}
-                  />
+                  <img src={preview.img} alt={preview.name} className="h-full w-full object-cover" />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center text-gray-400">
-                    <ImageIcon className="w-8 h-8" />
+                  <div className="h-full w-full flex items-center justify-center text-6xl">
+                    {CATEGORY_EMOJI[preview.category] || "🍽️"}
                   </div>
                 )}
                 <button
                   onClick={() => setPreview(null)}
-                  className="absolute top-2 right-2 p-2 bg-white/90 rounded-full shadow hover:bg-white"
-                  aria-label="Close"
+                  className="absolute top-2 right-2 p-2 bg-white/90 rounded-full hover:bg-white"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-              <div className="p-4 space-y-2">
-                <div className="flex items-start justify-between gap-3">
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-start">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{preview.name}</h3>
+                    <h3 className="text-lg font-semibold">{preview.name}</h3>
                     <div className="text-sm text-gray-500">{preview.category}</div>
                   </div>
-                  <div className="text-lg font-semibold">{peso.format(preview.price || 0)}</div>
+                  <div className="text-xl font-bold">{peso.format(preview.price)}</div>
                 </div>
-                {preview.desc && (
-                  <p className="text-sm text-gray-600 leading-relaxed">{preview.desc}</p>
-                )}
+                {preview.desc && <p className="text-sm text-gray-600">{preview.desc}</p>}
                 <div className="flex items-center justify-between pt-2">
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      Number(preview.stock) > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {Number(preview.stock) > 0 ? `${preview.stock} in stock` : "Out of stock"}
-                  </span>
-                  <div className="flex items-center gap-2">
+                  {preview.stock <= 0 ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700">Out of stock</span>
+                  ) : preview.stock <= 5 ? (
+                    <span className="text-xs px-2 py-1 rounded-full bg-orange-100 text-orange-700 animate-pulse">
+                      ⚠️ Only {preview.stock} left!
+                    </span>
+                  ) : (
+                    <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+                      ✓ {preview.stock} in stock
+                    </span>
+                  )}
+                  {!publicView && (
                     <button
-                      onClick={() => dec(preview.id)}
-                      className="px-3 py-2 border rounded-lg hover:bg-gray-50"
+                      onClick={() => {
+                        inc(preview.id);
+                        setPreview(null);
+                      }}
+                      disabled={preview.stock <= 0}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60 inline-flex items-center gap-2"
                     >
-                      <Minus className="w-4 h-4" />
+                      <ShoppingCart className="w-4 h-4" />
+                      Add to Cart
                     </button>
-                    {/* In public view the preview modal does not show add button */}
-                    {!publicView && (
-                      <button
-                        onClick={() => inc(preview.id)}
-                        disabled={Number(preview.stock) <= 0}
-                        className="inline-flex items-center gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-60"
-                      >
-                        <ShoppingCart className="w-4 h-4" />
-                        Add
-                      </button>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .animate-shimmer {
+          animation: shimmer 2s infinite;
+        }
+        @keyframes slide-in-right {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        .animate-slide-in-right {
+          animation: slide-in-right 0.3s ease-out;
+        }
+      `}</style>
+      
+      {!publicView && <BottomNav />}
     </div>
   );
 }

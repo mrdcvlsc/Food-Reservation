@@ -29,11 +29,11 @@ export default function BackButton({ className = '' }) {
     <button
       onClick={goBack}
       aria-label="Go back"
-      className={`fixed left-4 top-4 z-50 inline-flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md ${className}`}
+      className={`hidden md:inline-flex fixed left-4 top-4 z-50 items-center gap-2 px-3 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md ${className}`}
       style={{ backdropFilter: 'blur(4px)' }}
     >
       <ArrowLeft className="w-4 h-4" />
-      <span className="hidden sm:inline text-sm">Back</span>
+      <span className="text-sm">Back</span>
     </button>
   );
 }

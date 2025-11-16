@@ -37,7 +37,7 @@ export default function AdminApproved() {
     let m = true;
     setLoading(true);
     api.get('/reservations/admin')
-      .then(({ data: d }) => { if (!m) return; setRows((d || []).filter(r => r.status === 'Approved' || r.status === 'Preparing' || r.status === 'Ready')); })
+      .then((d) => { if (!m) return; setRows((d || []).filter(r => r.status === 'Approved' || r.status === 'Preparing' || r.status === 'Ready')); })
       .catch(() => setRows([]))
       .finally(() => m && setLoading(false));
     return () => (m = false);
@@ -77,7 +77,7 @@ export default function AdminApproved() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">

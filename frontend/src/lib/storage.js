@@ -161,8 +161,12 @@ export function clearTokenStorage() {
 
 /**
  * Clears all auth-related data from localStorage
+ * Dispatches event to notify other components
  */
 export function clearAllAuthStorage() {
   clearUserStorage();
   clearTokenStorage();
+  
+  // Dispatch logout event for cleanup in other components
+  window.dispatchEvent(new Event('auth:logout'));
 }

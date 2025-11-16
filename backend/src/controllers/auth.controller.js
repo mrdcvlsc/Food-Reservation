@@ -29,44 +29,29 @@ exports.me = (req, res) => {
 };
 
 exports.register = (req, res) => {
-  console.log('[AUTH] Register endpoint called');
   const { name, email, password, grade = "", section = "", studentId, phone } = req.body || {};
   
-  console.log('[AUTH] Registration attempt:', { 
-    name: name ? 'provided' : 'missing', 
-    email: email ? 'provided' : 'missing', 
-    password: password ? 'provided' : 'missing',
-    grade, section, phone: phone ? 'provided' : 'missing'
-  });
-  
   if (!name || !email || !password) {
-    console.log('[AUTH] Registration failed: Missing required fields');
     return res.status(400).json({ error: "Missing fields" });
   }
 
   // require studentId and validate digits-only (whole number)
   if (!studentId || !/^\d+$/.test(String(studentId).trim())) {
-    console.log('[AUTH] Registration failed: Invalid or missing studentId');
     return res.status(400).json({ error: "studentId is required and must contain only digits" });
   }
 
   // require phone (basic validation: digits, +, spaces, dashes, parentheses)
   if (!phone || !/^[\d+\-\s\(\)]+$/.test(String(phone).trim())) {
-    console.log('[AUTH] Registration failed: Invalid or missing phone');
     return res.status(400).json({ error: "Contact number is required and must be a valid phone string" });
   }
   
-  console.log('[AUTH] Loading database...');
   const db = load();
-  console.log('[AUTH] Database loaded, current users count:', db.users?.length || 0);
   
   if (db.users.some(u => u.email === email)) {
-    console.log('[AUTH] Registration failed: Email already exists');
     return res.status(409).json({ error: "Email already used" });
   }
   // ensure studentId uniqueness
   if (db.users.some(u => u.studentId === String(studentId).trim())) {
-    console.log('[AUTH] Registration failed: studentId already exists');
     return res.status(409).json({ error: "studentId already used" });
   }
 
@@ -82,16 +67,7 @@ exports.register = (req, res) => {
     createdAt: new Date().toISOString()
   };
   
-  console.log('[AUTH] Creating new user:', { 
-    id: newUser.id, 
-    name: newUser.name, 
-    email: newUser.email, 
-    role: newUser.role 
-  });
-  
   db.users.push(newUser);
-  
-  console.log('[AUTH] Saving database...');
   save(db);
   
   // Send notification to admin about new registration
@@ -115,12 +91,9 @@ exports.register = (req, res) => {
       read: false,
       createdAt: new Date().toISOString()
     });
-    console.log('[AUTH] Admin notification sent for new registration:', newUser.id);
   } catch (err) {
     console.error('[AUTH] Failed to send admin notification:', err && err.message);
   }
-  
-  console.log('[AUTH] Registration successful for user:', newUser.id);
   
   res.json({ ok: true });
 };

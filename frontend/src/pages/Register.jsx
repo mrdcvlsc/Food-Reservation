@@ -6,6 +6,7 @@ import Button from "../components/Button";
 import { api, ApiError } from "../lib/api";
 import { refreshSessionForPublic } from "../lib/auth";
 import { setUserToStorage, setTokenToStorage } from "../lib/storage";
+import { Menu, X } from "lucide-react";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -131,13 +133,22 @@ export default function Register() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col">
       {/* HEADER */}
       <header className="w-full bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="font-bold text-gray-900 text-lg">
-            Jesus Christ King of Kings and Lord of Lords Academy Inc.
-          </div>
-          <nav>
-            <ul className="flex items-center space-x-8">
-              <li>
+        <div className="max-w-6xl mx-auto px-2 sm:px-4 lg:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
+          <Link to="/" className="flex items-center gap-2 min-w-0 flex-shrink">
+            <img 
+              src="/jckl-192.png" 
+              alt="JCKL Logo" 
+              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex-shrink-0"
+            />
+            <div className="font-bold text-gray-900 min-w-0">
+              <span className="hidden xl:inline text-lg">Jesus Christ King of Kings and Lord of Lords Academy Inc.</span>
+              <span className="hidden md:inline xl:hidden text-base truncate max-w-[400px]">Jesus Christ King of Kings and Lord of Lords Academy Inc.</span>
+              <span className="md:hidden text-sm truncate">JCKL Academy</span>
+            </div>
+          </Link>
+          <nav className="flex-shrink-0">
+            <ul className="flex items-center gap-2 sm:gap-4 lg:gap-8">
+              <li className="hidden lg:block">
                 <Link
                   to="/"
                   className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
@@ -145,7 +156,7 @@ export default function Register() {
                   Home
                 </Link>
               </li>
-              <li>
+              <li className="hidden lg:block">
                 <Link
                   to="/about"
                   className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
@@ -153,10 +164,10 @@ export default function Register() {
                   About Us
                 </Link>
               </li>
-              <li>
+              <li className="hidden sm:block">
                 <Link
                   to="/register"
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200"
+                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-200 text-sm sm:text-base"
                 >
                   Register
                 </Link>
@@ -164,14 +175,52 @@ export default function Register() {
               <li>
                 <Link
                   to="/login"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors duration-200"
+                  className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors duration-200 text-sm sm:text-base"
                 >
                   Log In
                 </Link>
               </li>
             </ul>
           </nav>
+          
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
+        
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200 bg-white">
+            <nav className="px-4 py-3 space-y-2">
+              <Link
+                to="/"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/about"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About Us
+              </Link>
+              <Link
+                to="/register"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition text-sm sm:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Register
+              </Link>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* MAIN CONTENT */}
@@ -179,8 +228,12 @@ export default function Register() {
         <div className="w-full max-w-md">
           {/* Welcome Card */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl mb-4 shadow-lg">
-              <span className="text-white font-bold text-2xl">JCKL</span>
+            <div className="inline-flex items-center justify-center mb-4">
+              <img 
+                src="/jckl-192.png" 
+                alt="JCKL Academy Logo" 
+                className="w-20 h-20 rounded-2xl shadow-lg"
+              />
             </div>
             <h1 className="text-3xl font-extrabold text-gray-900 mb-2">
               Create Your Account

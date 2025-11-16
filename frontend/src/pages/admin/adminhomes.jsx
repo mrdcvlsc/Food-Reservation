@@ -14,30 +14,28 @@ import {
 } from "lucide-react";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
+import AdminBottomNav from '../../components/mobile/AdminBottomNav';
 
-// ---- currency (PHP)
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP",
 });
 
-// ---- single source of truth for admin routes
 const ADMIN_ROUTES = {
   home: "/admin",
-  shop: "/admin/shops", // file: adminShop.jsx
-  topup: "/admin/topup", // file: adminTopUp.jsx
-  orders: "/admin/orders", // file: adminOrders.jsx
-  reservations: "/admin/reservations", // file: adminReservations.jsx
-  stats: "/admin/stats", // file: adminStats.jsx
-  itemEdit: (id) => `/admin/shops/edit/${id}`, // ensure this matches the route that renders EditItem
+  shop: "/admin/shops",
+  topup: "/admin/topup",
+  orders: "/admin/orders",
+  reservations: "/admin/reservations",
+  stats: "/admin/stats",
+  itemEdit: (id) => `/admin/shops/edit/${id}`,
 };
 
 export default function AdminHome() {
   const navigate = useNavigate();
   const [busyId, setBusyId] = useState(null);
-  // modal edit states
-  const [editingItem, setEditingItem] = useState(null); // full item object being edited
-  const [editingFields, setEditingFields] = useState(null); // { name, category, stock, price }
+  const [editingItem, setEditingItem] = useState(null);
+  const [editingFields, setEditingFields] = useState(null);
   const [editingImagePreview, setEditingImagePreview] = useState(null);
   const [editingImageFile, setEditingImageFile] = useState(null);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -48,7 +46,6 @@ export default function AdminHome() {
     })();
   }, [navigate]);
 
-  // Quick links
   const [directories] = useState([
     { name: "Dashboard", to: ADMIN_ROUTES.home, icon: <TrendingUp /> },
     { name: "Shop", to: ADMIN_ROUTES.shop, icon: <ShoppingBag /> },
@@ -58,7 +55,6 @@ export default function AdminHome() {
     { name: "Stats", to: ADMIN_ROUTES.stats, icon: <TrendingUp /> },
   ]);
 
-  // Fallback demo stats while real dashboard loads
   const [todaySales] = useState([
     {
       label: "Total Sales",
@@ -86,7 +82,6 @@ export default function AdminHome() {
     },
   ]);
 
-  // Dashboard stats
   const [dashboard, setDashboard] = useState({
     totalSales: 0,
     ordersToday: 0,
@@ -124,7 +119,6 @@ export default function AdminHome() {
     };
   }, []);
 
-  // Current products (single source of truth = /menu)
   const [currentProducts, setCurrentProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
@@ -134,14 +128,11 @@ export default function AdminHome() {
     const price = Number(r.price) || 0;
     const stock = Number(r.stock ?? r.quantity ?? 0);
     const category = r.category || r.type || "";
-    // Treat visibility independently from stock.
-    // activeFlag = whether item is shown on the menu; available = stock > 0 (visibility does NOT affect availability)
     const activeFlag =
       r.visible !== undefined ? !!r.visible :
       r.active !== undefined ? !!r.active :
       r.isActive !== undefined ? !!r.isActive : true;
     const available = stock > 0;
-    // include image/url so adminhomes edit modal can show the uploaded image
     const imageUrl = r.image || r.img || r.imageUrl || null;
 
     return { id, name, price, stock, category, available, activeFlag, imageUrl };
@@ -153,7 +144,6 @@ export default function AdminHome() {
       const data = await api.get("/menu");
       const rows = Array.isArray(data) ? data : [];
       const mapped = rows.map(mapMenuToRow);
-      // Optional: sort by name asc
       mapped.sort((a, b) => a.name.localeCompare(b.name));
       setCurrentProducts(mapped);
     } catch {
@@ -174,12 +164,10 @@ export default function AdminHome() {
     };
   }, [loadProducts]);
 
-  // categories for edit modal dropdown (keeps UI consistent with adminShop edit-items)
   const categories = Array.from(
     new Set(currentProducts.map((p) => p.category).filter(Boolean))
   );
 
-  // Demo recent orders if backend not ready
   const [recentOrders] = useState([
     {
       id: "#12436",
@@ -215,21 +203,17 @@ export default function AdminHome() {
     },
   ]);
 
-  // Helpers to keep buttons from bubbling / submitting
   const safeNav = (to) => (e) => {
     e.preventDefault();
     e.stopPropagation();
     navigate(to);
   };
 
-  // toggle visibility (eye) same behavior as admin shop
   const toggleVisibility = async (id, currentFlag) => {
     if (!window.confirm(`Set visibility to ${currentFlag ? "hidden" : "visible"} for this item?`)) return;
     setBusyId(id);
     try {
-      // backend accepts "visible"
       await api.put(`/menu/${id}`, { visible: !currentFlag });
-      // only flip visibility flag locally — do NOT change stock/availability
       setCurrentProducts((prev) =>
         prev.map((p) => (String(p.id) === String(id) ? { ...p, activeFlag: !currentFlag } : p))
       );
@@ -242,14 +226,12 @@ export default function AdminHome() {
     }
   };
 
-  // delete product (try DELETE, fallback to hide)
   const deleteProduct = async (id) => {
     if (!window.confirm("Delete this product? It will be removed from the menu but preserved in reports.")) return;
     
     setBusyId(id);
     try {
       await api.delete(`/menu/${id}`);
-      // Remove from local state to hide from UI
       setCurrentProducts((prev) => prev.filter((p) => String(p.id) !== String(id)));
       try { window.dispatchEvent(new Event("menu:updated")); } catch {}
     } catch (err) {
@@ -260,11 +242,9 @@ export default function AdminHome() {
     }
   };
 
-  // open edit modal for product id
   const openEditModal = async (id) => {
     setBusyId(id);
     try {
-      // try get full product from backend, fallback to local list
       let item = null;
       try {
         item = await api.get(`/menu/${id}`);
@@ -277,7 +257,6 @@ export default function AdminHome() {
         return;
       }
 
-      // normalize fields similar to mapMenuToRow but keep raw image if present
       const normalized = {
         id: item._id || item.id || item.productId || id,
         name: item.name || item.title || "",
@@ -335,7 +314,6 @@ export default function AdminHome() {
     if (!window.confirm("Save changes to this product?")) return;
     setSavingEdit(true);
     try {
-      // update basic fields
       await api.put(`/menu/${editingItem.id}`, {
         name: editingFields.name,
         price: Number(editingFields.price) || 0,
@@ -343,22 +321,18 @@ export default function AdminHome() {
         category: editingFields.category,
       });
 
-      // if image file selected, try upload to common endpoint; if missing, ignore
       if (editingImageFile) {
         try {
           const fd = new FormData();
           fd.append("image", editingImageFile);
-          // backend endpoint may differ; try common pattern
           await api.post(`/menu/${editingItem.id}/image`, fd, {
             headers: { "Content-Type": "multipart/form-data" },
           });
         } catch (e) {
-          // non-blocking; still continue saving other fields
           console.warn("Image upload failed (non-blocking).", e);
         }
       }
 
-      // update locally
       setCurrentProducts((prev) =>
         prev.map((p) =>
           String(p.id) === String(editingItem.id)
@@ -382,17 +356,24 @@ export default function AdminHome() {
     }
   };
 
+  // derive badge counts for bottom nav
+  const badgeCounts = {
+    orders: loadingDashboard ? 0 : dashboard.pending || 0,
+    topups: 0,
+    lowStock: currentProducts.filter((p) => Number(p.stock) > 0 && Number(p.stock) < 5).length,
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 space-y-6 sm:space-y-8">
         {/* Header */}
         <header className="space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
             Good afternoon, Admin
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm sm:text-base text-gray-600">
             Here&apos;s what&apos;s happening with your canteen today.
           </p>
         </header>
@@ -401,21 +382,21 @@ export default function AdminHome() {
         <section aria-labelledby="quick-actions">
           <h2
             id="quick-actions"
-            className="text-xl font-semibold text-gray-900 mb-4"
+            className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4"
           >
             Quick Actions
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             {directories.map(({ name, to, icon }) => (
               <button
                 type="button"
                 key={to}
                 onClick={safeNav(to)}
-                className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 text-center group hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="bg-white rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100 text-center group hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-label={name}
               >
-                <div className="text-2xl mb-2 text-gray-700">{icon}</div>
-                <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                <div className="text-xl sm:text-2xl mb-2 text-gray-700">{icon}</div>
+                <span className="text-xs sm:text-sm font-medium text-gray-700 group-hover:text-gray-900">
                   {name}
                 </span>
               </button>
@@ -423,12 +404,12 @@ export default function AdminHome() {
           </div>
         </section>
 
-        {/* Today’s Overview */}
+        {/* Today's Overview */}
         <section aria-labelledby="overview">
-          <h2 id="overview" className="text-xl font-semibold text-gray-900 mb-4">
+          <h2 id="overview" className="text-lg sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4">
             Today&apos;s Overview
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {(loadingDashboard
               ? todaySales
               : [
@@ -468,9 +449,9 @@ export default function AdminHome() {
             ).map(({ label, value, icon, change }) => (
               <div
                 key={label}
-                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col justify-between"
+                className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
                   {icon}
                   <span
                     className={`text-xs font-medium px-2 py-1 rounded-full ${
@@ -482,8 +463,8 @@ export default function AdminHome() {
                     {change}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">{label}</p>
-                <p className="mt-1 text-2xl font-bold text-gray-900">
+                <p className="text-xs sm:text-sm text-gray-600">{label}</p>
+                <p className="mt-1 text-xl sm:text-2xl font-bold text-gray-900">
                   {label === "Total Sales" ? peso.format(value) : value}
                 </p>
               </div>
@@ -491,18 +472,18 @@ export default function AdminHome() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Current Products */}
           <div className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 sm:mb-4 gap-3">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                 Current Products
               </h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={loadProducts}
-                  className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50"
+                  className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-xs sm:text-sm hover:bg-gray-50 flex-1 sm:flex-none justify-center"
                   title="Refresh products"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -511,7 +492,7 @@ export default function AdminHome() {
                 <button
                   type="button"
                   onClick={safeNav(ADMIN_ROUTES.shop)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 sm:flex-none"
                 >
                   Add Product
                 </button>
@@ -519,138 +500,209 @@ export default function AdminHome() {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-              <table className="min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+              {/* Mobile: Card view */}
+              <div className="md:hidden divide-y">
+                {loadingProducts ? (
+                  <div className="px-4 py-8 text-center text-sm text-gray-500">
+                    Loading products…
+                  </div>
+                ) : currentProducts.length === 0 ? (
+                  <div className="px-4 py-8 text-center text-sm text-gray-500">
+                    No products found.
+                  </div>
+                ) : (
+                  currentProducts.map((p) => (
+                    <div key={p.id} className="p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">{p.name}</div>
+                          <div className="text-xs text-gray-500">{p.category}</div>
+                          <div className="mt-1 text-sm font-semibold text-gray-900">{peso.format(p.price)}</div>
+                        </div>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                            p.available
+                              ? "bg-green-100 text-green-700"
+                              : "bg-red-100 text-red-700"
+                          }`}
+                        >
+                          {p.available ? "Available" : "Out of stock"}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-600">
+                        Stock: {p.stock} {p.stock === 1 ? "unit" : "units"}
+                      </div>
 
-                <tbody className="divide-y divide-gray-200">
-                  {loadingProducts ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-10 text-center text-gray-500"
-                      >
-                        Loading products…
-                      </td>
-                    </tr>
-                  ) : currentProducts.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-10 text-center text-sm text-gray-500"
-                      >
-                        No products found.
-                      </td>
-                    </tr>
-                  ) : (
-                    currentProducts.map((p) => (
-                      <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {p.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {p.category}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">
-                          {peso.format(p.price)}
-                        </td>
-                        <td className="px-6 py-4 text-center text-sm text-gray-600">
-                          {p.stock} {p.stock === 1 ? "unit" : "units"}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              p.available
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {p.available ? "Available" : "Out of stock"}
+                      <div className="flex items-center justify-between pt-2 border-t">
+                        <button
+                          type="button"
+                          onClick={() => toggleVisibility(p.id, p.activeFlag)}
+                          className="inline-flex items-center gap-2 text-xs"
+                          disabled={busyId === p.id}
+                        >
+                          <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full transition-colors ${p.activeFlag ? "bg-emerald-500" : "bg-gray-300"}`}>
+                            <span className={`absolute left-0 top-0.5 inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${p.activeFlag ? "translate-x-4" : "translate-x-0"}`} />
                           </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-2">
-                            {/* visibility slider toggle */}
-                            <button
-                              type="button"
-                              onClick={() => toggleVisibility(p.id, p.activeFlag)}
-                              className="inline-flex items-center gap-3 px-2 py-1 rounded-md focus:outline-none"
-                              aria-pressed={p.activeFlag ? "true" : "false"}
-                              aria-label={`Toggle visibility for ${p.name}`}
-                              disabled={busyId === p.id}
-                            >
-                              <span className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors ${p.activeFlag ? "bg-emerald-500" : "bg-gray-300"}`}>
-                                <span className={`absolute left-0 top-0.5 inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${p.activeFlag ? "translate-x-5" : "translate-x-0"}`} />
-                              </span>
-                              <span className="text-sm text-gray-700">{p.activeFlag ? "Visible" : "Hidden"}</span>
-                            </button>
+                          <span className="text-gray-700">{p.activeFlag ? "Visible" : "Hidden"}</span>
+                        </button>
 
-                            <button
-                              type="button"
-                              onClick={() => openEditModal(p.id)}
-                              className="p-2 rounded-md text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                              aria-label={`Edit ${p.name}`}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(p.id)}
+                            className="p-2 rounded-md text-gray-500 hover:text-yellow-600 hover:bg-yellow-50"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              deleteProduct(p.id);
+                            }}
+                            className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                deleteProduct(p.id);
-                              }}
-                              className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
-                              aria-label={`Delete ${p.name}`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
+              {/* Desktop: Table view */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Product
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Stock
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-gray-200">
+                    {loadingProducts ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-6 py-10 text-center text-gray-500"
+                        >
+                          Loading products…
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : currentProducts.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="px-6 py-10 text-center text-sm text-gray-500"
+                        >
+                          No products found.
+                        </td>
+                      </tr>
+                    ) : (
+                      currentProducts.map((p) => (
+                        <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {p.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {p.category}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center text-sm font-medium text-gray-900">
+                            {peso.format(p.price)}
+                          </td>
+                          <td className="px-6 py-4 text-center text-sm text-gray-600">
+                            {p.stock} {p.stock === 1 ? "unit" : "units"}
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                p.available
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}
+                            >
+                              {p.available ? "Available" : "Out of stock"}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => toggleVisibility(p.id, p.activeFlag)}
+                                className="inline-flex items-center gap-3 px-2 py-1 rounded-md focus:outline-none"
+                                disabled={busyId === p.id}
+                              >
+                                <span className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors ${p.activeFlag ? "bg-emerald-500" : "bg-gray-300"}`}>
+                                  <span className={`absolute left-0 top-0.5 inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${p.activeFlag ? "translate-x-5" : "translate-x-0"}`} />
+                                </span>
+                                <span className="text-sm text-gray-700">{p.activeFlag ? "Visible" : "Hidden"}</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(p.id)}
+                                className="p-2 rounded-md text-gray-500 hover:text-yellow-600 hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  deleteProduct(p.id);
+                                }}
+                                className="p-2 rounded-md text-gray-500 hover:text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
           {/* Recent Orders */}
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
                 Recent Orders
               </h2>
               <Link
                 to={ADMIN_ROUTES.orders}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium"
               >
                 See all
               </Link>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <div className="space-y-4">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+              <div className="space-y-3 sm:space-y-4">
                 {(loadingDashboard
                   ? recentOrders.slice(0, 5)
                   : dashboard.recentOrders || []
@@ -661,7 +713,7 @@ export default function AdminHome() {
                   >
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-xs sm:text-sm font-medium text-gray-900">
                           {o.id}
                         </span>
                         <span
@@ -681,7 +733,7 @@ export default function AdminHome() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-500">{o.time}</span>
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-xs sm:text-sm font-medium text-gray-900">
                           {peso.format(o.amount)}
                         </span>
                       </div>
@@ -695,144 +747,125 @@ export default function AdminHome() {
             </div>
           </div>
         </div>
-        {/* NOTE: QR verification lives in /admin/topup */}
       </main>
 
-      {/* Edit Item Modal (matches adminShop/edit-items style) */}
+      {/* Edit Item Modal */}
       {editingItem && editingFields && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 px-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-16 px-4 overflow-y-auto">
           <div
             className="fixed inset-0 bg-black/40"
             onClick={closeEditModal}
-            aria-hidden="true"
           />
-          <div className="relative max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden z-10">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">Edit Item</h3>
+          <div className="relative max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden z-10 my-4">
+            <div className="flex items-center justify-between px-4 py-3 border-b">
+              <h3 className="text-lg font-semibold">Edit Product</h3>
               <button
-                type="button"
                 onClick={closeEditModal}
-                className="text-gray-600 hover:text-gray-900 text-2xl leading-none"
-                aria-label="Close"
+                className="text-gray-500 hover:text-gray-700 p-2 rounded"
+                aria-label="Close edit modal"
               >
-                ×
+                ✕
               </button>
             </div>
 
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2 space-y-4">
-                <label className="block">
-                  <div className="text-sm font-medium text-gray-700">Name</div>
-                  <input
-                    value={editingFields.name}
-                    onChange={(e) => onEditFieldChange("name", e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </label>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <label className="block">
-                    <div className="text-sm font-medium text-gray-700">Category</div>
-                    <select
-                      value={editingFields.category || ""}
-                      onChange={(e) => onEditFieldChange("category", e.target.value)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 bg-white"
-                    >
-                      <option value="">Select category</option>
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                      {/* allow free text */}
-                      <option value={editingFields.category} hidden>
-                        {editingFields.category}
-                      </option>
-                    </select>
-                  </label>
-
-                  <label className="block">
-                    <div className="text-sm font-medium text-gray-700">Stock</div>
-                    <input
-                      type="number"
-                      value={editingFields.stock}
-                      onChange={(e) => onEditFieldChange("stock", e.target.value)}
-                      className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2"
-                    />
-                  </label>
+            <div className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-1 flex flex-col items-center gap-3">
+                <div className="w-40 h-40 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                  {editingImagePreview ? (
+                    <img src={editingImagePreview} alt="Preview" className="object-cover w-full h-full" />
+                  ) : (
+                    <div className="text-xs text-gray-400">No image</div>
+                  )}
                 </div>
 
-                <label className="block">
-                  <div className="text-sm font-medium text-gray-700">Price (PHP)</div>
+                <div className="w-full flex flex-col gap-2">
+                  <label className="text-xs font-medium text-gray-700">Replace image</label>
                   <input
-                    type="number"
-                    value={editingFields.price}
-                    onChange={(e) => onEditFieldChange("price", e.target.value)}
-                    className="mt-1 block w-48 border border-gray-300 rounded-md px-3 py-2"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => onReplaceImage(e.target.files?.[0])}
+                    className="text-xs"
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    Preview: {peso.format(Number(editingFields.price) || 0)}
-                  </div>
-                </label>
-              </div>
-
-              <div className="space-y-4 flex flex-col items-center">
-                <div className="w-full border-2 border-dashed rounded-lg p-4">
-                  <div className="w-40 h-40 mx-auto rounded-md overflow-hidden bg-gray-50 flex items-center justify-center">
-                    {editingImagePreview ? (
-                      <img
-                        src={editingImagePreview}
-                        alt="preview"
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <div className="text-sm text-gray-400">No image</div>
-                    )}
-                  </div>
-                  <div className="mt-4 flex items-center justify-center gap-3">
-                    <label className="inline-flex items-center gap-2 bg-slate-900 text-white px-3 py-2 rounded cursor-pointer">
-                      <span aria-hidden>⤴️</span>
-                      <span className="text-sm">Replace</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => onReplaceImage(e.target.files?.[0])}
-                      />
-                    </label>
+                  {editingImagePreview && (
                     <button
                       type="button"
                       onClick={removeImage}
-                      className="bg-red-600 text-white px-3 py-2 rounded text-sm"
+                      className="text-xs text-red-600 mt-1"
                     >
-                      Remove
+                      Remove image
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700">Name</label>
+                    <input
+                      value={editingFields.name}
+                      onChange={(e) => onEditFieldChange("name", e.target.value)}
+                      className="mt-1 block w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700">Price</label>
+                      <input
+                        type="number"
+                        value={editingFields.price}
+                        onChange={(e) => onEditFieldChange("price", e.target.value)}
+                        className="mt-1 block w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700">Stock</label>
+                      <input
+                        type="number"
+                        value={editingFields.stock}
+                        onChange={(e) => onEditFieldChange("stock", e.target.value)}
+                        className="mt-1 block w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700">Category</label>
+                      <input
+                        value={editingFields.category}
+                        onChange={(e) => onEditFieldChange("category", e.target.value)}
+                        className="mt-1 block w-full border border-gray-200 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={closeEditModal}
+                      className="px-4 py-2 rounded bg-white border text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={saveEdit}
+                      disabled={savingEdit}
+                      className="px-4 py-2 rounded bg-blue-600 text-white text-sm disabled:opacity-60"
+                    >
+                      {savingEdit ? "Saving…" : "Save changes"}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
-
-            <div className="p-6 border-t flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={closeEditModal}
-                className="px-4 py-2 bg-white border rounded-md"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={saveEdit}
-                disabled={savingEdit}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md"
-              >
-                <span aria-hidden>💾</span>
-                <span>{savingEdit ? "Saving…" : "Save Changes"}</span>
-              </button>
-            </div>
           </div>
         </div>
       )}
+
+      {/* Bottom Nav (mobile) */}
+      <AdminBottomNav badgeCounts={badgeCounts} />
     </div>
   );
 }

@@ -196,7 +196,6 @@ export default function AdminUsers() {
       const res = await api.patch(`/admin/users/${editUser.id}`, formData);
       
       if (res && (res.ok || res.user)) {
-        console.log ('adminuserrequest1')
         const updated = res.user || res;
         setUsers(users.map(u => 
           u.id === editUser.id ? { ...u, ...updated } : u
@@ -235,7 +234,6 @@ export default function AdminUsers() {
     setDeletingId(id);
     try {
       await api.delete(`/admin/users/${id}`);
-      console.log ('adminuserrequest2')
       setUsers(prev => prev.filter(x => String(x.id) !== String(id)));
     } catch (err) {
       console.error("delete user failed", err);

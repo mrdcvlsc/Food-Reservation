@@ -1,6 +1,7 @@
 // filepath: c:\Documents\Food-Reservation\Food-Reservation\frontend\src\pages\admin\adminReports.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
+import AdminBottomNav from "../../components/mobile/AdminBottomNav";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import {
@@ -822,10 +823,10 @@ export default function AdminReports() {
   }, [filteredTopProducts]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-24 flex flex-col">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="flex-1 max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 space-y-8 bg-white rounded-t-2xl shadow-md border border-gray-100 mt-2 mb-0">
         {/* Header */}
         <section className="flex items-center justify-between">
           <div>
@@ -993,7 +994,7 @@ export default function AdminReports() {
         </section>
 
         {/* Top items & report visuals (existing adminReports content) */}
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Top items ({periodLabel})</h3>
             <button
@@ -1007,7 +1008,7 @@ export default function AdminReports() {
           {filteredResTopItems.length === 0 ? (
             <p className="text-sm text-gray-500">No data yet.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <table className="w-full text-sm">
                   <thead className="text-left text-gray-500">
@@ -1100,7 +1101,7 @@ export default function AdminReports() {
         </section>
 
         {/* Top Products (from monthly report if available, otherwise fall back to computed top items) */}
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Top Products ({periodLabel})</h3>
             <button
@@ -1114,7 +1115,7 @@ export default function AdminReports() {
           {filteredTopProducts.length === 0 ? (
             <p className="text-sm text-gray-500">No data available.</p>
           ) : (
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Revenue-sorted list */}
               <div>
                 <h4 className="text-md font-medium text-gray-700 mb-3">Sorted by Revenue</h4>
@@ -1247,6 +1248,11 @@ export default function AdminReports() {
 
         {loading && <div className="text-center text-sm text-gray-500">Loading…</div>}
       </main>
+      <div className="fixed left-0 right-0 bottom-0 z-[9999] px-2 pb-2 pointer-events-none">
+        <div className="pointer-events-auto">
+          <AdminBottomNav />
+        </div>
+      </div>
     </div>
   );
 }

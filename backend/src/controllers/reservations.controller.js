@@ -589,8 +589,32 @@ exports.setStatus = async (req, res) => {
       return res.json({ status: 200, data: { reservation: row } });
     }
 
-    // Preparing / Ready / Claimed
-    row.status = status;
+    // Preparing / Ready / Claimed - validate state machine transitions
+    const validTransitions = {
+      'Approved': ['Preparing'],
+      'Preparing': ['Ready'],
+      'Ready': ['Claimed'],
+      'Claimed': [] // Terminal state
+    };
+
+    const allowedNext = validTransitions[prev] || [];
+    if (!allowedNext.includes(newStatus)) {
+      console.warn(`[RESERVATION] Invalid transition: ${prev} -> ${newStatus} for ${id}`);
+      return res.status(400).json({ 
+        error: `Invalid status transition from ${prev} to ${newStatus}`,
+        details: `Allowed transitions from ${prev}: ${allowedNext.join(', ') || 'none (terminal state)'}`
+      });
+    }
+
+    // Check if already in requested state (idempotency)
+    if (prev === newStatus) {
+      return res.status(409).json({ 
+        error: `Order is already in ${newStatus} status`,
+        reservation: row
+      });
+    }
+
+    row.status = newStatus;
     row.updatedAt = new Date().toISOString();
     await save(db);
 

@@ -1,6 +1,7 @@
 // src/pages/admin/adminStats.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../../components/adminavbar";
+import AdminBottomNav from '../../components/mobile/AdminBottomNav';
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { TrendingUp, ClipboardList, Clock, Wallet, RefreshCw } from "lucide-react";
@@ -403,6 +404,8 @@ export default function AdminStats() {
 
         {loading && <div className="text-center text-sm text-gray-500">Loading…</div>}
       </main>
+      {/* ...existing code... */}
+      <AdminBottomNav />
     </div>
   );
 }

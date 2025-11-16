@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
+import FullScreenLoader from "../../components/FullScreenLoader";
 import { X } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
 export default function Notifications() {
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [notifications, setNotifications] = useState([]);
   const [selected, setSelected] = useState(new Set());
   const [preview, setPreview] = useState(null);
@@ -22,6 +24,7 @@ export default function Notifications() {
       setNotifications([]);
     } finally {
       setLoading(false);
+      setInitialLoad(false);
       setSelected(new Set());
     }
   };
@@ -66,9 +69,6 @@ export default function Notifications() {
   };
 
   const openPreview = async (n) => {
-    console.log("Opening preview for notification:", n);
-    console.log("Notification data:", n.data);
-    
     setPreview(n);
     
     // If it's a reservation notification, fetch full details
@@ -80,7 +80,6 @@ export default function Notifications() {
           ...prev,
           [n.data.reservationId]: reservation
         }));
-        console.log("Fetched reservation:", reservation);
       } catch (err) {
         console.error("Failed to fetch reservation:", err);
       }
@@ -164,6 +163,11 @@ export default function Notifications() {
       </div>
     );
   };
+
+  // Full-screen loading overlay (ONLY on initial load)
+  if (loading && initialLoad) {
+    return <FullScreenLoader message="Loading notifications..." />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,6 +1,7 @@
 // src/pages/TopUp.jsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
 import { api, ApiError } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import {
@@ -278,9 +279,9 @@ export default function TopUp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+            <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-6">
         {/* Header */}
         <div className="flex items-center gap-2">
           <Wallet className="w-6 h-6 text-blue-600" />
@@ -292,22 +293,22 @@ export default function TopUp() {
         </p>
 
         {/* User summary */}
-        <div className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between">
+        <div className="bg-white rounded-xl border border-gray-100 p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
           <div className="text-sm text-gray-700">
             <div className="font-medium">{user.name || "—"}</div>
             <div className="text-gray-500">{user.email || "—"}</div>
           </div>
-          <div className="text-right">
+          <div className="text-left sm:text-right">
             <div className="text-xs text-gray-500">Current Balance</div>
             <div className="text-xl font-bold text-green-700">{peso.format(user.balance || 0)}</div>
           </div>
         </div>
 
         {/* Provider tabs */}
-        <div className="flex w-full rounded-lg overflow-hidden">
+        <div className="flex w-full rounded-lg overflow-hidden border border-gray-200">
           <button
             onClick={() => setProvider("gcash")}
-            className={`flex-1 py-2 text-sm font-medium ${
+            className={`flex-1 py-2.5 sm:py-2 text-xs sm:text-sm font-medium transition ${
               provider === "gcash" ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -315,7 +316,7 @@ export default function TopUp() {
           </button>
           <button
             onClick={() => setProvider("maya")}
-            className={`flex-1 py-2 text-sm font-medium ${
+            className={`flex-1 py-2.5 sm:py-2 text-xs sm:text-sm font-medium transition ${
               provider === "maya" ? "bg-green-600 text-white" : "bg-gray-100 text-gray-700"
             }`}
           >
@@ -323,19 +324,19 @@ export default function TopUp() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-8">
           {/* Left: QR + account info */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold mb-4">Scan & Pay</h2>
+          <div className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-3 sm:p-6">
+            <h2 className="text-sm sm:text-lg font-semibold mb-2 sm:mb-4">Scan & Pay</h2>
 
-            <div className="border border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[280px]">
+            <div className="border border-dashed border-gray-300 rounded-lg sm:rounded-xl p-3 sm:p-6 flex flex-col items-center justify-center text-center min-h-[220px] sm:min-h-[280px]">
               {loading ? (
                 <div className="text-sm text-gray-500">Loading…</div>
               ) : qr[provider] ? (
                 <img
                   src={qr[provider]}
                   alt={`${provider} qr`}
-                  className="w-56 h-56 object-contain rounded"
+                  className="w-48 h-48 sm:w-56 sm:h-56 object-contain rounded"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = "";
@@ -370,10 +371,10 @@ export default function TopUp() {
           </div>
 
           {/* Right: submit proof */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold mb-4">Submit Proof</h2>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+            <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Submit Proof</h2>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {/* Payer Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Payer Full Name</label>
@@ -381,7 +382,7 @@ export default function TopUp() {
                   value={payerName}
                   onChange={(e) => setPayerName(e.target.value)}
                   placeholder="Your name as shown in GCash/Maya"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {!nameOk && <p className="text-xs text-rose-600 mt-1">Enter at least 3 characters.</p>}
               </div>
@@ -533,6 +534,8 @@ export default function TopUp() {
           </div>
         </div>
       </main>
+      
+      <BottomNav />
     </div>
   );
 }

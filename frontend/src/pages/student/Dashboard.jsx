@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, isValid, parseISO } from "date-fns";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
 import { api, ApiError } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { getUserFromStorage, setUserToStorage, clearAllAuthStorage } from "../../lib/storage";
@@ -185,6 +186,7 @@ export default function Dashboard() {
 
   // --- loading & error states ---
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true); // Track first load
   const [error, setError] = useState(null);
 
   // --- user & balance ---
@@ -408,6 +410,7 @@ export default function Dashboard() {
       } finally {
         if (!signal.aborted) {
           setLoading(false);
+          setInitialLoad(false); // Mark initial load complete
         }
       }
     };
@@ -510,27 +513,16 @@ export default function Dashboard() {
   // slice for dashboard preview (show only latest RECENT_LIMIT)
   const recentPreview = activity.slice(0, RECENT_LIMIT);
 
-  // --- Skeleton Components ---
+  // --- Skeleton Components (for refreshes) ---
   const SkeletonWalletButton = () => (
-    <div 
-      className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm" 
-      role="status" 
-      aria-live="polite" 
-      aria-label="Loading wallet"
-      aria-hidden={!loading}
-    >
-      <div className="w-4 h-4 bg-gray-200 rounded animate-pulse"></div>
-      <div className="w-24 h-4 bg-gray-200 rounded animate-pulse"></div>
+    <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-xl animate-pulse">
+      <div className="w-4 h-4 bg-gray-300 rounded"></div>
+      <div className="w-24 h-4 bg-gray-300 rounded"></div>
     </div>
   );
 
   const SkeletonStatsCard = () => (
-    <div 
-      className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white" 
-      role="status" 
-      aria-live="polite"
-      aria-hidden={!loading}
-    >
+    <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
       <div className="w-32 h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
       <div className="w-20 h-8 bg-gray-200 rounded animate-pulse"></div>
     </div>
@@ -580,11 +572,32 @@ export default function Dashboard() {
     }
   };
 
+  // Full-screen loading overlay (ONLY on initial load)
+  if (loading && initialLoad) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
+        <div className="relative">
+          <div className="animate-spin rounded-full h-24 w-24 border-4 border-gray-200 border-t-blue-600"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <img 
+              src="/jckl-192.png" 
+              alt="JCKL Academy Logo" 
+              className="w-16 h-16 rounded-xl"
+            />
+          </div>
+        </div>
+        <p className="mt-6 text-gray-600 font-medium animate-pulse">
+          Loading your dashboard...
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-8">
         {/* Error Banner */}
         {error && (
           <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start justify-between" role="alert">
@@ -607,93 +620,92 @@ export default function Dashboard() {
         )}
 
         {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-xl sm:text-3xl font-bold text-gray-900">
               {greeting}, {user?.name || "Student"}
             </h1>
-            <p className="text-gray-600">Reserve ahead and skip the line.</p>
+            <p className="text-xs sm:text-base text-gray-600">Reserve ahead and skip the line.</p>
           </div>
 
-          {loading ? (
+          {loading && !initialLoad ? (
             <SkeletonWalletButton />
           ) : (
             <button
               onClick={() => navigate("/profile")}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition font-medium text-gray-800 focus-ring"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-white border border-gray-200 rounded-lg sm:rounded-xl shadow-sm hover:shadow-md transition font-medium text-sm sm:text-base text-gray-800 focus-ring"
             >
-              <Wallet className="w-4 h-4 text-emerald-600" />
-              Wallet: <span className="font-semibold">{peso.format(balance)}</span>
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" />
+              <span className="text-xs sm:text-sm">Wallet:</span> <span className="font-semibold text-xs sm:text-base">{peso.format(balance)}</span>
             </button>
           )}
         </header>
 
         {/* Quick Actions */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <button
             onClick={() => navigate("/shop")}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-blue-600" />
+            className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring">
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 flex items-center justify-center">
+                <ShoppingBag className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Order Food</h3>
-                <p className="text-sm text-gray-500">Browse menu & reserve</p>
+                <h3 className="text-xs sm:text-base font-semibold text-gray-900">Order Food</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500">Browse menu</p>
               </div>
             </div>
           </button>
 
           <button
             onClick={() => navigate("/topup")}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
+            className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
-                <Wallet className="w-6 h-6 text-emerald-600" />
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-emerald-50 flex items-center justify-center">
+                <Wallet className="w-4 h-4 sm:w-6 sm:h-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Top-Up</h3>
-                <p className="text-sm text-gray-500">Add balance via QR</p>
+                <h3 className="text-xs sm:text-base font-semibold text-gray-900">Top-Up</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500 hidden sm:block">Add balance via QR</p>
               </div>
             </div>
           </button>
 
           <button
             onClick={() => navigate("/transactions")}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
+            className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
-                <ClipboardList className="w-6 h-6 text-violet-600" />
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-violet-50 flex items-center justify-center">
+                <ClipboardList className="w-4 h-4 sm:w-6 sm:h-6 text-violet-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">History</h3>
-                <p className="text-sm text-gray-500">View orders & top-ups</p>
+                <h3 className="text-xs sm:text-base font-semibold text-gray-900">History</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500 hidden sm:block">View orders & top-ups</p>
               </div>
             </div>
           </button>
 
           <button
             onClick={handleLogout}
-            className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
+            className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-left focus-ring"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center">
-                <LogOut className="w-6 h-6 text-gray-700" />
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <LogOut className="w-4 h-4 sm:w-6 sm:h-6 text-gray-700" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Logout</h3>
-                <p className="text-sm text-gray-500">Sign out of your account</p>
+                <h3 className="text-xs sm:text-base font-semibold text-gray-900">Logout</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500 hidden sm:block">Sign out of your account</p>
               </div>
             </div>
           </button>
         </section>
 
         {/* Stats (neutral, no "member status") */}
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {loading ? (
+        <section className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+          {loading && !initialLoad ? (
             <>
               <SkeletonStatsCard />
               <SkeletonStatsCard />
@@ -701,19 +713,19 @@ export default function Dashboard() {
             </>
           ) : (
             <>
-              <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-                <p className="text-sm text-gray-600">Orders this month</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.ordersCount}</p>
+              <div className="rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100 bg-white">
+                <p className="text-[10px] sm:text-sm text-gray-600">Orders this month</p>
+                <p className="mt-1 text-xl sm:text-3xl font-bold text-gray-900">{stats.ordersCount}</p>
               </div>
-              <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-                <p className="text-sm text-gray-600">Total spent this month</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">
+              <div className="rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100 bg-white">
+                <p className="text-[10px] sm:text-sm text-gray-600">Total spent this month</p>
+                <p className="mt-1 text-xl sm:text-3xl font-bold text-gray-900">
                   {peso.format(stats.totalSpent)}
                 </p>
               </div>
-              <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-                <p className="text-sm text-gray-600">Ready for pickup</p>
-                <p className="mt-1 text-3xl font-bold text-gray-900">{stats.readyCount}</p>
+              <div className="rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100 bg-white">
+                <p className="text-[10px] sm:text-sm text-gray-600">Ready for pickup</p>
+                <p className="mt-1 text-xl sm:text-3xl font-bold text-gray-900">{stats.readyCount}</p>
               </div>
             </>
           )}
@@ -722,27 +734,27 @@ export default function Dashboard() {
         {/* Ready Orders Callout Banner */}
         {showReadyOrdersBanner && (
           <section 
-            className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4 shadow-sm"
+            className="bg-emerald-50 border border-emerald-200 rounded-lg sm:rounded-2xl p-3 sm:p-4 shadow-sm"
             role="status"
             aria-live="polite"
             aria-label={`You have ${readyOrders.length} order${readyOrders.length > 1 ? 's' : ''} ready for pickup`}
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <div className="flex items-start justify-between gap-2 sm:gap-4">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-emerald-900 mb-1">
+                  <h3 className="text-sm sm:text-base font-semibold text-emerald-900 mb-1">
                     🎉 {readyOrders.length} Order{readyOrders.length > 1 ? 's' : ''} Ready for Pickup!
                   </h3>
-                  <p className="text-sm text-emerald-700">
+                  <p className="text-xs sm:text-sm text-emerald-700">
                     Your food is ready. Please proceed to the canteen counter to claim your order.
                   </p>
                   {readyOrders.length > 0 && (
                     <ul className="mt-2 space-y-1">
                       {readyOrders.slice(0, 3).map((order) => (
-                        <li key={order.id} className="text-xs text-emerald-600">
+                        <li key={order.id} className="text-[10px] sm:text-xs text-emerald-600">
                           • {order.title} - {peso.format(order.amount)}
                         </li>
                       ))}
@@ -767,24 +779,24 @@ export default function Dashboard() {
         )}
 
         {/* Recent Activity */}
-        <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-4">
+        <section className="bg-white rounded-lg sm:rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
+              <h2 className="text-base sm:text-xl font-bold text-gray-900">Recent Activity</h2>
               {!loading && (
-                <div className="text-sm text-gray-500">Showing {recentPreview.length} of {activity.length} recent items</div>
+                <div className="text-xs sm:text-sm text-gray-500">Showing {recentPreview.length} of {activity.length} recent items</div>
               )}
             </div>
             <button
               onClick={() => navigate("/transactions")}
-              className="text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 focus-ring"
+              className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 focus-ring"
             >
-              See all <ArrowRight className="w-4 h-4" />
+              See all <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
             </button>
           </div>
 
-          {loading ? (
-            <ul className="divide-y divide-gray-100" role="status" aria-live="polite" aria-label="Loading recent activity" aria-hidden={!loading}>
+          {loading && !initialLoad ? (
+            <ul className="divide-y divide-gray-100">
               <SkeletonActivityRow />
               <SkeletonActivityRow />
               <SkeletonActivityRow />
@@ -792,9 +804,21 @@ export default function Dashboard() {
               <SkeletonActivityRow />
             </ul>
           ) : activity.length === 0 ? (
-             <div className="text-sm text-gray-500 py-8 text-center">
-               No recent activity. Start by reserving from the <b>Shop</b>.
-             </div>
+            <div className="bg-blue-50 rounded-lg sm:rounded-xl p-4 sm:p-8 text-center">
+              <div className="w-12 h-12 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                <UtensilsCrossed className="w-6 h-6 sm:w-10 sm:h-10 text-blue-600" />
+              </div>
+              <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1 sm:mb-2">Welcome to JCKL Canteen!</h3>
+              <p className="text-xs sm:text-base text-gray-600 mb-4 sm:mb-6">
+                Pre-order your meals and skip the lunch rush. Your first order gets priority handling!
+              </p>
+              <button
+                onClick={() => navigate('/shop')}
+                className="inline-flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg sm:rounded-xl text-xs sm:text-base font-medium hover:bg-blue-700 transition focus-ring"
+              >
+                Browse Menu <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
+              </button>
+            </div>
            ) : (
              <ul className="divide-y divide-gray-100">
               {recentPreview.map((a) => (
@@ -808,67 +832,69 @@ export default function Dashboard() {
            )}
         </section>
 
-        {/* Categories quick access (neutral chips) */}
+        {/* Categories quick access - now functional with URL params */}
         <section>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Categories</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+          <h2 className="text-base sm:text-xl font-bold text-gray-900 mb-2 sm:mb-4">Categories</h2>
+          <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-4">
             <button
-              onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
+              onClick={() => navigate("/shop?category=Rice Meals")}
+              className="bg-white rounded-lg sm:rounded-2xl p-2 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
-              <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <UtensilsCrossed className="w-5 h-5 text-gray-700" />
+              <div className="mx-auto mb-1 sm:mb-3 w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <UtensilsCrossed className="w-3 h-3 sm:w-5 sm:h-5 text-gray-700" />
               </div>
-              <div className="text-sm font-medium text-gray-900">Rice Meals</div>
+              <div className="text-[10px] sm:text-sm font-medium text-gray-900">Rice Meals</div>
             </button>
             <button
-              onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
+              onClick={() => navigate("/shop?category=Noodles")}
+              className="bg-white rounded-lg sm:rounded-2xl p-2 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
-              <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <UtensilsCrossed className="w-5 h-5 text-gray-700" />
+              <div className="mx-auto mb-1 sm:mb-3 w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <UtensilsCrossed className="w-3 h-3 sm:w-5 sm:h-5 text-gray-700" />
               </div>
-              <div className="text-sm font-medium text-gray-900">Noodles</div>
+              <div className="text-[10px] sm:text-sm font-medium text-gray-900">Noodles</div>
             </button>
             <button
-              onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
+              onClick={() => navigate("/shop?category=Snacks")}
+              className="bg-white rounded-lg sm:rounded-2xl p-2 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
-              <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <Cookie className="w-5 h-5 text-gray-700" />
+              <div className="mx-auto mb-1 sm:mb-3 w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <Cookie className="w-3 h-3 sm:w-5 sm:h-5 text-gray-700" />
               </div>
-              <div className="text-sm font-medium text-gray-900">Snacks</div>
+              <div className="text-[10px] sm:text-sm font-medium text-gray-900">Snacks</div>
             </button>
             <button
-              onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
+              onClick={() => navigate("/shop?category=Beverages")}
+              className="bg-white rounded-lg sm:rounded-2xl p-2 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
-              <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <CupSoda className="w-5 h-5 text-gray-700" />
+              <div className="mx-auto mb-1 sm:mb-3 w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <CupSoda className="w-3 h-3 sm:w-5 sm:h-5 text-gray-700" />
               </div>
-              <div className="text-sm font-medium text-gray-900">Beverages</div>
+              <div className="text-[10px] sm:text-sm font-medium text-gray-900">Beverages</div>
             </button>
             <button
-              onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
+              onClick={() => navigate("/shop?category=Desserts")}
+              className="bg-white rounded-lg sm:rounded-2xl p-2 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
-              <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <Cookie className="w-5 h-5 text-gray-700" />
+              <div className="mx-auto mb-1 sm:mb-3 w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <Cookie className="w-3 h-3 sm:w-5 sm:h-5 text-gray-700" />
               </div>
-              <div className="text-sm font-medium text-gray-900">Desserts</div>
+              <div className="text-[10px] sm:text-sm font-medium text-gray-900">Desserts</div>
             </button>
             <button
-              onClick={() => navigate("/shop")}
-              className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
+              onClick={() => navigate("/shop?category=Breakfast")}
+              className="bg-white rounded-lg sm:rounded-2xl p-2 sm:p-6 shadow-sm hover:shadow-md transition border border-gray-100 text-center focus-ring"
             >
-              <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
-                <UtensilsCrossed className="w-5 h-5 text-gray-700" />
+              <div className="mx-auto mb-1 sm:mb-3 w-6 h-6 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gray-100 flex items-center justify-center">
+                <UtensilsCrossed className="w-3 h-3 sm:w-5 sm:h-5 text-gray-700" />
               </div>
-              <div className="text-sm font-medium text-gray-900">Breakfast</div>
+              <div className="text-[10px] sm:text-sm font-medium text-gray-900">Breakfast</div>
             </button>
           </div>
         </section>
       </main>
+      
+      <BottomNav />
     </div>
   );
 }

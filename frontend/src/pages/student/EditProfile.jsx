@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { getUserFromStorage, setUserToStorage } from "../../lib/storage";
@@ -22,7 +23,7 @@ export default function EditProfile() {
     phone: localUser.phone || localUser.contact || ""
   });
 
-  const [imagePreview, setImagePreview] = useState(localUser.profilePicture || null);
+  const [imagePreview, setImagePreview] = useState(localUser.profilePictureUrl || localUser.profilePicture || null);
   const [imageFile, setImageFile] = useState(null);
 
   // Load fresh data from server and update form
@@ -34,28 +35,26 @@ export default function EditProfile() {
         const data = meRes;
         
         if (data && typeof data === "object") {
-          // Debug log to see what we're getting from the server
-          console.log('Server data:', data);
-          
           setForm(prev => ({
             ...prev,
             name: data.name || data.fullName || prev.name || "",
             email: data.email || prev.email || "",
-            studentId: data.user || prev.studentId || "", // Changed to match Profile.jsx
-            phone: data.phone || prev.phone || "" // Changed to match Profile.jsx
+            studentId: data.user || prev.studentId || "",
+            phone: data.phone || prev.phone || ""
           }));
 
           // Also update localStorage with fresh data
           const updatedUser = {
             ...localUser,
             ...data,
-            studentId: data.user, // Changed to match Profile.jsx
-            phone: data.phone // Changed to match Profile.jsx
+            studentId: data.user,
+            phone: data.phone
           };
           setUserToStorage(updatedUser);
 
           if (data.profilePictureUrl) {
-            setImagePreview(data.profilePictureUrl);
+            const cacheBuster = `?t=${new Date().getTime()}`;
+            setImagePreview(`${data.profilePictureUrl}${cacheBuster}`);
           }
         }
       } catch (err) {
@@ -153,19 +152,19 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="bg-white rounded-2xl shadow-lg p-10">
-          <h2 className="text-3xl font-bold mb-8 text-center text-blue-700">
+      <main className="max-w-2xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8 lg:py-12">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 lg:p-10">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-gray-900">
             Edit Profile
           </h2>
           
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
             {/* Profile Picture */}
-            <div className="mb-8 flex flex-col items-center">
+            <div className="mb-6 sm:mb-8 flex flex-col items-center">
               <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-blue-100">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-blue-100">
                   {imagePreview ? (
                     <img
                       src={imagePreview}
@@ -173,7 +172,7 @@ export default function EditProfile() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-blue-700">
+                    <div className="w-full h-full flex items-center justify-center text-3xl sm:text-4xl font-bold text-blue-700">
                       {form.name?.[0]?.toUpperCase() || "U"}
                     </div>
                   )}
@@ -189,13 +188,13 @@ export default function EditProfile() {
                   />
                 </label>
               </div>
-              <p className="text-sm text-gray-500 mt-2">Click the camera icon to upload a profile picture</p>
+              <p className="text-xs sm:text-sm text-gray-500 mt-2 text-center">Click the camera icon to upload a profile picture</p>
             </div>
 
             {/* Form Fields */}
             {['name', 'email', 'studentId', 'phone'].map((field) => (
               <div key={field}>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   {field === 'studentId' ? 'Student ID' : 
                    field === 'phone' ? 'Contact Number' :
                    field === 'email' ? 'Email Address' : 'Full Name'}
@@ -205,7 +204,7 @@ export default function EditProfile() {
                   type={field === 'email' ? 'email' : 'text'}
                   value={form[field]}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
+                  className="mt-1 block w-full border border-gray-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
                   placeholder={`Enter your ${field === 'studentId' ? 'student ID' : 
                               field === 'phone' ? 'phone number' : field}`}
                   disabled={loading}
@@ -214,18 +213,18 @@ export default function EditProfile() {
             ))}
 
             {/* Buttons */}
-            <div className="flex justify-between mt-8">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 mt-6 sm:mt-8">
               <button
                 type="button"
                 onClick={() => navigate("/profile")}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm sm:text-base"
                 disabled={loading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={loading}
               >
                 {loading ? "Saving..." : "Save Changes"}
@@ -234,6 +233,8 @@ export default function EditProfile() {
           </form>
         </div>
       </main>
+      
+      <BottomNav />
     </div>
   );
 }

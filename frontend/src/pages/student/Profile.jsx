@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { Pencil, Wallet, ShoppingBag, Clock } from "lucide-react";
@@ -198,33 +199,33 @@ export default function Profile() {
   }, [user?.studentId]); // Reload when user changes
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
-      <main className="container mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Profile</h1>
           <Link
             to="/profile/edit"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm hover:bg-blue-700"
+            className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-blue-600 text-white text-xs sm:text-sm font-medium hover:bg-blue-700 transition"
           >
             <Pencil className="w-4 h-4" />
-            Edit Profile
+            <span className="hidden sm:inline">Edit Profile</span>
           </Link>
         </div>
 
         {/* Card */}
-        <section className="bg-white rounded-lg shadow-md p-6 mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <section className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Avatar + meta */}
             <div className="flex md:block items-center md:items-start gap-4 md:gap-0">
               <div className="relative">
-                <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-3xl font-bold overflow-hidden">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-2xl sm:text-3xl font-bold overflow-hidden">
                   {profilePicture ? (
                     <img 
                       src={profilePicture}
                       alt={`${user?.name}'s profile`}
                       className="w-full h-full object-cover"
-                      onError={() => setProfilePicture(null)} // Fallback to initials on error
+                      onError={() => setProfilePicture(null)}
                     />
                   ) : (
                     <span>{initials}</span>
@@ -235,47 +236,47 @@ export default function Profile() {
             </div>
 
             {/* Details */}
-            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <p className="text-sm text-gray-500">Full Name</p>
-                <p className="text-lg font-medium text-gray-900 break-words">{user?.name || "—"}</p>
+                <p className="text-xs sm:text-sm text-gray-500">Full Name</p>
+                <p className="text-base sm:text-lg font-medium text-gray-900 break-words">{user?.name || "—"}</p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Student ID</p>
-                <p className="text-lg font-mono text-gray-900 break-words">{user?.studentId || "—"}</p>
+                <p className="text-xs sm:text-sm text-gray-500">Student ID</p>
+                <p className="text-base sm:text-lg font-mono text-gray-900 break-words">{user?.studentId || "—"}</p>
               </div>
 
               <div>
-                <p className="text-sm text-gray-500">Email Address</p>
-                <p className="text-lg font-medium text-gray-900 break-words">
+                <p className="text-xs sm:text-sm text-gray-500">Email Address</p>
+                <p className="text-base sm:text-lg font-medium text-gray-900 break-words">
                   {user?.email && user.email !== "guest@example.com" ? user.email : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Phone</p>
-                <p className="text-lg font-mono text-gray-900 break-words">{user?.phone || "—"}</p>
+                <p className="text-xs sm:text-sm text-gray-500">Phone</p>
+                <p className="text-base sm:text-lg font-mono text-gray-900 break-words">{user?.phone || "—"}</p>
               </div>
             </div>
           </div>
 
-          {/* Extra quick links row (optional) */}
-          <div className="mt-6 flex flex-wrap gap-2">
+          {/* Extra quick links row */}
+          <div className="mt-4 sm:mt-6 flex flex-wrap gap-2">
             <Link
               to="/transactions"
-              className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm hover:bg-gray-50 transition"
             >
               View Orders
             </Link>
             <Link
               to="/transactions"
-              className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm hover:bg-gray-50 transition"
             >
               Purchase History
             </Link>
             <Link
               to="/profile/security"
-              className="px-3 py-2 rounded-lg border text-sm hover:bg-gray-50"
+              className="px-3 py-2 rounded-lg border border-gray-200 text-xs sm:text-sm hover:bg-gray-50 transition"
             >
               Change Password
             </Link>
@@ -283,49 +284,51 @@ export default function Profile() {
         </section>
 
         {/* Stats section */}
-        <section className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6">
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <div className="flex items-center gap-2 mb-1">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-2">
               <Wallet className="w-4 h-4 text-emerald-600" />
-              <p className="text-sm text-gray-600">Current Balance</p>
+              <p className="text-xs sm:text-sm text-gray-600">Balance</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               {peso.format(user.balance || 0)}
             </p>
           </div>
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-2">
               <ShoppingBag className="w-4 h-4 text-blue-600" />
-              <p className="text-sm text-gray-600">Total Orders</p>
+              <p className="text-xs sm:text-sm text-gray-600">Orders</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               {stats.ordersCount || 0}
             </p>
           </div>
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-2">
               <Wallet className="w-4 h-4 text-violet-600" />
-              <p className="text-sm text-gray-600">Total spent</p>
+              <p className="text-xs sm:text-sm text-gray-600">Spent</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               {peso.format(stats.totalSpent || 0)}
             </p>
           </div>
-          <div className="rounded-2xl p-5 shadow-sm border border-gray-100 bg-white">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-4 h-4 text-violet-600" />
-              <p className="text-sm text-gray-600">Ready for pickup</p>
+          <div className="rounded-lg sm:rounded-xl p-4 sm:p-5 shadow-sm border border-gray-100 bg-white">
+            <div className="flex items-center gap-2 mb-2">
+              <Clock className="w-4 h-4 text-orange-600" />
+              <p className="text-xs sm:text-sm text-gray-600">Ready</p>
             </div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
               {stats.readyCount || 0}
             </p>
           </div>
         </section>
 
         {loading && (
-          <p className="text-center text-sm text-gray-500">Refreshing your profile…</p>
+          <p className="text-center text-xs sm:text-sm text-gray-500">Refreshing your profile…</p>
         )}
       </main>
+      
+      <BottomNav />
     </div>
   );
 }

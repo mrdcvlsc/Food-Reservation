@@ -1,5 +1,6 @@
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 
 // Lazy load non-critical sections
 const LazyFAQ = lazy(() => import("../components/FAQ").catch(() => ({ default: () => null })));
@@ -207,6 +208,7 @@ const schedules = [
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Prefetch critical routes on hover/idle
   React.useEffect(() => {
@@ -243,17 +245,18 @@ export default function Landing() {
       </a>
 
       {/* HEADER */}
-      <header className="bg-white/80 backdrop-blur-md py-4 shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="container mx-auto flex items-center justify-between px-6">
-          <Link to="/" className="flex items-center space-x-3" aria-label="JCKL Food Reservation Home">
-            <div 
-              className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center"
-              aria-hidden="true"
-            >
-              <span className="text-white font-bold text-sm">JCKL</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">
-              Jesus Christ King of Kings Academy
+      <header className="bg-white/80 backdrop-blur-md py-3 sm:py-4 shadow-sm border-b border-gray-100 sticky top-0 z-50">
+        <div className="container mx-auto flex items-center justify-between px-2 sm:px-4 lg:px-6 gap-2">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 min-w-0 flex-shrink" aria-label="JCKL Food Reservation Home">
+            <img 
+              src="/jckl-192.png" 
+              alt="JCKL Academy Logo" 
+              className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl shadow-md flex-shrink-0"
+            />
+            <span className="font-bold text-gray-900 min-w-0">
+              <span className="hidden xl:inline text-xl">Jesus Christ King of Kings Academy</span>
+              <span className="hidden md:inline xl:hidden text-base truncate max-w-[300px]">Jesus Christ King of Kings Academy</span>
+              <span className="md:hidden text-sm truncate">JCKL Academy</span>
             </span>
           </Link>
 
@@ -302,10 +305,57 @@ export default function Landing() {
             </ul>
           </nav>
 
-          <Link to="/login" className="inline-block">
-            <Button variant="ghost" className="font-medium">Student Login</Button>
-          </Link>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link to="/login" className="hidden sm:inline-block">
+              <Button variant="ghost" className="font-medium text-sm sm:text-base px-3 sm:px-4">Student Login</Button>
+            </Link>
+            
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
+        
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-200 bg-white">
+            <nav className="px-4 py-3 space-y-2">
+              <Link
+                to="/"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/about"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link
+                to="/register"
+                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Register
+              </Link>
+              <Link
+                to="/login"
+                className="block px-3 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition text-sm font-medium"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Student Login
+              </Link>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* HERO */}
@@ -561,12 +611,11 @@ export default function Landing() {
       <footer className="py-12 bg-gray-900" role="contentinfo">
         <div className="container mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-3 mb-6">
-            <div 
-              className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center"
-              aria-hidden="true"
-            >
-              <span className="text-white font-bold text-sm">JCKL</span>
-            </div>
+            <img 
+              src="/jckl-192.png" 
+              alt="JCKL Academy Logo" 
+              className="w-10 h-10 rounded-xl shadow-md"
+            />
             <div className="font-bold text-xl text-white">Food Reservation & Allowance System</div>
           </div>
           <p className="text-gray-400 mb-6 max-w-2xl mx-auto">

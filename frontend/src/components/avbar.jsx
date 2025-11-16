@@ -212,41 +212,26 @@ export default function Navbar() {
       }`}
     >
       {/* Top bar */}
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-16 flex items-center justify-between">
-          {/* Brand */}
-          <Link to="/dashboard" className="flex items-center gap-3 group">
-            <img
-              src={LOGO_SRC}
-              alt="Academy logo"
-              className="h-9 w-9 rounded-md ring-1 ring-slate-200 object-cover"
-              onError={(e) => {
-                // graceful fallback chain
-                const el = e.currentTarget;
-                if (el.dataset.fallback === "brand") {
-                  el.src = "/logo192.png";
-                } else {
-                  el.src = "/brand-logo.png";
-                  el.dataset.fallback = "brand";
-                }
-              }}
-            />
-            <div className="leading-tight">
-              {/* Full name on xl; truncated on md; compact on xs */}
-              <div className="hidden xl:block text-[15px] font-semibold text-slate-900">
-                {BRAND_NAME}
-              </div>
-              <div className="hidden md:block xl:hidden max-w-[520px] truncate text-[15px] font-semibold text-slate-900">
-                {BRAND_NAME}
-              </div>
-              <div className="md:hidden text-[15px] font-semibold text-slate-900">
-                Canteen
-              </div>
-            </div>
-          </Link>
+      <nav className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="h-14 sm:h-16 flex items-center justify-between gap-2">
+          {/* Brand - Back button on mobile, full branding on desktop */}
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            {/* Mobile back button */}
+            <button
+              onClick={() => navigate(-1)}
+              className="md:hidden p-2 rounded-lg hover:bg-slate-100"
+              aria-label="Go back"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            {/* ...existing code... */}
+          </div>
 
           {/* Desktop links */}
-          <ul className="hidden md:flex items-center gap-1">
+          <ul className="hidden md:flex items-center gap-1 flex-shrink-0">
             {LINKS.map(({ to, label }) => (
               <li key={to}>
                 <NavLink
@@ -373,24 +358,96 @@ export default function Navbar() {
           </button>
           </ul>
 
-          {/* Mobile toggle */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-slate-100"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-          >
-            {open ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile: Compact icon-only buttons (no hamburger - using bottom nav instead) */}
+          <div className="md:hidden flex items-center gap-1 flex-shrink-0">
+            {/* Notifications */}
+            <button
+              onClick={() => setNotifOpen(v => !v)}
+              className="p-2 rounded-lg hover:bg-slate-100 relative"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5" />
+              {unread > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center px-0.5">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </button>
+
+            {/* Cart */}
+            <button
+              onClick={() => navigate("/cart")}
+              className="p-2 rounded-lg hover:bg-slate-100 relative"
+              aria-label="Cart"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center px-0.5">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </nav>
+
+      {/* Mobile notifications dropdown (appears under nav bar) */}
+      {notifOpen && (
+        <div className="md:hidden fixed inset-x-0 top-14 sm:top-16 z-50 bg-white border-b shadow-lg max-h-[60vh] overflow-y-auto">
+          <div className="flex items-center justify-between p-2 sm:p-3 border-b bg-gray-50">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900">Notifications</h3>
+            <button onClick={() => setNotifOpen(false)} className="p-1">
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {notifications.length === 0 ? (
+              <div className="p-3 sm:p-4 text-xs sm:text-sm text-gray-500 text-center">
+                No notifications
+              </div>
+            ) : (
+              notifications.map(notification => (
+                <div key={notification.id} className="cursor-pointer">
+                  <NotificationItem 
+                    notification={notification} 
+                    onClick={() => {
+                      openNotif(notification);
+                      setNotifOpen(false);
+                    }}
+                    isAdminSide={false}
+                  />
+                </div>
+              ))
+            )}
+          </div>
+          <div className="p-2 border-t flex items-center justify-between bg-gray-50 text-xs sm:text-sm">
+            <Link
+              to="/notifications"
+              className="text-blue-600 hover:text-blue-700 font-medium"
+              onClick={() => setNotifOpen(false)}
+            >
+              See all
+            </Link>
+            <button
+              onClick={() => {
+                markAllRead();
+                setNotifOpen(false);
+              }}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              Mark all read
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile sheet */}
       <div
         className={`md:hidden border-t bg-white transition-all duration-200 origin-top ${
-          open ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
+          open ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"
         }`}
       >
-        <ul className="max-w-7xl mx-auto px-4 py-2 flex flex-col">
+        <ul className="max-w-7xl mx-auto px-2 sm:px-4 py-2 flex flex-col">
           {LINKS.map(({ to, label }) => (
             <li key={to}>
               <NavLink

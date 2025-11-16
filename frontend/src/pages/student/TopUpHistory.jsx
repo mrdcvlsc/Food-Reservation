@@ -3,6 +3,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
+import FullScreenLoader from "../../components/FullScreenLoader";
 import { api } from "../../lib/api";
 import { Search, RefreshCw, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
@@ -40,6 +42,7 @@ export default function TopUpHistory() {
 
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState("");
 
   // UI controls
@@ -75,6 +78,7 @@ export default function TopUpHistory() {
       setError(e?.message || "Failed to load. Please try again.");
     } finally {
       setLoading(false);
+      setInitialLoad(false);
     }
   };
 
@@ -135,11 +139,16 @@ export default function TopUpHistory() {
     return ["all", ...arr]; // e.g., ["all","gcash","maya"]
   }, [rows]);
 
+  // Full-screen loading overlay (ONLY on initial load)
+  if (loading && initialLoad) {
+    return <FullScreenLoader message="Loading top-up history..." />;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
 
-      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-6">
         {/* Header */}
         <header className="flex items-center justify-between flex-wrap gap-3">
           <div>
@@ -359,6 +368,8 @@ export default function TopUpHistory() {
           </div>
         </div>
       )}
+      
+      <BottomNav />
     </div>
   );
 }

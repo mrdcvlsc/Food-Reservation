@@ -185,14 +185,14 @@ export default function AdminAvbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/90 backdrop-blur border-b shadow-sm">
-      <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto h-14 sm:h-16 px-3 sm:px-4 lg:px-8 flex items-center justify-between">
         {/* Brand */}
         <Link
           to="/admin"
-          className="group flex items-center gap-3 min-w-0"
+          className="group flex items-center gap-2 sm:gap-3 min-w-0"
           aria-label="Admin Home"
         >
-          <div className="relative h-8 w-8 rounded-xl overflow-hidden ring-1 ring-gray-200 bg-white">
+          <div className="relative h-7 w-7 sm:h-8 sm:w-8 rounded-xl overflow-hidden ring-1 ring-gray-200 bg-white">
             <img
               src="/jckl-192.png"
               alt=""
@@ -203,7 +203,7 @@ export default function AdminAvbar() {
               }}
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-blue-700" />
             <span className="truncate font-semibold text-gray-900">
               Canteen Admin

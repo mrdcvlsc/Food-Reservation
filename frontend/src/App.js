@@ -60,90 +60,88 @@ import BackButton from "./components/BackButton";
 
 function App() {
   return (
-    <BrowserRouter>
-      <>
-        <BackButton />
-        <Routes>
-          {/* ---------- Public routes ---------- */}
-          <Route path="/"               element={<Landing />} />
-          <Route path="/about"          element={<About />} />
-          <Route path="/loading"        element={<Loading />} />
-          <Route path="/register"       element={<Register />} />
-          <Route path="/login"          element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+    <>
+      <BackButton />
+      <Routes>
+        {/* ---------- Public routes ---------- */}
+        <Route path="/"               element={<Landing />} />
+        <Route path="/about"          element={<About />} />
+        <Route path="/loading"        element={<Loading />} />
+        <Route path="/register"       element={<Register />} />
+        <Route path="/login"          element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* ---------- student routes ---------- */}
-          <Route path="/cart"           element={<Cart />} />
-          <Route path="/dashboard"      element={<Dashboard />} />
-          <Route path="/profile/edit"   element={<EditProfile />} />
-          <Route path="/profile"        element={<Profile />} />
-          <Route path="/shop"           element={<Shop />} />
-          <Route path="/topup"          element={<TopUp />} />
-          <Route path="/topup-history"  element={<TopUpHistory />} />
-          <Route path="/transactions"   element={<TxHistory />} />
-          <Route path="/profile/security" element={<Security />} /> {/* added route */}
-          {/* alias for older links */}
-          <Route path="/topup/history"  element={<TopUpHistory />} />
+        {/* ---------- student routes ---------- */}
+        <Route path="/cart"           element={<Cart />} />
+        <Route path="/dashboard"      element={<Dashboard />} />
+        <Route path="/profile/edit"   element={<EditProfile />} />
+        <Route path="/profile"        element={<Profile />} />
+        <Route path="/shop"           element={<Shop />} />
+        <Route path="/topup"          element={<TopUp />} />
+        <Route path="/topup-history"  element={<TopUpHistory />} />
+        <Route path="/transactions"   element={<TxHistory />} />
+        <Route path="/profile/security" element={<Security />} /> {/* added route */}
+        {/* alias for older links */}
+        <Route path="/topup/history"  element={<TopUpHistory />} />
 
-          {/* ----------------- Admin routes ----------------- */}
-          <Route path="/admin"                          element={<AdminHome />} />
+        {/* ----------------- Admin routes ----------------- */}
+        <Route path="/admin"                          element={<AdminHome />} />
 
-          {/* Inventory list (support both /shop and /shops for compatibility) */}
-          {/* <Route path="/admin/shop"                     element={<AdminShop />} /> */}
-          <Route path="/admin/shops"                    element={<AdminShop />} />
+        {/* Inventory list (support both /shop and /shops for compatibility) */}
+        {/* <Route path="/admin/shop"                     element={<AdminShop />} /> */}
+        <Route path="/admin/shops"                    element={<AdminShop />} />
 
-          {/* Add forms */}
-          <Route path="/admin/shop/add-rice"            element={<AdminAddRice />} />
-          <Route path="/admin/shop/add-drinks"          element={<AdminAddDrinks />} />
-          <Route path="/admin/shop/add-snacks"          element={<AdminAddSnacks />} />
-          {/* aliases for earlier links used in some pages */}
-          <Route path="/admin/shops/add"                element={<AdminAddRice />} />
-          <Route path="/admin/shops/add-drink"          element={<AdminAddDrinks />} />
-          <Route path="/admin/shops/add-snack"          element={<AdminAddSnacks />} />
+        {/* Add forms */}
+        <Route path="/admin/shop/add-rice"            element={<AdminAddRice />} />
+        <Route path="/admin/shop/add-drinks"          element={<AdminAddDrinks />} />
+        <Route path="/admin/shop/add-snacks"          element={<AdminAddSnacks />} />
+        {/* aliases for earlier links used in some pages */}
+        <Route path="/admin/shops/add"                element={<AdminAddRice />} />
+        <Route path="/admin/shops/add-drink"          element={<AdminAddDrinks />} />
+        <Route path="/admin/shops/add-snack"          element={<AdminAddSnacks />} />
 
-          {/* Edit screens */}
-          <Route path="/admin/shop/edit-categories"     element={<AdminEditCategories />} />
-          <Route path="/admin/shop/edit-items"          element={<AdminEditItems />} />
+        {/* Edit screens */}
+        <Route path="/admin/shop/edit-categories"     element={<AdminEditCategories />} />
+        <Route path="/admin/shop/edit-items"          element={<AdminEditItems />} />
 
-          {/* Wallet top-ups & orders */}
-          <Route path="/admin/topup"                    element={<AdminTopUp />} />
-          <Route path="/admin/topup/history"           element={<AdminTopUpHistory />} />
-          <Route path="/admin/orders"                   element={<AdminOrders />} />
-          <Route path="/admin/orders/summary"           element={<AdminSummary />} />
+        {/* Wallet top-ups & orders */}
+        <Route path="/admin/topup"                    element={<AdminTopUp />} />
+        <Route path="/admin/topup/history"           element={<AdminTopUpHistory />} />
+        <Route path="/admin/orders"                   element={<AdminOrders />} />
+        <Route path="/admin/orders/summary"           element={<AdminSummary />} />
 
-          {/* Reservations */}
-          <Route path="/admin/reservations"             element={<AdminReservations />} />
-          <Route path="/admin/reservations/approved"    element={<AdminApproved />} />
+        {/* Reservations */}
+        <Route path="/admin/reservations"             element={<AdminReservations />} />
+        <Route path="/admin/reservations/approved"    element={<AdminApproved />} />
 
-          {/* Stats */}
-          <Route path="/admin/stats"                    element={<AdminStats />} />
-          <Route path="/admin/inventory"                element={<AdminInventory />} />
+        {/* Stats */}
+        <Route path="/admin/stats"                    element={<AdminStats />} />
+        <Route path="/admin/inventory"                element={<AdminInventory />} />
 
-          {/* Reports */}
-          <Route path="/admin/reports"                element={<AdminReports />} />
-          <Route path="/admin/users"                element={<AdminUsers />} />
-          <Route path="/notifications" element={<Notifications />} />
-          <Route path="/admin/notifications" element={<AdminNotifications />} />
+        {/* Reports */}
+        <Route path="/admin/reports"                element={<AdminReports />} />
+        <Route path="/admin/users"                element={<AdminUsers />} />
+        <Route path="/notifications" element={<Notifications />} />
+        <Route path="/admin/notifications" element={<AdminNotifications />} />
 
-          {/* ---------- status pages ---------- */}
-          <Route path="/status/maintenance"          element={<Maintenance />} />
-          <Route path="/status/not_found"            element={<NotFound />} />
-          <Route path="/status/server_error"         element={<ServerError />} />
-          <Route path="/status/unauthorized"         element={<Unauthorized />} />
-          <Route path="/status/forbidden"            element={<Forbidden />} />
-          <Route path="/status/something_went_wrong" element={<SomethingWentWrong />} />
+        {/* ---------- status pages ---------- */}
+        <Route path="/status/maintenance"          element={<Maintenance />} />
+        <Route path="/status/not_found"            element={<NotFound />} />
+        <Route path="/status/server_error"         element={<ServerError />} />
+        <Route path="/status/unauthorized"         element={<Unauthorized />} />
+        <Route path="/status/forbidden"            element={<Forbidden />} />
+        <Route path="/status/something_went_wrong" element={<SomethingWentWrong />} />
 
-          {/* Public read-only menu alias */}
-          <Route path="/menu" element={<Shop publicView={true} />} />
-          
-          {/* Break time policy page */}
-          <Route path="/break-policy" element={<BreakPolicy />} />
+        {/* Public read-only menu alias */}
+        <Route path="/menu" element={<Shop publicView={true} />} />
+        
+        {/* Break time policy page */}
+        <Route path="/break-policy" element={<BreakPolicy />} />
 
-          {/* ------------- Fallback / 404 redirect ------------- */}
-          <Route path="*" element={<Navigate to="/status/not_found" replace />} />
-      </Routes>
-    </>
-    </BrowserRouter>
+        {/* ------------- Fallback / 404 redirect ------------- */}
+        <Route path="*" element={<Navigate to="/status/not_found" replace />} />
+    </Routes>
+  </>
   );
 }
 

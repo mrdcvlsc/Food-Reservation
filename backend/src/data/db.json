@@ -3768,13 +3768,13 @@
         }
       ],
       "total": 46,
-      "status": "Approved",
+      "status": "Claimed",
       "createdAt": "2025-11-11T08:35:25.182Z",
       "transactionId": "txn_mhubg62i",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-11T08:35:25.242Z",
-      "updatedAt": "2025-11-11T08:36:42.579Z"
+      "updatedAt": "2025-11-15T01:15:03.058Z"
     },
     {
       "id": "RES_mhubkgfxqk",
@@ -4230,13 +4230,13 @@
         }
       ],
       "total": 20,
-      "status": "Ready",
+      "status": "Claimed",
       "createdAt": "2025-11-14T13:14:58.939Z",
       "transactionId": "txn_mhyvr8rs",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-14T13:14:58.984Z",
-      "updatedAt": "2025-11-14T13:25:47.317Z"
+      "updatedAt": "2025-11-15T01:14:44.054Z"
     }
   ],
   "topups": [
@@ -6796,6 +6796,58 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mhzlh992",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhubg60up5 Claimed",
+      "body": "Your reservation RES_mhubg60up5 is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhubg60up5",
+        "status": "Claimed"
+      },
+      "read": false,
+      "createdAt": "2025-11-15T01:15:03.062Z"
+    },
+    {
+      "id": "notif_mhzlh8by",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhubg60up5 Ready",
+      "body": "Your reservation RES_mhubg60up5 is now Ready.",
+      "data": {
+        "reservationId": "RES_mhubg60up5",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-11-15T01:15:01.870Z"
+    },
+    {
+      "id": "notif_mhzlh6vy",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhubg60up5 Preparing",
+      "body": "Your reservation RES_mhubg60up5 is now Preparing.",
+      "data": {
+        "reservationId": "RES_mhubg60up5",
+        "status": "Preparing"
+      },
+      "read": false,
+      "createdAt": "2025-11-15T01:14:59.998Z"
+    },
+    {
+      "id": "notif_mhzlgul6",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhyvr8qj8w Claimed",
+      "body": "Your reservation RES_mhyvr8qj8w is now Claimed.",
+      "data": {
+        "reservationId": "RES_mhyvr8qj8w",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-15T01:14:44.058Z"
+    },
     {
       "id": "notif_mhyw5516",
       "for": "usr_meusxal8",
@@ -13936,7 +13988,7 @@
           "price": 0
         }
       ],
-      "updatedAt": "2025-11-14T13:44:28.377Z"
+      "updatedAt": "2025-11-15T10:25:55.650Z"
     },
     {
       "id": "cart_user_usr_mhkms3f1",

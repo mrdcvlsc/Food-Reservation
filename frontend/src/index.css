@@ -18,6 +18,28 @@
   .focus-ring-white {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white;
   }
+  
+  /* Safe area support for iOS notch/home indicator */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Bottom nav sheet slide-up animation */
+  .animate-slide-up {
+    animation: slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Keyframes for slide-up animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* Ensure default focus styles are hidden, only focus-visible shows */

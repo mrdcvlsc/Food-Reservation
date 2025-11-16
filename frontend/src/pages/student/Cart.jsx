@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { getUserFromStorage, setUserToStorage } from "../../lib/storage";
 import Navbar from "../../components/avbar";
+import BottomNav from "../../components/mobile/BottomNav";
 import {
   Plus,
   Minus,
@@ -286,10 +287,10 @@ export default function Cart() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Your Cart</h1>
@@ -301,86 +302,143 @@ export default function Cart() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Lines */}
-          <section className="lg:col-span-2 bg-white rounded-lg p-4 border">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs text-gray-600">
-                  <th className="py-2">ITEM</th>
-                  <th className="py-2">PRICE</th>
-                  <th className="py-2">QTY</th>
-                  <th className="py-2">SUBTOTAL</th>
-                  <th />
-                </tr>
-              </thead>
-              <tbody>
-                {list.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-10 text-center text-gray-500">
-                      Your cart is empty.
-                    </td>
+          <section className="lg:col-span-2 space-y-3">
+            {/* Desktop table - hidden on mobile */}
+            <div className="hidden md:block bg-white rounded-lg p-4 border">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-gray-600">
+                    <th className="py-2">ITEM</th>
+                    <th className="py-2">PRICE</th>
+                    <th className="py-2">QTY</th>
+                    <th className="py-2">SUBTOTAL</th>
+                    <th />
                   </tr>
-                ) : (
-                  list.map((it) => (
-                    <tr key={it.id} className="border-t">
-                      <td className="py-3">
-                        <div>
-                          <div>{it.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {it.stock >= 0 && (
-                              <span className={it.stock > 0 ? 'text-green-600' : 'text-red-600'}>
-                                {it.stock > 0 ? `${it.stock} in stock` : 'Out of stock'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3">{peso.format(Number(it.price) || 0)}</td>
-                      <td className="py-3">
-                        <div className="inline-flex items-center border rounded">
-                          <button
-                            onClick={() => dec(it.id)}
-                            className="px-2 py-1 hover:bg-gray-50"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <span className="px-3">{cart[it.id] || 0}</span>
-                          <button
-                            onClick={() => inc(it.id)}
-                            className="px-2 py-1 hover:bg-gray-50"
-                            disabled={it.stock >= 0 && cart[it.id] >= it.stock}
-                            title={it.stock >= 0 && cart[it.id] >= it.stock ? 'Maximum stock reached' : undefined}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="py-3">
-                        {peso.format((Number(it.price) || 0) * (it.qty || 0))}
-                      </td>
-                      <td className="py-3">
-                        <button
-                          onClick={() => removeLine(it.id)}
-                          className="text-sm text-red-600 hover:text-red-700"
-                        >
-                          Remove
-                        </button>
+                </thead>
+                <tbody>
+                  {list.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-10 text-center text-gray-500">
+                        Your cart is empty.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    list.map((it) => (
+                      <tr key={it.id} className="border-t">
+                        <td className="py-3">
+                          <div>
+                            <div>{it.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {it.stock >= 0 && (
+                                <span className={it.stock > 0 ? 'text-green-600' : 'text-red-600'}>
+                                  {it.stock > 0 ? `${it.stock} in stock` : 'Out of stock'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3">{peso.format(Number(it.price) || 0)}</td>
+                        <td className="py-3">
+                          <div className="inline-flex items-center border rounded">
+                            <button
+                              onClick={() => dec(it.id)}
+                              className="px-2 py-1 hover:bg-gray-50"
+                            >
+                              <Minus className="w-4 h-4" />
+                            </button>
+                            <span className="px-3">{cart[it.id] || 0}</span>
+                            <button
+                              onClick={() => inc(it.id)}
+                              className="px-2 py-1 hover:bg-gray-50"
+                              disabled={it.stock >= 0 && cart[it.id] >= it.stock}
+                              title={it.stock >= 0 && cart[it.id] >= it.stock ? 'Maximum stock reached' : undefined}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                        <td className="py-3">
+                          {peso.format((Number(it.price) || 0) * (it.qty || 0))}
+                        </td>
+                        <td className="py-3">
+                          <button
+                            onClick={() => removeLine(it.id)}
+                            className="text-sm text-red-600 hover:text-red-700"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile card layout */}
+            <div className="md:hidden space-y-3">
+              {list.length === 0 ? (
+                <div className="bg-white rounded-lg p-6 border text-center text-gray-500">
+                  Your cart is empty.
+                </div>
+              ) : (
+                list.map((it) => (
+                  <div key={it.id} className="bg-white rounded-lg p-4 border">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{it.name}</div>
+                        <div className="text-sm text-gray-600 mt-1">{peso.format(Number(it.price) || 0)}</div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {it.stock >= 0 && (
+                            <span className={it.stock > 0 ? 'text-green-600' : 'text-red-600'}>
+                              {it.stock > 0 ? `${it.stock} in stock` : 'Out of stock'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeLine(it.id)}
+                        className="text-sm text-red-600 hover:text-red-700 ml-2"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="inline-flex items-center border rounded">
+                        <button
+                          onClick={() => dec(it.id)}
+                          className="px-3 py-2 hover:bg-gray-50"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="px-4 py-2 font-medium">{cart[it.id] || 0}</span>
+                        <button
+                          onClick={() => inc(it.id)}
+                          className="px-3 py-2 hover:bg-gray-50"
+                          disabled={it.stock >= 0 && cart[it.id] >= it.stock}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="font-semibold text-gray-900">
+                        {peso.format((Number(it.price) || 0) * (it.qty || 0))}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </section>
 
           {/* Summary */}
-          <aside className="bg-white rounded-lg p-4 border">
-            <div className="flex items-center justify-between mb-4">
+          <aside className="bg-white rounded-lg p-3 sm:p-4 border">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
               <div className="text-sm text-gray-600">Items</div>
               <div className="font-medium">{list.reduce((a, b) => a + b.qty, 0)}</div>
             </div>
-            <div className="flex items-center justify-between text-lg font-semibold mb-4">
+            <div className="flex items-center justify-between text-base sm:text-lg font-semibold mb-3 sm:mb-4">
               <div>Total</div>
               <div>{peso.format(total)}</div>
             </div>
@@ -388,14 +446,14 @@ export default function Cart() {
             <div className="space-y-2">
               <button
                 onClick={() => navigate("/shop")}
-                className="w-full border rounded px-4 py-2 text-sm"
+                className="w-full border rounded px-4 py-2.5 sm:py-2 text-sm hover:bg-gray-50 transition"
               >
                 Continue Shopping
               </button>
               <button
                 onClick={openReserve}
                 disabled={!list.length}
-                className="w-full bg-blue-600 text-white rounded px-4 py-2 text-sm"
+                className="w-full bg-blue-600 text-white rounded px-4 py-2.5 sm:py-2 text-sm hover:bg-blue-700 transition disabled:opacity-60"
               >
                 Reserve for Pickup
               </button>
@@ -415,10 +473,10 @@ export default function Cart() {
       {/* Reservation modal (same UX as Shop.jsx) */}
       {open && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="min-h-screen px-4 text-center flex items-center justify-center">
+          <div className="min-h-screen px-2 sm:px-4 text-center flex items-center justify-center py-4">
             <div className="fixed inset-0 bg-black/30" onClick={closeReserve} />
             
-            <div className="relative inline-block w-full max-w-2xl bg-white rounded-xl shadow-xl border border-gray-100 text-left align-middle">
+            <div className="relative inline-block w-full max-w-5xl bg-white rounded-xl shadow-xl border border-gray-100 text-left mx-auto">
               <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white">
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5 text-blue-600" />
@@ -429,9 +487,9 @@ export default function Cart() {
                 </button>
               </div>
 
-              <div className="max-h-[80vh] flex flex-col">
+              <div className="max-h-[85vh] sm:max-h-[80vh] flex flex-col">
                 <div className="flex-1 overflow-y-auto">
-                  <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="p-3 sm:p-4 grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     {/* Left side form */}
                     <div className="space-y-4">
                       <div className="grid grid-cols-2 gap-3">
@@ -610,6 +668,8 @@ export default function Cart() {
       <div className="mt-4">
         
       </div>
+      
+      <BottomNav />
     </div>
   );
 }
