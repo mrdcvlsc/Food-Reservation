@@ -1,4 +1,3 @@
-// src/components/mobile/BottomNav.jsx
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -10,24 +9,28 @@ import {
   Wallet,
   LogOut,
   Shield,
+  X,
+  ChevronUp,
+  History,
 } from "lucide-react";
 
-/**
- * Mobile Bottom Navigation
- *
- * - Safe-area aware
- * - Touch targets >= 56px
- * - Prefetch on hover/focus (adds <link rel="prefetch">)
- * - "More" sheet overlay with keyboard (Escape) + outside click + route-close
- * - Accessible: aria-current, aria-expanded, role dialog for sheet, focus management
- * - Accepts badgeCounts prop for dynamic badges (e.g. { orders: 3 })
- */
+const Badge = ({ count, color = "bg-rose-500" }) => {
+  if (!count || Number(count) <= 0) return null;
+  const label = count > 99 ? "99+" : String(count);
+  return (
+    <span
+      className={`absolute -top-1 -right-1.5 min-w-[16px] h-[16px] rounded-full ${color} text-white text-[9px] font-bold flex items-center justify-center px-1 shadow-sm ring-2 ring-white`}
+    >
+      {label}
+    </span>
+  );
+};
+
 export default function BottomNav({ badgeCounts = {} }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const sheetRef = useRef(null);
-  const firstSheetItemRef = useRef(null);
 
   const navItems = [
     { to: "/dashboard", label: "Home", Icon: Home, key: "home" },
@@ -37,22 +40,14 @@ export default function BottomNav({ badgeCounts = {} }) {
   ];
 
   const moreItems = [
-    { to: "/topup", label: "Top-Up", Icon: Wallet, key: "topup" },
-    { to: "/topup-history", label: "Top-Up History", Icon: Receipt, key: "topup-history" },
-    { to: "/security", label: "Security", Icon: Shield, key: "security" },
+    { to: "/topup", label: "Top-Up", Icon: Wallet },
+    { to: "/topup-history", label: "Top-Up History", Icon: History },
+    { to: "/security", label: "Security", Icon: Shield },
   ];
 
-  // CSS helpers: ensure minimum touch size and consistent style
-  const baseClasses =
-    "flex flex-col items-center justify-center gap-1 px-3 transition-colors min-w-[64px] min-h-[56px]"; // min-h for touch target
-  const activeClasses = "text-blue-600 font-medium";
-  const inactiveClasses = "text-gray-600 hover:text-blue-600";
-
-  // --- Prefetch helper (idempotent) ---
   const prefetch = (url) => {
     try {
       if (!url || typeof document === "undefined") return;
-      // avoid duplicate prefetch tags
       if (document.querySelector(`link[data-prefetch][href="${url}"]`)) return;
       const link = document.createElement("link");
       link.rel = "prefetch";
@@ -60,72 +55,53 @@ export default function BottomNav({ badgeCounts = {} }) {
       link.as = "document";
       link.setAttribute("data-prefetch", "true");
       document.head.appendChild(link);
-    } catch (e) {
-      // silent fail
-    }
+    } catch (e) {}
   };
 
-  // Prefetch common routes on mount idle (non-blocking)
   useEffect(() => {
-    const idle = requestIdleCallback
-      ? requestIdleCallback(() => {
-          prefetch("/shop");
-          prefetch("/register");
-          prefetch("/dashboard");
-        })
-      : setTimeout(() => {
-          prefetch("/shop");
-          prefetch("/register");
-          prefetch("/dashboard");
-        }, 1500);
+    const idle =
+      typeof requestIdleCallback === "function"
+        ? requestIdleCallback(() => {
+            prefetch("/shop");
+            prefetch("/dashboard");
+            prefetch("/transactions");
+          })
+        : setTimeout(() => {
+            prefetch("/shop");
+            prefetch("/dashboard");
+            prefetch("/transactions");
+          }, 1500);
 
     return () => {
-      if (typeof idle === "number") cancelIdleCallback?.(idle) ?? clearTimeout(idle);
+      if (typeof idle === "number") {
+        typeof cancelIdleCallback === "function"
+          ? cancelIdleCallback(idle)
+          : clearTimeout(idle);
+      }
     };
   }, []);
 
-  // Close sheet on route change
   useEffect(() => {
     setMoreOpen(false);
   }, [location.pathname]);
 
-  // Close sheet on Escape and trap focus to first element when opened
   useEffect(() => {
     if (!moreOpen) return;
 
-    function onKey(e) {
-      if (e.key === "Escape") {
-        setMoreOpen(false);
-      }
-      // basic focus trap: Tab from last -> first
-      if (e.key === "Tab") {
-        const sheet = sheetRef.current;
-        if (!sheet) return;
-        const focusable = sheet.querySelectorAll(
-          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-        );
-        if (!focusable.length) return;
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    }
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
 
-    document.addEventListener("keydown", onKey, { capture: true });
-    // move focus to first actionable element
-    setTimeout(() => firstSheetItemRef.current?.focus?.(), 0);
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
 
-    return () => document.removeEventListener("keydown", onKey, { capture: true });
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
   }, [moreOpen]);
 
   const handleLogout = () => {
-    // confirm + clean local state + navigate
     if (!window.confirm("Are you sure you want to logout?")) return;
     try {
       localStorage.removeItem("user");
@@ -136,96 +112,157 @@ export default function BottomNav({ badgeCounts = {} }) {
 
   return (
     <>
-      {/* More Menu Overlay (sheet) */}
       {moreOpen && (
         <div
-          className="md:hidden fixed inset-0 z-40 flex items-end"
+          className="md:hidden fixed inset-0 z-[100] flex items-end bg-black/40"
           onClick={() => setMoreOpen(false)}
-          aria-hidden={!moreOpen}
         >
           <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="More options"
             ref={sheetRef}
             onClick={(e) => e.stopPropagation()}
-            className="w-full bg-white rounded-t-xl shadow-lg border-t border-gray-200 animate-slide-up"
+            className="w-full bg-white rounded-t-3xl shadow-2xl max-h-[85vh] overflow-hidden"
             style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
           >
-            <div className="p-3 border-b bg-gray-50">
-              <h3 className="text-sm font-semibold text-gray-900">More</h3>
+            <div className="sticky top-0 bg-white z-10 border-b border-gray-100">
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <Menu className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">More Options</h3>
+                    <p className="text-xs text-gray-500">Additional features</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-gray-600" />
+                </button>
+              </div>
             </div>
 
-            <nav className="divide-y divide-gray-100" aria-label="More options navigation">
-              {moreItems.map(({ to, label, Icon }, idx) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className="flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors text-sm text-gray-900"
-                  onClick={() => setMoreOpen(false)}
-                  onMouseEnter={() => prefetch(to)}
-                  onFocus={() => prefetch(to)}
-                  ref={idx === 0 ? firstSheetItemRef : undefined}
-                >
-                  <Icon className="w-5 h-5 text-gray-600" />
-                  <span>{label}</span>
-                </NavLink>
-              ))}
+            <nav className="overflow-y-auto max-h-[calc(85vh-80px)] p-3">
+              <div className="space-y-2 mb-3">
+                {moreItems.map(({ to, label, Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    onClick={() => setMoreOpen(false)}
+                    onMouseEnter={() => prefetch(to)}
+                    onFocus={() => prefetch(to)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 p-4 rounded-2xl transition-all ${
+                        isActive
+                          ? "bg-blue-50 text-blue-600 shadow-sm"
+                          : "bg-gray-50 text-gray-700 hover:bg-gray-100 active:scale-95"
+                      }`
+                    }
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="text-sm font-medium">{label}</span>
+                  </NavLink>
+                ))}
+              </div>
 
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 transition-colors text-sm text-red-600 text-left"
-              >
-                <LogOut className="w-5 h-5 text-red-600" />
-                <span className="font-medium">Logout</span>
-              </button>
+              <div className="pt-3 border-t border-gray-200">
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-red-50 text-red-600 hover:bg-red-100 transition-colors active:scale-95"
+                >
+                  <LogOut className="w-5 h-5" />
+                  <span className="font-semibold">Logout</span>
+                </button>
+              </div>
             </nav>
           </div>
         </div>
       )}
 
-      {/* Bottom Navigation Bar */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40"
-        aria-label="Mobile primary"
-        style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+        className="md:hidden fixed bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] z-[99]"
+        style={{
+          paddingBottom: "max(0.25rem, env(safe-area-inset-bottom))",
+        }}
       >
-        <div className="flex items-center justify-around max-w-7xl mx-auto">
+        <div className="flex items-center justify-around px-2 py-1">
           {navItems.map(({ to, label, Icon, key }) => (
             <NavLink
               key={to}
               to={to}
               end={to === "/dashboard"}
-              className={({ isActive }) => `${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+              className={({ isActive }) =>
+                `flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-all duration-200 ${
+                  isActive ? "text-blue-600" : "text-gray-600 active:scale-95"
+                }`
+              }
               aria-label={label}
-              aria-current={({ isActive }) => (isActive ? "page" : undefined)}
               onMouseEnter={() => prefetch(to)}
               onFocus={() => prefetch(to)}
             >
-              <div className="relative">
-                <Icon className="w-5 h-5" aria-hidden="true" />
-                {/* optional badge: pass badgeCounts.orders etc */}
-                {key === "orders" && badgeCounts?.orders > 0 && (
-                  <span className="absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center px-1">
-                    {badgeCounts.orders > 99 ? "99+" : badgeCounts.orders}
+              {({ isActive }) => (
+                <>
+                  <div className="relative">
+                    <div
+                      className={`transition-all duration-200 ${
+                        isActive ? "scale-110" : ""
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    {key === "orders" && (
+                      <Badge count={badgeCounts.orders} color="bg-rose-500" />
+                    )}
+                    {key === "shop" && (
+                      <Badge count={badgeCounts.cart} color="bg-blue-500" />
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] transition-all duration-200 ${
+                      isActive ? "font-semibold" : "font-medium"
+                    }`}
+                  >
+                    {label}
                   </span>
-                )}
-              </div>
-              <span className="text-[11px] mt-0.5">{label}</span>
+                  {isActive && (
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-t-full" />
+                  )}
+                </>
+              )}
             </NavLink>
           ))}
 
-          {/* More button */}
           <button
+            className={`flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-all duration-200 ${
+              moreOpen ? "text-blue-600" : "text-gray-600 active:scale-95"
+            }`}
             onClick={() => setMoreOpen((s) => !s)}
-            className={`${baseClasses} ${moreOpen ? activeClasses : inactiveClasses}`}
             aria-label="More options"
             aria-expanded={moreOpen}
             onMouseEnter={() => prefetch("/topup")}
             onFocus={() => prefetch("/topup")}
           >
-            <Menu className="w-5 h-5" aria-hidden="true" />
-            <span className="text-[11px] mt-0.5">More</span>
+            <div
+              className={`transition-all duration-200 ${
+                moreOpen ? "scale-110 rotate-180" : ""
+              }`}
+            >
+              <ChevronUp className="w-5 h-5" />
+            </div>
+            <span
+              className={`text-[10px] transition-all duration-200 ${
+                moreOpen ? "font-semibold" : "font-medium"
+              }`}
+            >
+              More
+            </span>
+            {moreOpen && (
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-600 rounded-t-full" />
+            )}
           </button>
         </div>
       </nav>

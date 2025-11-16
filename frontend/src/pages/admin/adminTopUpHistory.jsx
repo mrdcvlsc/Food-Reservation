@@ -1,6 +1,7 @@
 // AdminTopUpHistory.jsx
 import React, { useEffect, useState, useMemo } from "react";
 import Navbar from "../../components/adminavbar";
+import AdminBottomNav from "../../components/mobile/AdminBottomNav";
 import { api } from "../../lib/api";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
@@ -43,7 +44,6 @@ export default function AdminTopUpHistory() {
   const [providerFilter, setProviderFilter] = useState("all");
 
   const [selected, setSelected] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
 
   const load = async () => {
     try {
@@ -59,7 +59,7 @@ export default function AdminTopUpHistory() {
             break;
           }
         } catch (e) {
-          // try next
+          // try next endpoint
         }
       }
       const raw = Array.isArray(data) ? data : [];
@@ -166,8 +166,11 @@ export default function AdminTopUpHistory() {
 
   const viewTopUp = (t) => setSelected(t);
 
+  // small helper for passing to AdminBottomNav
+  const pendingCount = rawList.filter((r) => String(r.status).toLowerCase() === "pending").length;
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-8">
       <Navbar />
       <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
         <div className="flex items-center gap-2 mb-2">
@@ -381,6 +384,11 @@ export default function AdminTopUpHistory() {
           </div>
         </div>
       )}
+
+      {/* Fixed mobile bottom nav (hidden on lg+) */}
+      <div className="fixed inset-x-0 bottom-0 z-50 lg:hidden">
+        <AdminBottomNav badgeCounts={{ topups: pendingCount }} />
+      </div>
     </div>
   );
 }
