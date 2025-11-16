@@ -101,7 +101,7 @@
       "stock": 10,
       "img": "/uploads/1761538656602_927934.jpg",
       "visible": false,
-      "updatedAt": "2025-11-16T11:53:22.646Z"
+      "updatedAt": "2025-11-16T12:22:20.445Z"
     },
     {
       "id": "ITM-11",
@@ -5065,7 +5065,9 @@
       "grade": "",
       "section": "",
       "balance": 392,
-      "studentId": "344667121"
+      "studentId": "344667121",
+      "profilePictureUrl": "/uploads/profile-usr_meusxal8-1763296113838.png",
+      "updatedAt": "2025-11-16T12:28:33.838Z"
     },
     {
       "id": "usr_mh0h1va7",
@@ -15068,9 +15070,21 @@
           "qty": 1,
           "name": "",
           "price": 0
+        },
+        {
+          "itemId": "ITM-7",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        },
+        {
+          "itemId": "ITM-2",
+          "qty": 1,
+          "name": "",
+          "price": 0
         }
       ],
-      "updatedAt": "2025-11-15T10:25:55.650Z"
+      "updatedAt": "2025-11-16T12:27:09.076Z"
     },
     {
       "id": "cart_user_usr_mhkms3f1",
