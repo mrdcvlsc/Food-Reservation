@@ -12,6 +12,8 @@ import {
   RefreshCw,
   Loader2,
   ShieldCheck,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,14 +28,11 @@ const CANON = ["Pending", "Approved", "Rejected", "Claimed"];
 function normalizeStatus(raw) {
   const s = String(raw || "").trim();
   if (!s) return "Pending";
-  // Return the actual status - don't default everything to Pending!
-  // Only normalize known variations
   const lower = s.toLowerCase();
   if (["pending"].includes(lower)) return "Pending";
   if (["approved", "approve"].includes(lower)) return "Approved";
   if (["rejected", "declined", "cancelled"].includes(lower)) return "Rejected";
   if (["claimed", "pickedup", "picked_up", "picked-up"].includes(lower)) return "Claimed";
-  // Return original status for Preparing, Ready, etc.
   return s;
 }
 
@@ -64,8 +63,9 @@ export default function AdminReservations() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
-  const [tab, setTab] = useState("Pending"); // make Pending the default (admin workflow)
-  const [selected, setSelected] = useState({}); // id -> true
+  const [tab, setTab] = useState("Pending");
+  const [selected, setSelected] = useState({});
+  const [expandedCards, setExpandedCards] = useState({}); // for mobile expand/collapse
 
   // fetch
   const fetchReservations = async () => {
@@ -96,7 +96,6 @@ export default function AdminReservations() {
           : Array.isArray(r.order)
           ? r.order
           : [];
-        // prefer explicit student fields, then nested user object
         const student =
           r.student ||
           r.studentName ||
@@ -106,7 +105,6 @@ export default function AdminReservations() {
           "Student";
         const grade = r.grade || r.gradeLevel || r.grade_level || "";
         const section = r.section || r.classSection || r.section_name || "";
-        // normalize "When" / pickup label
         const when = r.when || r.slotLabel || r.slot || r.pickup || r.pickupTime || "";
         const status = normalizeStatus(r.status);
         const created =
@@ -119,7 +117,7 @@ export default function AdminReservations() {
         const createdNum = created ? new Date(created).getTime() : 0;
         return { ...r, items, student, grade, section, when, status, createdNum };
       })
-      .sort((a, b) => b.createdNum - a.createdNum); // newest first
+      .sort((a, b) => b.createdNum - a.createdNum);
   }, [rows]);
 
   // counts for tabs
@@ -163,7 +161,6 @@ export default function AdminReservations() {
     setBusyId(id);
     try {
       const data = await api.patch(`/reservations/admin/${id}`, { status });
-      // optimistic fallback if server doesn't echo the obj
       const patch = data && (data.reservation || data);
       if (patch && (patch.id || patch.status)) {
         setRows((rs) => rs.map((r) => (String(r.id) === String(id) ? { ...r, ...patch } : r)));
@@ -171,9 +168,7 @@ export default function AdminReservations() {
         await fetchReservations();
       }
 
-      // notify other UI parts to reload data
       try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
-      // if the reservation just became Approved, menu stock likely changed -> notify menu listeners
       if (String(status).toLowerCase() === "approved") {
         try { window.dispatchEvent(new Event("menu:updated")); } catch {}
       }
@@ -185,7 +180,7 @@ export default function AdminReservations() {
     }
   };
 
-  // bulk actions (only for Pending)
+  // bulk actions
   const selectedIds = useMemo(() => Object.keys(selected).filter((k) => selected[k]), [selected]);
   const anySelected = selectedIds.length > 0;
 
@@ -194,7 +189,6 @@ export default function AdminReservations() {
     const ids = selectedIds.slice();
     setSelected({});
     for (const id of ids) {
-      // show subtle progress by marking busyId briefly
       setBusyId(id);
       try {
         await api.patch(`/reservations/admin/${id}`, { status: nextStatus });
@@ -206,218 +200,274 @@ export default function AdminReservations() {
       }
     }
 
-    // notify other UI parts once
     try { window.dispatchEvent(new Event("reservations:updated")); } catch {}
     if (String(nextStatus).toLowerCase() === "approved") {
       try { window.dispatchEvent(new Event("menu:updated")); } catch {}
     }
   };
 
+  const toggleExpand = (id) => {
+    setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // derive badge counts for bottom nav
+  const badgeCounts = {
+    orders: 0,
+    topups: 0,
+    reservations: counts["Pending"] || 0,
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-3 sm:py-8 space-y-3 sm:space-y-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <CalendarClock className="w-6 h-6 text-blue-600" />
+            <CalendarClock className="w-6 h-6 sm:w-7 sm:h-7 text-blue-600" />
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-              Reservations {tab !== "All" ? `(${tab})` : ""}
+              Reservations
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative">
+          {/* Search bar - full width on mobile */}
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search name, ID, grade/section…"
-                className="w-72 sm:w-80 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Search student, ID, grade..."
+                className="w-full border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
             <button
               onClick={fetchReservations}
               disabled={loading}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50 text-sm disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50 text-sm disabled:opacity-60 whitespace-nowrap"
+              aria-label="Refresh reservations"
             >
               {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Loading…
-                </>
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <>
-                  <RefreshCw className="w-4 h-4" />
-                  Refresh
-                </>
+                <RefreshCw className="w-4 h-4" />
               )}
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
 
-        {/* Tabs with counts */}
-        <div className="flex items-center gap-2">
-          {["All", ...CANON].map((t) => {
-            const active = tab === t;
-            return (
-              <button
-                key={t}
-                onClick={() => setTab(t)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition ${
-                  active
-                    ? "bg-gray-900 text-white border-gray-900"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                <span className="inline-flex items-center gap-2">
-                  {t}
-                  <span
-                    className={`px-1.5 py-0.5 rounded text-[11px] ${
-                      active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {counts[t] ?? 0}
+        {/* Tabs - scrollable on mobile */}
+        <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-2 min-w-max">
+            {["All", ...CANON].map((t) => {
+              const active = tab === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border transition whitespace-nowrap ${
+                    active
+                      ? "bg-gray-900 text-white border-gray-900"
+                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    {t}
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[10px] sm:text-[11px] ${
+                        active ? "bg-white/20 text-white" : "bg-gray-100 text-gray-700"
+                      }`}
+                    >
+                      {counts[t] ?? 0}
+                    </span>
                   </span>
-                </span>
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Bulk bar (only in Pending tab) */}
+        {/* Bulk action bar - responsive */}
         {tab === "Pending" && (
-          <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl p-3">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
-              <span>
-                {anySelected ? `${selectedIds.length} selected` : "Select rows to bulk approve/reject"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={!anySelected}
-                onClick={() => bulkUpdate("Approved")}
-                className="px-3 py-1.5 rounded-lg text-xs bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
-              >
-                Approve Selected
-              </button>
-              <button
-                disabled={!anySelected}
-                onClick={() => bulkUpdate("Rejected")}
-                className="px-3 py-1.5 rounded-lg text-xs bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50"
-              >
-                Reject Selected
-              </button>
+          <div className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                <ShieldCheck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span>
+                  {anySelected ? `${selectedIds.length} selected` : "Select items to bulk approve/reject"}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={!anySelected}
+                  onClick={() => bulkUpdate("Approved")}
+                  className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Approve Selected
+                </button>
+                <button
+                  disabled={!anySelected}
+                  onClick={() => bulkUpdate("Rejected")}
+                  className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs sm:text-sm bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Reject Selected
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* List */}
         {loading ? (
-          <div className="bg-white rounded-xl border border-gray-100 p-10 text-center text-sm text-gray-500">
+          <div className="bg-white rounded-xl border border-gray-100 p-8 sm:p-10 text-center text-sm text-gray-500">
+            <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
             Loading reservations…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="bg-white rounded-xl border border-gray-100 p-10 text-center text-sm text-gray-500">
-            No reservations for this filter.
+          <div className="bg-white rounded-xl border border-gray-100 p-8 sm:p-10 text-center text-sm text-gray-500">
+            {q ? "No reservations match your search." : "No reservations for this filter."}
           </div>
         ) : (
           <div className="space-y-3">
             {filtered.map((r) => {
               const isPending = r.status === "Pending";
               const isChecked = !!selected[r.id];
+              const isExpanded = !!expandedCards[r.id];
 
               return (
-                <div key={r.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                  <div className="flex items-start justify-between gap-3">
+                <div key={r.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  {/* Card Header - Always visible */}
+                  <div className="p-3 sm:p-4">
                     <div className="flex items-start gap-3">
-                      {/* checkbox only in Pending tab */}
+                      {/* Checkbox - only in Pending tab */}
                       {tab === "Pending" && (
                         <input
                           type="checkbox"
-                          className="mt-1 h-4 w-4 rounded border-gray-300"
+                          className="mt-1 h-4 w-4 rounded border-gray-300 flex-shrink-0"
                           checked={isChecked}
                           onChange={(e) =>
                             setSelected((m) => ({ ...m, [r.id]: e.target.checked }))
                           }
                         />
                       )}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-500">RES-{r.id}</span>
+
+                      {/* Main info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs sm:text-sm text-gray-500 font-mono">RES-{r.id}</span>
                           <Pill status={r.status} />
                         </div>
-                        <div className="mt-1 text-gray-900 font-medium">
-                          {r.student} {r.studentId ? <span className="ml-2 text-sm font-mono text-gray-500">{r.studentId}</span> : null} • {r.grade}
-                          {r.section ? `-${r.section}` : ""}
+                        <div className="mt-1 text-sm sm:text-base text-gray-900 font-medium">
+                          {r.student}
+                          {r.studentId && (
+                            <span className="ml-2 text-xs sm:text-sm font-mono text-gray-500">
+                              {r.studentId}
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs sm:text-sm text-gray-600 mt-0.5">
+                          {r.grade}{r.section ? `-${r.section}` : ""}
                         </div>
                         {r.when && (
-                          <div className="text-sm text-gray-600">Pickup Time: {r.when}</div>
+                          <div className="text-xs sm:text-sm text-gray-600 mt-1">
+                            Pickup: {r.when}
+                          </div>
                         )}
-                        {/* show claimed timestamp when reservation is Claimed */}
                         {r.status === "Claimed" && (r.claimedAt || r.pickedAt || r.picked_at || r.claimed_at) && (
-                          <div className="text-xs text-gray-500 mt-1">Claimed: {new Date(r.claimedAt || r.pickedAt || r.picked_at || r.claimed_at).toLocaleString()}</div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Claimed: {new Date(r.claimedAt || r.pickedAt || r.picked_at || r.claimed_at).toLocaleString()}
+                          </div>
                         )}
+                      </div>
+
+                      {/* Total - Right side */}
+                      <div className="text-right flex-shrink-0">
+                        <div className="text-xs text-gray-500">Total</div>
+                        <div className="text-base sm:text-lg font-semibold text-gray-900">
+                          {peso.format(total(r))}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Total</div>
-                      <div className="text-lg font-semibold">{peso.format(total(r))}</div>
-                    </div>
+                    {/* Expand/Collapse button - Mobile only */}
+                    <button
+                      onClick={() => toggleExpand(r.id)}
+                      className="md:hidden mt-3 w-full flex items-center justify-center gap-2 py-2 text-xs text-gray-600 hover:text-gray-900 border-t"
+                    >
+                      {isExpanded ? (
+                        <>
+                          <span>Hide Items</span>
+                          <ChevronUp className="w-4 h-4" />
+                        </>
+                      ) : (
+                        <>
+                          <span>View {r.items?.length || 0} Item{(r.items?.length || 0) !== 1 ? 's' : ''}</span>
+                          <ChevronDown className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
                   </div>
 
-                  <div className="mt-3 border-t pt-3">
-                    {(r.items || []).map((it, idx) => {
-                      const qty = Number(it.qty ?? it.quantity ?? 1);
-                      return (
-                        <div key={idx} className="flex items-center justify-between text-sm py-1">
-                          <div className="text-gray-700">{it.name || it.product || "Item"}</div>
-                          <div className="text-gray-600">x{qty}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* Actions */}
-                  {isPending && (
-                    <div className="mt-3 flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => updateStatus(r.id, "Approved")}
-                        disabled={busyId === r.id}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
-                      >
-                        {busyId === r.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Check className="w-4 h-4" />
-                        )}
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => updateStatus(r.id, "Rejected")}
-                        disabled={busyId === r.id}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-60"
-                      >
-                        {busyId === r.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <X className="w-4 h-4" />
-                        )}
-                        Reject
-                      </button>
+                  {/* Items list - Hidden on mobile unless expanded, always visible on desktop */}
+                  <div className={`border-t ${isExpanded ? 'block' : 'hidden'} md:block`}>
+                    <div className="p-3 sm:p-4 space-y-2">
+                      {(r.items || []).map((it, idx) => {
+                        const qty = Number(it.qty ?? it.quantity ?? 1);
+                        const itemPrice = Number(it.price ?? it.unitPrice ?? it.amount ?? 0);
+                        return (
+                          <div key={idx} className="flex items-center justify-between text-xs sm:text-sm">
+                            <div className="text-gray-700 flex-1 min-w-0 truncate">
+                              {it.name || it.product || "Item"}
+                            </div>
+                            <div className="text-gray-600 ml-3 flex-shrink-0">
+                              x{qty} = {peso.format(itemPrice * qty)}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  )}
+
+                    {/* Actions - only for Pending */}
+                    {isPending && (
+                      <div className="p-3 sm:p-4 bg-gray-50 border-t flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => updateStatus(r.id, "Approved")}
+                          disabled={busyId === r.id}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60"
+                        >
+                          {busyId === r.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Check className="w-4 h-4" />
+                          )}
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => updateStatus(r.id, "Rejected")}
+                          disabled={busyId === r.id}
+                          className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-60"
+                        >
+                          {busyId === r.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <X className="w-4 h-4" />
+                          )}
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
       </main>
-      {/* ...existing code... */}
-      <AdminBottomNav />
+
+      {/* Bottom Navigation - Mobile only */}
+      <AdminBottomNav badgeCounts={badgeCounts} />
     </div>
   );
 }
