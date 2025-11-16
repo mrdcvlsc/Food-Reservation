@@ -40,15 +40,17 @@ exports.create = async (req, res) => {
       console.log('[RESERVATION] Create: missing pickup slot');
       return res.status(400).json({ error: "Missing pickup slot" });
     }
+
     const user = db.users.find(x => x.id === req?.user.id);
-    console.log('mag pakita ka na user = ', user);
-    let studentName;
-    // Validate and normalize items (no stock changes here)
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    // Validate and normalize items
     const normalized = [];
     for (const it of items) {
       const { id, qty } = it || {};
 
-      // Robust item lookup (exact id or suffix match like "abc-123")
       let m = (db.menu || []).find((x) => String(x.id) === String(id));
       if (!m) {
         const incoming = String(id || "").trim();
@@ -81,14 +83,45 @@ exports.create = async (req, res) => {
         price: Number(m.price) || 0,
         qty: q,
       });
-      console.log('m.name = ', m?.name)
-      console.log('m.id = ', m?.id)
     }
 
     const total = normalized.reduce((s, r) => s + r.price * r.qty, 0);
+
+    // **CHECK WALLET BALANCE BEFORE CREATING RESERVATION**
+    user.balance = Number(user.balance) || 0;
+    if (user.balance < total) {
+      return res.status(400).json({ error: "Insufficient balance. Please top-up first." });
+    }
+
+    // **DEDUCT WALLET IMMEDIATELY**
+    user.balance -= total;
+
+    // **DEDUCT STOCK IMMEDIATELY**
+    for (const it of normalized) {
+      const menuItem = (db.menu || []).find(m => String(m.id) === String(it.id));
+      if (menuItem && typeof menuItem.stock === "number") {
+        menuItem.stock = Math.max(0, menuItem.stock - it.qty);
+      }
+    }
+
+    // Create transaction (debit) IMMEDIATELY
+    db.transactions = db.transactions || [];
+    const txId = nextId(db.transactions, "TX");
+    const tx = {
+      id: txId,
+      userId: user.id,
+      title: "Reservation Hold",
+      ref: null, // will be set when reservation is created
+      amount: total,
+      direction: "debit",
+      status: "Pending",
+      createdAt: new Date().toISOString(),
+    };
+    db.transactions.push(tx);
+
     const reservation = {
       id: nextId(db.reservations, "RES"),
-      userId: req.user?.id || null,
+      userId: user.id,
       student: user.name || req.user?.name,
       grade,
       section,
@@ -97,34 +130,22 @@ exports.create = async (req, res) => {
       items: normalized,
       total,
       status: "Pending",
+      transactionId: tx.id,
+      charged: true,
+      chargedAt: new Date().toISOString(),
+      stockDeducted: true,
       createdAt: new Date().toISOString(),
     };
 
-    // Best effort: resolve user from student (legacy/guest)
-    if (!reservation.userId) {
-      const studentNorm = String(reservation.student || "").trim().toLowerCase();
-      if (studentNorm) {
-        const found = (db.users || []).find((u) => {
-          const name = String(u.name || "").trim().toLowerCase();
-          const email = String(u.email || "").trim().toLowerCase();
-          const uid = String(u.id || "").trim().toLowerCase();
-          return studentNorm === name || studentNorm === email || studentNorm === uid;
-        });
-        if (found) {
-          reservation.userId = found.id; // <-- ensure we attach resolved userId
-        }
-      }
-      console.log('studentNorm = ', studentNorm)
-    }
-    console.log(req.body)
-    console.log('req.user= ', req?.user)
+    // Update transaction with reservation reference
+    tx.ref = reservation.id;
+
     db.reservations = db.reservations || [];
     db.reservations.push(reservation);
     await save(db);
 
-    // Notify admins about new reservation (best-effort)
+    // Notify admins
     try {
-      const user = db.users.find(u => String(u.id) === String(req.user.id));
       Notifications.addNotification({
         id: "notif_" + Date.now().toString(36),
         for: "admin",
@@ -137,7 +158,6 @@ exports.create = async (req, res) => {
         type: "reservation:created",
         title: "New reservation submitted",
         body: `${user?.name || reservation.student || req.user?.email || req.user?.id} submitted a reservation`,
-        // include note and slot so admins see "less sauce" etc.
         data: { 
           reservationId: reservation.id,
           items: reservation.items,
@@ -261,212 +281,55 @@ exports.setStatus = async (req, res) => {
         return res.status(400).json({ error: `Cannot approve: current status is "${prevNorm}". Only pending reservations can be approved.` });
       }
 
-      // Resolve user from reservation.userId or student (legacy)
-      if (!row.userId) {
-        const studentNorm = String(row.student || "").trim().toLowerCase();
-        if (studentNorm) {
-          const found = (db.users || []).find((u) => {
-            const name = String(u.name || "").trim().toLowerCase();
-            const email = String(u.email || "").trim().toLowerCase();
-            const uid = String(u.id || "").trim().toLowerCase();
-            return studentNorm === name || studentNorm === email || studentNorm === uid;
-          });
-          if (found) {
-            row.userId = found.id; // <-- attach userId so /reservations/mine will include it
-          }
-        }
-      }
-
-      // (do not require user here — existing transaction or later student-resolution can supply user)
-      // Stock check
+      // **SKIP WALLET CHECK - ALREADY DEDUCTED AT CREATION**
+      
+      // Stock check (should already be deducted, but verify)
       for (const it of row.items || []) {
-        const menuItem = (db.menu || []).find(
-          (m) => String(m.id) === String(it.id)
-        );
+        const menuItem = (db.menu || []).find(m => String(m.id) === String(it.id));
         if (!menuItem) {
           return res.status(400).json({ error: `Item ${it.id} not found` });
         }
-        if (
-          typeof menuItem.stock === "number" &&
-          menuItem.stock < (it.qty || 0)
-        ) {
-          return res
-            .status(400)
-            .json({ error: `Not enough stock for ${menuItem.name}` });
-        }
       }
 
-      // If a transaction already exists that references this reservation,
-      // treat the reservation as already charged/approved (idempotency and
-      // legacy-data fix). This avoids 'Reservation has no user to charge'
-      // when transactions were created earlier but the reservation record
-      // wasn't updated.
-      const existingTx = (db.transactions || []).find(
-        (t) => String(t.ref || "") === String(row.id)
-      );
-      if (existingTx) {
-        // ensure reservation is linked to the user from the existing transaction
-        if (!row.transactionId) row.transactionId = existingTx.id;
-        if (!row.userId && existingTx.userId) row.userId = existingTx.userId;
-
-        // Deduct stock if it wasn't already deducted for this reservation
-        if (!row.stockDeducted) {
-          try {
-            const adj = await adjustReservationStock(db, row, "deduct");
-            if (!adj.ok) {
-              // do not fail existing-tx branch hard — log and continue, but attach problems
-              console.warn("[RESERVATION] existingTx stock adjust problems:", adj.problems);
-            } else {
-              row.stockDeducted = true;
-            }
-            await save(db);
-          } catch (e) {
-            console.error("[RESERVATION] failed to adjust stock for existingTx:", e && e.message);
-          }
-        }
-
-        row.charged = true;
-        row.chargedAt = row.chargedAt || existingTx.createdAt || new Date().toISOString();
-        row.status = "Approved";
-        row.updatedAt = new Date().toISOString();
-        await save(db);
-
-        // notify user about approval (best-effort)
-        try {
-          const targetUser = row.userId || existingTx.userId;
-          if (targetUser) {
-            Notifications.addNotification({
-              id: "notif_" + Date.now().toString(36),
-              for: targetUser,
-              actor: req.user && req.user.id,
-              type: "reservation:status",
-              title: `Reservation ${row.id} Approved`,
-              body: `Your reservation ${row.id} has been approved.`,
-              data: { 
-                reservationId: row.id, 
-                status: "Approved",
-                items: row.items,
-                total: row.total,
-                note: row.note || "",
-                slot: row.when || row.slot || "",
-                grade: row.grade || "",
-                section: row.section || "",
-                student: row.student || "",
-                transactionId: existingTx.id
-              },
-              read: false,
-              createdAt: new Date().toISOString(),
-            });
-          }
-        } catch (e) {
-          console.error("Notification publish failed", e && e.message);
-        }
-
-        const user = (db.users || []).find((u) => String(u.id) === String(existingTx.userId));
-        return res.json({ status: 200, data: { reservation: row, transaction: existingTx, user } });
+      // Update transaction status from Pending to Success
+      const tx = (db.transactions || []).find(t => String(t.id) === String(row.transactionId));
+      if (tx) {
+        tx.status = "Success";
       }
 
-      // Resolve user from the reservation 'student' field (legacy/guest resolution)
-      if (!row.userId) {
-        const studentNorm = String(row.student || "").trim().toLowerCase();
-        if (studentNorm) {
-          const found = (db.users || []).find((u) => {
-            const name = String(u.name || "").trim().toLowerCase();
-            const email = String(u.email || "").trim().toLowerCase();
-            const uid = String(u.id || "").trim().toLowerCase();
-            return (
-              studentNorm === name || studentNorm === email || studentNorm === uid
-            );
-          });
-          if (found) row.userId = found.id;
-        }
-      }
-      if (!row.userId) {
-        return res.status(400).json({ error: "Reservation has no user to charge" });
-      }
-
-      const user = (db.users || []).find(
-        (u) => String(u.id) === String(row.userId)
-      );
-      if (!user) return res.status(400).json({ error: "User not found" });
-
-      user.balance = Number(user.balance) || 0;
-      const total = Number(row.total || 0);
-      if (user.balance < total) {
-        return res.status(400).json({ error: "Insufficient balance" });
-      }
-
-      // Deduct wallet & stock
-      user.balance -= total;
-
-      // perform stock deduction and mark flag
-      const adj = await adjustReservationStock(db, row, "deduct");
-      if (!adj.ok) {
-        // this should rarely happen because we pre-checked stock, but surface error if it does
-        return res.status(500).json({ error: "Failed to adjust stock", details: adj.problems });
-      }
-      row.stockDeducted = true;
-
-      for (const it of row.items || []) {
-        // keep legacy per-item menu stock decrement (menu already adjusted in adjustReservationStock)
-        // nothing additional needed here
-      }
-
-      // Create transaction (debit)
-      db.transactions = db.transactions || [];
-      const txId = nextId(db.transactions, "TX");
-      const tx = {
-        id: txId,
-        userId: user.id,
-        title: "Reservation",
-        ref: row.id,
-        amount: total,
-        direction: "debit",
-        status: "Success",
-        createdAt: new Date().toISOString(),
-      };
-      db.transactions.push(tx);
-
-      // Update reservation flags
       row.status = "Approved";
-      row.charged = true;
-      row.chargedAt = new Date().toISOString();
-      row.transactionId = tx.id;
       row.updatedAt = new Date().toISOString();
-
       await save(db);
 
-      // notify user about approval (best-effort)
+      // Notify user
       try {
-        const targetUser = row.userId;
-        if (targetUser) {
-          Notifications.addNotification({
-            id: "notif_" + Date.now().toString(36),
-            for: targetUser,
-            actor: req.user && req.user.id,
-            type: "reservation:status",
-            title: `Reservation ${row.id} Approved`,
-            body: `Your reservation ${row.id} has been approved.`,
-            data: { 
-              reservationId: row.id, 
-              status: "Approved",
-              items: row.items,
-              total: row.total,
-              note: row.note || "",
-              slot: row.when || row.slot || "",
-              grade: row.grade,
-              section: row.section,
-              student: row.student,
-              transactionId: tx.id
-            },
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-        }
+        Notifications.addNotification({
+          id: "notif_" + Date.now().toString(36),
+          for: row.userId,
+          actor: req.user && req.user.id,
+          type: "reservation:status",
+          title: `Reservation ${row.id} Approved`,
+          body: `Your reservation ${row.id} has been approved.`,
+          data: { 
+            reservationId: row.id, 
+            status: "Approved",
+            items: row.items,
+            total: row.total,
+            note: row.note || "",
+            slot: row.when || row.slot || "",
+            grade: row.grade,
+            section: row.section,
+            student: row.student,
+            transactionId: row.transactionId
+          },
+          read: false,
+          createdAt: new Date().toISOString(),
+        });
       } catch (e) {
         console.error("Notification publish failed", e && e.message);
       }
 
+      const user = (db.users || []).find((u) => String(u.id) === String(row.userId));
       return res.json({ status: 200, data: { reservation: row, transaction: tx, user } });
     }
 
@@ -477,85 +340,49 @@ exports.setStatus = async (req, res) => {
         return res.status(400).json({ error: "Refund/cancellation not allowed for current order state" });
       }
 
-      // Resolve userId (prefer reservation.userId, then transaction, then student best-effort)
-      let targetUserId = row.userId || null;
       const total = Number(row.total || 0);
-
-      // Try resolve from existing transaction
-      if (!targetUserId) {
-        const existingTx = (db.transactions || []).find((t) => String(t.ref || "") === String(row.id));
-        if (existingTx && existingTx.userId) targetUserId = existingTx.userId;
-      }
-
-      // Best-effort resolve from student field
-      if (!targetUserId && row.student) {
-        const studentNorm = String(row.student).trim().toLowerCase();
-        if (studentNorm) {
-          const found = (db.users || []).find((u) => {
-            const name = String(u.name || "").trim().toLowerCase();
-            const email = String(u.email || "").trim().toLowerCase();
-            const uid = String(u.id || "").trim().toLowerCase();
-            return studentNorm === name || studentNorm === email || studentNorm === uid;
-          });
-          if (found) targetUserId = found.id;
-        }
-      }
-
-      // Prevent duplicate refunds: check for any existing credit/refund txn referencing this reservation
-      const alreadyRefunded = (db.transactions || []).some((t) => {
-        const refMatch = String(t.ref || "") === String(row.id);
-        const isCredit = t.direction === "credit" || t.type === "Refund" || String(t.title || "").toLowerCase().includes("refund");
-        return refMatch && isCredit;
-      });
-
-      let refundTx = null;
-      // If we have a user and amount > 0 and not already refunded => apply refund
-      if (!alreadyRefunded && targetUserId && total > 0) {
+      
+      // **RESTORE WALLET & STOCK IF NOT ALREADY REFUNDED**
+      if (!row.refunded && row.charged && total > 0) {
         db.users = db.users || [];
-        const user = db.users.find((u) => String(u.id) === String(targetUserId));
+        const user = db.users.find(u => String(u.id) === String(row.userId));
         if (user) {
           user.balance = Number(user.balance || 0) + total;
-
-          // record refund transaction
-          db.transactions = db.transactions || [];
-          const txId = nextId(db.transactions, "TX");
-          refundTx = {
-            id: txId,
-            userId: user.id,
-            title: "Refund",
-            ref: row.id,
-            amount: total,
-            direction: "credit",
-            status: "Success",
-            createdAt: new Date().toISOString(),
-          };
-          db.transactions.push(refundTx);
         }
-      }
 
-      // If previous was Approved, restore stock that was deducted earlier
-      if (prev === "Approved" && row.stockDeducted) {
-        try {
-          const adj = await adjustReservationStock(db, row, "restore");
-          if (!adj.ok) {
-            console.warn("[RESERVATION] restore stock problems:", adj.problems);
+        // Restore stock
+        if (row.stockDeducted) {
+          for (const it of row.items || []) {
+            const menuItem = (db.menu || []).find(m => String(m.id) === String(it.id));
+            if (menuItem && typeof menuItem.stock === "number") {
+              menuItem.stock = Number(menuItem.stock) + it.qty;
+            }
           }
-          // clear flag so repeated transitions won't double-restore
-          row.stockDeducted = false;
-        } catch (e) {
-          console.error("[RESERVATION] failed to restore stock on refund:", e && e.message);
         }
+
+        // Create refund transaction
+        db.transactions = db.transactions || [];
+        const refundTx = {
+          id: nextId(db.transactions, "TX"),
+          userId: row.userId,
+          title: "Refund",
+          ref: row.id,
+          amount: total,
+          direction: "credit",
+          status: "Success",
+          createdAt: new Date().toISOString(),
+        };
+        db.transactions.push(refundTx);
+
+        row.refunded = true;
+        row.refundTransactionId = refundTx.id;
       }
 
-      // Update reservation status and timestamp
       row.status = "Rejected";
       row.updatedAt = new Date().toISOString();
-      // attach resolved userId if we found one
-      if (targetUserId && !row.userId) row.userId = targetUserId;
-
       await save(db);
 
-      // Send notification with FULL details (best-effort)
+      // Notify user
       try {
         if (row.userId) {
           Notifications.addNotification({
@@ -564,7 +391,7 @@ exports.setStatus = async (req, res) => {
             actor: req.user && req.user.id,
             type: "reservation:status",
             title: `Reservation ${row.id} Rejected`,
-            body: `Your reservation ${row.id} has been rejected.`,
+            body: `Your reservation ${row.id} has been rejected. Refund has been applied.`,
             data: { 
               reservationId: row.id, 
               status: "Rejected",
@@ -579,8 +406,6 @@ exports.setStatus = async (req, res) => {
             read: false,
             createdAt: new Date().toISOString(),
           });
-        } else {
-          console.warn("[RESERVATION] Rejected: no userId found for", row.id);
         }
       } catch (e) {
         console.error("Notification publish failed", e && e.message);

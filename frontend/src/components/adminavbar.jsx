@@ -567,6 +567,8 @@ export default function AdminNavbar() {
     { name: "Inventory", to: "/admin/inventory", Icon: Box },
     { name: "Orders", to: "/admin/orders", Icon: ClipboardList },
     { name: "Reservations", to: "/admin/reservations", Icon: CalendarClock },
+    { name: "Users", to: "/admin/users", Icon: ShieldCheck },
+    { name: "Reports", to: "/admin/reports", Icon: BarChart3 },
   ];
 
   const baseClasses =

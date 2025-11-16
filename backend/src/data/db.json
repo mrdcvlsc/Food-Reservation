@@ -70,15 +70,15 @@
       "price": 170,
       "stock": 17,
       "img": "/uploads/1761207705197_937291.jpg",
-      "visible": true,
-      "updatedAt": "2025-11-04T11:04:16.365Z"
+      "visible": false,
+      "updatedAt": "2025-11-16T11:53:26.891Z"
     },
     {
       "id": "ITM-8",
       "name": "Rice Meal B",
       "category": "Meals",
       "price": 80,
-      "stock": 8,
+      "stock": 6,
       "img": "/uploads/1761212149686_300413.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T08:49:54.143Z"
@@ -98,17 +98,17 @@
       "name": "Bottled Water",
       "category": "Beverages",
       "price": 20,
-      "stock": 13,
+      "stock": 10,
       "img": "/uploads/1761538656602_927934.jpg",
-      "visible": true,
-      "updatedAt": "2025-11-10T10:51:46.126Z"
+      "visible": false,
+      "updatedAt": "2025-11-16T11:53:22.646Z"
     },
     {
       "id": "ITM-11",
       "name": "Yakult",
       "category": "Beverages",
       "price": 10,
-      "stock": 4,
+      "stock": 3,
       "img": "/uploads/1761538643677_574382.jpg",
       "visible": true,
       "updatedAt": "2025-11-06T08:27:14.850Z"
@@ -118,7 +118,7 @@
       "name": "Rebisco Sandwich (10PCS)",
       "category": "Snacks",
       "price": 10,
-      "stock": 4,
+      "stock": 3,
       "img": "/uploads/1761632660060_61033.jpg",
       "createdAt": "2025-10-28T06:17:48.631Z",
       "updatedAt": "2025-10-28T12:42:06.788Z",
@@ -144,22 +144,22 @@
       "name": "Dutch Mill",
       "category": "Beverages",
       "price": 20,
-      "stock": 0,
+      "stock": 4,
       "img": "/uploads/1761992752859_306286.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:25:30.493Z",
-      "updatedAt": "2025-11-06T02:05:43.755Z"
+      "updatedAt": "2025-11-16T09:41:26.128Z"
     },
     {
       "id": "1761993633466934",
       "name": "Bravo",
       "category": "Snacks",
       "price": 10,
-      "stock": 7,
+      "stock": 6,
       "img": "/uploads/1761993657294_157996.jpg",
-      "visible": true,
+      "visible": false,
       "createdAt": "2025-11-01T10:40:33.466Z",
-      "updatedAt": "2025-11-08T11:29:54.564Z"
+      "updatedAt": "2025-11-16T11:53:24.494Z"
     },
     {
       "id": "1761997137761313",
@@ -4055,13 +4055,13 @@
         }
       ],
       "total": 10,
-      "status": "Preparing",
+      "status": "Ready",
       "createdAt": "2025-11-12T06:12:30.578Z",
       "transactionId": "txn_mhvls8ok",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-12T06:12:30.836Z",
-      "updatedAt": "2025-11-14T12:45:06.212Z"
+      "updatedAt": "2025-11-16T11:26:00.078Z"
     },
     {
       "id": "RES_mhvlsl76n3",
@@ -4122,13 +4122,13 @@
         }
       ],
       "total": 10,
-      "status": "Preparing",
+      "status": "Ready",
       "createdAt": "2025-11-12T06:20:56.807Z",
       "transactionId": "txn_mhvm3356",
       "stockDeducted": true,
       "charged": true,
       "chargedAt": "2025-11-12T06:20:56.874Z",
-      "updatedAt": "2025-11-14T12:39:18.738Z"
+      "updatedAt": "2025-11-16T11:25:59.032Z"
     },
     {
       "id": "RES_mhvm6onnam",
@@ -4237,6 +4237,250 @@
       "charged": true,
       "chargedAt": "2025-11-14T13:14:58.984Z",
       "updatedAt": "2025-11-15T01:14:44.054Z"
+    },
+    {
+      "id": "RES_mi1jnuhuqw",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "Less sauce pls",
+      "items": [
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        },
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Rejected",
+      "createdAt": "2025-11-16T09:59:43.650Z",
+      "updatedAt": "2025-11-16T10:00:29.760Z"
+    },
+    {
+      "id": "RES_mi1jq1b188",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "Less sauce po! Im allergic to too much sauce",
+      "items": [
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        },
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Rejected",
+      "createdAt": "2025-11-16T10:01:25.789Z",
+      "updatedAt": "2025-11-16T10:02:22.124Z"
+    },
+    {
+      "id": "RES_mi1juvlec0",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        },
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Approved",
+      "createdAt": "2025-11-16T10:05:11.666Z",
+      "stockDeducted": true,
+      "charged": true,
+      "chargedAt": "2025-11-16T10:05:28.736Z",
+      "transactionId": "TX_mi1jv8rjod",
+      "updatedAt": "2025-11-16T10:05:28.736Z"
+    },
+    {
+      "id": "RES_mi1ksz9w87",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        },
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Rejected",
+      "transactionId": "TX_mi1ksz9wd4",
+      "charged": true,
+      "chargedAt": "2025-11-16T10:31:42.740Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-16T10:31:42.740Z",
+      "refunded": true,
+      "refundTransactionId": "TX_mi1kuwmhmg",
+      "updatedAt": "2025-11-16T10:33:12.617Z"
+    },
+    {
+      "id": "RES_mi1kxti0dz",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "Less sauce",
+      "items": [
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        },
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Approved",
+      "transactionId": "TX_mi1kxti0m5",
+      "charged": true,
+      "chargedAt": "2025-11-16T10:35:28.536Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-16T10:35:28.536Z",
+      "updatedAt": "2025-11-16T10:35:47.169Z"
+    },
+    {
+      "id": "RES_mi1lcvqdcd",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 1
+        },
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Rejected",
+      "transactionId": "TX_mi1lcvqdrb",
+      "charged": true,
+      "chargedAt": "2025-11-16T10:47:11.269Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-16T10:47:11.269Z",
+      "refunded": true,
+      "refundTransactionId": "TX_mi1le7mu34",
+      "updatedAt": "2025-11-16T10:48:13.350Z"
+    },
+    {
+      "id": "RES_mi1lfbtrr3",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-11",
+          "name": "Yakult",
+          "price": 10,
+          "qty": 1
+        },
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Claimed",
+      "transactionId": "TX_mi1lfbtr4e",
+      "charged": true,
+      "chargedAt": "2025-11-16T10:49:05.439Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-16T10:49:05.439Z",
+      "updatedAt": "2025-11-16T10:49:29.520Z"
+    },
+    {
+      "id": "RES_mi1li3ej3z",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761993633466934",
+          "name": "Bravo",
+          "price": 10,
+          "qty": 1
+        },
+        {
+          "id": "ITM-10",
+          "name": "Bottled Water",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 30,
+      "status": "Ready",
+      "transactionId": "TX_mi1li3ejk1",
+      "charged": true,
+      "chargedAt": "2025-11-16T10:51:14.491Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-16T10:51:14.491Z",
+      "updatedAt": "2025-11-16T11:26:05.634Z"
     }
   ],
   "topups": [
@@ -4769,6 +5013,24 @@
       "updatedAt": "2025-11-12T06:11:25.667Z",
       "credited": true,
       "creditedAt": "2025-11-12T06:11:25.667Z"
+    },
+    {
+      "id": "top_mi1l1y9r",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "studentId": "1646523368",
+      "contact": "09688523253",
+      "email": "spadymold@gmail.com",
+      "provider": "gcash",
+      "amount": 500,
+      "reference": "234252452354",
+      "status": "Approved",
+      "proofUrl": "/uploads/mi1l1y8x_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-11-16T10:38:41.343Z",
+      "createdAt": "2025-11-16T10:38:41.343Z",
+      "updatedAt": "2025-11-16T10:39:12.405Z",
+      "credited": true,
+      "creditedAt": "2025-11-16T10:39:12.405Z"
     }
   ],
   "users": [
@@ -4813,7 +5075,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 4337,
+      "balance": 4787,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -6781,6 +7043,115 @@
       "ref": "RES_mhyvr8qj8w",
       "createdAt": "2025-11-14T13:14:58.984Z",
       "status": "Success"
+    },
+    {
+      "id": "TX_mi1jou2o5g",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mi1jnuhuqw",
+      "amount": 100,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:00:29.760Z"
+    },
+    {
+      "id": "TX_mi1jr8rwr0",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mi1jq1b188",
+      "amount": 100,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:02:22.124Z"
+    },
+    {
+      "id": "TX_mi1jv8rjod",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation",
+      "ref": "RES_mi1juvlec0",
+      "amount": 100,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:05:28.735Z"
+    },
+    {
+      "id": "TX_mi1ksz9wd4",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi1ksz9w87",
+      "amount": 100,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-16T10:31:42.740Z"
+    },
+    {
+      "id": "TX_mi1kuwmhmg",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mi1ksz9w87",
+      "amount": 100,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:33:12.617Z"
+    },
+    {
+      "id": "TX_mi1kxti0m5",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi1kxti0dz",
+      "amount": 100,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:35:28.536Z"
+    },
+    {
+      "id": "txn_mi1l2m8l",
+      "userId": "usr_mh0h1va7",
+      "type": "TopUp",
+      "amount": 500,
+      "reference": "234252452354",
+      "topupId": "top_mi1l1y9r",
+      "createdAt": "2025-11-16T10:39:12.405Z"
+    },
+    {
+      "id": "TX_mi1lcvqdrb",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi1lcvqdcd",
+      "amount": 20,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-16T10:47:11.269Z"
+    },
+    {
+      "id": "TX_mi1le7mu34",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mi1lcvqdcd",
+      "amount": 20,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:48:13.350Z"
+    },
+    {
+      "id": "TX_mi1lfbtr4e",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi1lfbtrr3",
+      "amount": 20,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:49:05.439Z"
+    },
+    {
+      "id": "TX_mi1li3ejk1",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi1li3ej3z",
+      "amount": 30,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-16T10:51:14.491Z"
     }
   ],
   "wallets": [
@@ -6797,6 +7168,717 @@
   ],
   "notifications": [
     {
+      "id": "notif_mi1mqwy3",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1li3ej3z Ready",
+      "body": "Your reservation RES_mi1li3ej3z is now Ready.",
+      "data": {
+        "reservationId": "RES_mi1li3ej3z",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T11:26:05.643Z"
+    },
+    {
+      "id": "notif_mi1mqwhy",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1li3ej3z Preparing",
+      "body": "Your reservation RES_mi1li3ej3z is now Preparing.",
+      "data": {
+        "reservationId": "RES_mi1li3ej3z",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T11:26:05.062Z"
+    },
+    {
+      "id": "notif_mi1mqsns",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvls8he3m Ready",
+      "body": "Your reservation RES_mhvls8he3m is now Ready.",
+      "data": {
+        "reservationId": "RES_mhvls8he3m",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-11-16T11:26:00.088Z"
+    },
+    {
+      "id": "notif_mi1mqrup",
+      "for": "usr_mhbem19p",
+      "type": "reservation:status",
+      "title": "Reservation RES_mhvm333bgr Ready",
+      "body": "Your reservation RES_mhvm333bgr is now Ready.",
+      "data": {
+        "reservationId": "RES_mhvm333bgr",
+        "status": "Ready"
+      },
+      "read": false,
+      "createdAt": "2025-11-16T11:25:59.041Z"
+    },
+    {
+      "id": "notif_mi1lmwfe",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1li3ej3z Approved",
+      "body": "Your reservation RES_mi1li3ej3z has been approved.",
+      "data": {
+        "reservationId": "RES_mi1li3ej3z",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1761993633466934",
+            "name": "Bravo",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 30,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi1li3ejk1"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:54:58.730Z"
+    },
+    {
+      "id": "notif_mi1li3es",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1li3ej3z",
+        "items": [
+          {
+            "id": "1761993633466934",
+            "name": "Bravo",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 30,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:51:14.491Z"
+    },
+    {
+      "id": "notif_mi1lfuf0",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1lfbtrr3 Claimed",
+      "body": "Your reservation RES_mi1lfbtrr3 is now Claimed.",
+      "data": {
+        "reservationId": "RES_mi1lfbtrr3",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:49:29.532Z"
+    },
+    {
+      "id": "notif_mi1lfu03",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1lfbtrr3 Ready",
+      "body": "Your reservation RES_mi1lfbtrr3 is now Ready.",
+      "data": {
+        "reservationId": "RES_mi1lfbtrr3",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:49:28.995Z"
+    },
+    {
+      "id": "notif_mi1lftk4",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1lfbtrr3 Preparing",
+      "body": "Your reservation RES_mi1lfbtrr3 is now Preparing.",
+      "data": {
+        "reservationId": "RES_mi1lfbtrr3",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:49:28.420Z"
+    },
+    {
+      "id": "notif_mi1lfrq6",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1lfbtrr3 Approved",
+      "body": "Your reservation RES_mi1lfbtrr3 has been approved.",
+      "data": {
+        "reservationId": "RES_mi1lfbtrr3",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-11",
+            "name": "Yakult",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "1761632268631799",
+            "name": "Rebisco Sandwich (10PCS)",
+            "price": 10,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi1lfbtr4e"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:49:26.046Z"
+    },
+    {
+      "id": "notif_mi1lfbu5",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1lfbtrr3",
+        "items": [
+          {
+            "id": "ITM-11",
+            "name": "Yakult",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "1761632268631799",
+            "name": "Rebisco Sandwich (10PCS)",
+            "price": 10,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:49:05.439Z"
+    },
+    {
+      "id": "notif_mi1le7n3",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1lcvqdcd Rejected",
+      "body": "Your reservation RES_mi1lcvqdcd has been rejected. Refund has been applied.",
+      "data": {
+        "reservationId": "RES_mi1lcvqdcd",
+        "status": "Rejected",
+        "items": [
+          {
+            "id": "1761632268631799",
+            "name": "Rebisco Sandwich (10PCS)",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "ITM-11",
+            "name": "Yakult",
+            "price": 10,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:48:13.359Z"
+    },
+    {
+      "id": "notif_mi1lcvqn",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1lcvqdcd",
+        "items": [
+          {
+            "id": "1761632268631799",
+            "name": "Rebisco Sandwich (10PCS)",
+            "price": 10,
+            "qty": 1
+          },
+          {
+            "id": "ITM-11",
+            "name": "Yakult",
+            "price": 10,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:47:11.269Z"
+    },
+    {
+      "id": "notif_mi1l2m8x",
+      "for": "usr_mh0h1va7",
+      "actor": {
+        "id": "u_admin",
+        "name": "Canteen Admin",
+        "email": "admin@school.test",
+        "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg"
+      },
+      "type": "topup:status",
+      "title": "Top-up Approved",
+      "body": "Your top-up request for ₱500.00 was approved",
+      "data": {
+        "topupId": "top_mi1l1y9r",
+        "status": "Approved",
+        "amount": 500,
+        "rejectionReason": null
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:39:12.417Z"
+    },
+    {
+      "id": "notif_mi1l1yam",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "topup:created",
+      "title": "New Top-up Request",
+      "body": "Anmol David Das submitted a top-up request for ₱500.00",
+      "data": {
+        "topupId": "top_mi1l1y9r",
+        "amount": 500,
+        "provider": "gcash",
+        "studentId": "1646523368",
+        "reference": "234252452354",
+        "student": {
+          "name": "Anmol David Das",
+          "contact": "09688523253",
+          "email": "spadymold@gmail.com"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:38:41.343Z"
+    },
+    {
+      "id": "notif_mi1ky7vu",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1kxti0dz Approved",
+      "body": "Your reservation RES_mi1kxti0dz has been approved.",
+      "data": {
+        "reservationId": "RES_mi1kxti0dz",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "Less sauce",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi1kxti0m5"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:35:47.178Z"
+    },
+    {
+      "id": "notif_mi1kxtia",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1kxti0dz",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "Less sauce",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:35:28.536Z"
+    },
+    {
+      "id": "notif_mi1kuwmr",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1ksz9w87 Rejected",
+      "body": "Your reservation RES_mi1ksz9w87 has been rejected. Refund has been applied.",
+      "data": {
+        "reservationId": "RES_mi1ksz9w87",
+        "status": "Rejected",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          },
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:33:12.627Z"
+    },
+    {
+      "id": "notif_mi1ksza7",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1ksz9w87",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          },
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:31:42.740Z"
+    },
+    {
+      "id": "notif_mi1jv8rt",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1juvlec0 Approved",
+      "body": "Your reservation RES_mi1juvlec0 has been approved.",
+      "data": {
+        "reservationId": "RES_mi1juvlec0",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi1jv8rjod"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:05:28.745Z"
+    },
+    {
+      "id": "notif_mi1juvlr",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1juvlec0",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:05:11.666Z"
+    },
+    {
+      "id": "notif_mi1jr8s5",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1jq1b188 Rejected",
+      "body": "Your reservation RES_mi1jq1b188 has been rejected.",
+      "data": {
+        "reservationId": "RES_mi1jq1b188",
+        "status": "Rejected",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "Less sauce po! Im allergic to too much sauce",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:02:22.133Z"
+    },
+    {
+      "id": "notif_mi1jq1bf",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1jq1b188",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "Less sauce po! Im allergic to too much sauce",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:01:25.789Z"
+    },
+    {
+      "id": "notif_mi1jou2x",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi1jnuhuqw Rejected",
+      "body": "Your reservation RES_mi1jnuhuqw has been rejected.",
+      "data": {
+        "reservationId": "RES_mi1jnuhuqw",
+        "status": "Rejected",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          },
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "Less sauce pls",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T10:00:29.769Z"
+    },
+    {
+      "id": "notif_mi1jnui7",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi1jnuhuqw",
+        "items": [
+          {
+            "id": "ITM-10",
+            "name": "Bottled Water",
+            "price": 20,
+            "qty": 1
+          },
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "Less sauce pls",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-16T09:59:43.650Z"
+    },
+    {
       "id": "notif_mhzlh992",
       "for": "usr_mh0h1va7",
       "type": "reservation:status",
@@ -6806,7 +7888,7 @@
         "reservationId": "RES_mhubg60up5",
         "status": "Claimed"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-15T01:15:03.062Z"
     },
     {
@@ -6819,7 +7901,7 @@
         "reservationId": "RES_mhubg60up5",
         "status": "Ready"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-15T01:15:01.870Z"
     },
     {
@@ -6832,7 +7914,7 @@
         "reservationId": "RES_mhubg60up5",
         "status": "Preparing"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-15T01:14:59.998Z"
     },
     {
@@ -13969,7 +15051,7 @@
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
       "items": [],
-      "updatedAt": "2025-11-11T13:34:59.676Z"
+      "updatedAt": "2025-11-16T11:48:25.195Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
@@ -14026,6 +15108,12 @@
         }
       ],
       "updatedAt": "2025-11-14T13:00:02.149Z"
+    },
+    {
+      "id": "cart_user_usr_mhvoh1zp",
+      "userId": "usr_mhvoh1zp",
+      "items": [],
+      "updatedAt": "2025-11-16T10:11:02.107Z"
     }
   ],
   "inventory": []
