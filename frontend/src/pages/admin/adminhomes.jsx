@@ -27,7 +27,8 @@ const ADMIN_ROUTES = {
   topup: "/admin/topup",
   orders: "/admin/orders",
   reservations: "/admin/reservations",
-  stats: "/admin/stats",
+  reports: "/admin/reports",
+  users: "/admin/users",
   itemEdit: (id) => `/admin/shops/edit/${id}`,
 };
 
@@ -52,7 +53,8 @@ export default function AdminHome() {
     { name: "Top-Up Verify", to: ADMIN_ROUTES.topup, icon: <Wallet /> },
     { name: "Orders", to: ADMIN_ROUTES.orders, icon: <Clock /> },
     { name: "Reservations", to: ADMIN_ROUTES.reservations, icon: <Clock /> },
-    { name: "Stats", to: ADMIN_ROUTES.stats, icon: <TrendingUp /> },
+    { name: "Reports", to: ADMIN_ROUTES.reports, icon: <TrendingUp /> },
+    { name: "Users", to: ADMIN_ROUTES.users, icon: <Users /> },
   ]);
 
   const [todaySales] = useState([

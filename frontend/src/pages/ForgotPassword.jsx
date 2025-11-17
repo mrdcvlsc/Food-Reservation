@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Input from "../components/Input";
 import Button from "../components/Button";
+import { api } from "../lib/api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -20,22 +21,14 @@ export default function ForgotPassword() {
     setIsLoading(true);
     setError("");
 
-    // TODO: Implement actual password reset API call
-    // For now, just simulate success
-    setTimeout(() => {
+    try {
+      await api.post("/auth/forgot-password", { email: email.trim() });
       setSuccess(true);
+    } catch (err) {
+      setError(err.message || "Failed to send reset email");
+    } finally {
       setIsLoading(false);
-    }, 1500);
-
-    // Real implementation would be:
-    // try {
-    //   await api.post("/auth/forgot-password", { email: email.trim() });
-    //   setSuccess(true);
-    // } catch (err) {
-    //   setError(err.message || "Failed to send reset email");
-    // } finally {
-    //   setIsLoading(false);
-    // }
+    }
   };
 
   return (

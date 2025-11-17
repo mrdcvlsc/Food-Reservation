@@ -360,9 +360,9 @@ export default function Navbar() {
 
           {/* Mobile: Compact icon-only buttons (no hamburger - using bottom nav instead) */}
           <div className="md:hidden flex items-center gap-1 flex-shrink-0">
-            {/* Notifications */}
+            {/* Notifications - Navigate to page on mobile */}
             <button
-              onClick={() => setNotifOpen(v => !v)}
+              onClick={() => navigate("/notifications")}
               className="p-2 rounded-lg hover:bg-slate-100 relative"
               aria-label="Notifications"
             >
@@ -643,9 +643,26 @@ export default function Navbar() {
 
                         {/* Pickup Slot */}
                         {previewNotif.data.slot && (
-                          <div className="pt-2">
+                          <div className="pt-3 border-t">
                             <div className="text-xs font-medium text-gray-500 uppercase mb-1">Pickup</div>
                             <div className="font-medium text-gray-900">{previewNotif.data.slot}</div>
+                          </div>
+                        )}
+
+                        {/* Status */}
+                        {previewNotif.data.status && (
+                          <div className="pt-3 border-t">
+                            <div className="text-xs font-medium text-gray-500 uppercase mb-1">Status</div>
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              String(previewNotif.data.status).toLowerCase() === "approved" ? "bg-green-100 text-green-700" :
+                              String(previewNotif.data.status).toLowerCase() === "preparing" ? "bg-blue-100 text-blue-700" :
+                              String(previewNotif.data.status).toLowerCase() === "ready" ? "bg-purple-100 text-purple-700" :
+                              String(previewNotif.data.status).toLowerCase() === "claimed" ? "bg-emerald-100 text-emerald-700" :
+                              String(previewNotif.data.status).toLowerCase() === "rejected" ? "bg-red-100 text-red-700" :
+                              "bg-gray-100 text-gray-700"
+                            }`}>
+                              {previewNotif.data.status}
+                            </div>
                           </div>
                         )}
                       </div>

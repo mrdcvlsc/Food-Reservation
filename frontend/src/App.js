@@ -57,6 +57,7 @@ import {
 /* --------------- Components --------------- */
 import Loading      from "./components/Loading";
 import BackButton from "./components/BackButton";
+import ResetPassword from "./pages/ResetPassword";
 
 function App() {
   return (
@@ -70,6 +71,7 @@ function App() {
         <Route path="/register"       element={<Register />} />
         <Route path="/login"          element={<Login />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* ---------- student routes ---------- */}
         <Route path="/cart"           element={<Cart />} />

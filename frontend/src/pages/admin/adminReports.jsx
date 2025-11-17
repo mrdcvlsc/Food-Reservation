@@ -828,13 +828,13 @@ export default function AdminReports() {
 
       <main className="flex-1 max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 space-y-8 bg-white rounded-t-2xl shadow-md border border-gray-100 mt-2 mb-0">
         {/* Header */}
-        <section className="flex items-center justify-between">
+        <section className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Reports & Statistics</h1>
-            <p className="text-gray-600">Combined monthly reports and current month statistics.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Reports & Statistics</h1>
+            <p className="text-sm sm:text-base text-gray-600">Combined monthly reports and current month statistics.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <select value={month} onChange={(e) => setMonth(String(e.target.value))} className="border rounded px-3 py-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            <select value={month} onChange={(e) => setMonth(String(e.target.value))} className="border rounded px-3 py-2 text-sm">
               <option value="all">All</option>
               <option value="1">January</option>
               <option value="2">February</option>
@@ -849,7 +849,7 @@ export default function AdminReports() {
               <option value="11">November</option>
               <option value="12">December</option>
             </select>
-            <select value={year} onChange={(e) => setYear(String(e.target.value))} className="w-36 border rounded px-3 py-2">
+            <select value={year} onChange={(e) => setYear(String(e.target.value))} className="border rounded px-3 py-2 text-sm">
               {yearOptions.map((y) => <option key={y} value={y}>{y === "all" ? "All years" : y}</option>)}
             </select>
             <button
@@ -861,50 +861,51 @@ export default function AdminReports() {
                 productsBar,
                 dashboard
               })}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+              className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm whitespace-nowrap"
             >
-              Export Full Report
+              Export Report
             </button>
-            <button type="button" onClick={load} className="inline-flex items-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
-              <RefreshCw className="w-4 h-4" /> Refresh
+            <button type="button" onClick={load} className="inline-flex items-center justify-center gap-2 border px-3 py-2 rounded-lg text-sm hover:bg-gray-50">
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </section>
 
         {/* KPI cards (from previous Stats page) */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+        <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Revenue (this period)</span>
-              <TrendingUp className="w-5 h-5 text-emerald-600" />
+              <span className="text-xs sm:text-sm text-gray-600">Revenue</span>
+              <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <div className="text-3xl font-bold text-gray-900">{peso.format((dashboard.totalSales || 0) || resStats.revenue || 0)}</div>
+            <div className="text-xl sm:text-3xl font-bold text-gray-900">{peso.format((dashboard.totalSales || 0) || resStats.revenue || 0)}</div>
             <div className="text-xs text-gray-500 mt-1">{periodLabel}</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Orders (this period)</span>
-              <ClipboardList className="w-5 h-5 text-blue-600" />
+              <span className="text-xs sm:text-sm text-gray-600">Orders</span>
+              <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <div className="text-3xl font-bold text-gray-900">{resStats.orders}</div>
+            <div className="text-xl sm:text-3xl font-bold text-gray-900">{resStats.orders}</div>
             <div className="text-xs text-gray-500 mt-1">{periodLabel}</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Pending reservations</span>
-              <Clock className="w-5 h-5 text-amber-600" />
+              <span className="text-xs sm:text-sm text-gray-600">Pending</span>
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
             </div>
-            <div className="text-3xl font-bold text-gray-900">{resStats.pendingReservations}</div>
+            <div className="text-xl sm:text-3xl font-bold text-gray-900">{resStats.pendingReservations}</div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-gray-600">Pending top-ups</span>
-              <Wallet className="w-5 h-5 text-violet-600" />
+              <span className="text-xs sm:text-sm text-gray-600">Top-ups</span>
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
             </div>
-            <div className="text-3xl font-bold text-gray-900">{topupStats?.pending ?? topMonth.length}</div>
+            <div className="text-xl sm:text-3xl font-bold text-gray-900">{topupStats?.pending ?? topMonth.length}</div>
           </div>
         </section>
 
@@ -919,11 +920,11 @@ export default function AdminReports() {
         </div>
 
         {/* Reservation status + revenue by category (from previous Stats page) */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Reservation status section - remove export button */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Reservation status ({periodLabel})</h3>
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Reservation status ({periodLabel})</h3>
+            <table className="w-full text-xs sm:text-sm">
               <tbody className="divide-y divide-gray-100">
                 {CANONICAL_STATUSES.map((label) => (
                   <tr key={label}>
@@ -936,9 +937,9 @@ export default function AdminReports() {
           </div>
 
           {/* Top-ups section - remove export button */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Top-ups ({periodLabel})</h3>
-            <table className="w-full text-sm">
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Top-ups ({periodLabel})</h3>
+            <table className="w-full text-xs sm:text-sm">
               <tbody className="divide-y divide-gray-100">
                 <tr><td className="py-2 text-gray-600">Approved</td><td className="py-2 text-right font-semibold text-gray-900">{topupStats?.approvedCount ?? 0}</td></tr>
                 <tr><td className="py-2 text-gray-600">Approved amount</td><td className="py-2 text-right font-semibold text-gray-900">{fmt(topupStats?.approvedAmt ?? 0)}</td></tr>
@@ -949,13 +950,13 @@ export default function AdminReports() {
           </div>
 
           {/* Revenue by category section - remove export button */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Revenue by category ({periodLabel})</h3>
+          <div className="bg-white rounded-lg sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Revenue by category ({periodLabel})</h3>
 
             {resStats.categoryRows.length === 0 ? (
-              <p className="text-sm text-gray-500">No data yet.</p>
+              <p className="text-xs sm:text-sm text-gray-500">No data yet.</p>
             ) : (
-              <table className="w-full text-sm">
+              <table className="w-full text-xs sm:text-sm">
                 <thead className="text-left text-gray-500">
                   <tr><th className="py-2">Category</th><th className="py-2 text-right">Revenue</th></tr>
                 </thead>
@@ -970,8 +971,8 @@ export default function AdminReports() {
         </section>
 
         {/* Category filters (APPLIES TO ALL TOP LISTS & CHARTS) */}
-        <section className="bg-white p-4 rounded shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
+        <section className="bg-white p-3 sm:p-4 rounded shadow-sm border border-gray-100">
+          <div className="space-y-3">
             <div>
               <div className="flex flex-wrap gap-2 items-center">
                 {categories.map((c) => {
@@ -980,43 +981,42 @@ export default function AdminReports() {
                     <button
                       key={c}
                       onClick={() => setSelectedCategory(c)}
-                      className={`text-sm px-3 py-2 rounded-lg border ${active ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200"} hover:opacity-90`}
+                      className={`text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded-lg border ${active ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200"} hover:opacity-90`}
                     >
                       {c}
                     </button>
                   );
                 })}
               </div>
-              <div className="text-sm text-gray-500 mt-2">Filters apply to all top lists and charts. Showing: <strong>{selectedCategory}</strong></div>
+              <div className="text-xs text-gray-500 mt-2">Selected: <strong>{selectedCategory}</strong></div>
             </div>
-            <div className="text-sm text-gray-500">Tip: select a category to filter Top Products, Top items and the charts.</div>
           </div>
         </section>
 
         {/* Top items & report visuals (existing adminReports content) */}
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Top items ({periodLabel})</h3>
+        <section className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Top items ({periodLabel})</h3>
             <button
               onClick={() => exportToCsv(filteredResTopItems, 'top_items')}
-              className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-3 py-1 text-xs sm:text-sm bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap"
             >
               Export CSV
             </button>
           </div>
           
           {filteredResTopItems.length === 0 ? (
-            <p className="text-sm text-gray-500">No data yet.</p>
+            <p className="text-xs sm:text-sm text-gray-500">No data yet.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <table className="w-full text-sm">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs sm:text-sm">
                   <thead className="text-left text-gray-500">
                     <tr>
-                      <th className="py-2">Item</th>
-                      <th className="py-2">Category</th>
-                      <th className="py-2 text-right">Qty</th>
-                      <th className="py-2 text-right">Revenue</th>
+                      <th className="py-2 px-1 sm:px-2">Item</th>
+                      <th className="py-2 px-1 sm:px-2">Category</th>
+                      <th className="py-2 px-1 sm:px-2 text-right">Qty</th>
+                      <th className="py-2 px-1 sm:px-2 text-right">Revenue</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -1024,39 +1024,39 @@ export default function AdminReports() {
                       .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                       .map((it, idx) => (
                         <tr key={(it.name || idx) + idx}>
-                          <td className="py-2 text-gray-700">{it.name}</td>
-                          <td className="py-2 text-gray-600">{it.category || "Uncategorized"}</td>
-                          <td className="py-2 text-right text-gray-700">{it.qty}</td>
-                          <td className="py-2 text-right font-semibold text-gray-900">{peso.format(it.revenue)}</td>
+                          <td className="py-2 px-1 sm:px-2 text-gray-700 truncate">{it.name}</td>
+                          <td className="py-2 px-1 sm:px-2 text-gray-600 text-xs">{it.category || "Uncategorized"}</td>
+                          <td className="py-2 px-1 sm:px-2 text-right text-gray-700">{it.qty}</td>
+                          <td className="py-2 px-1 sm:px-2 text-right font-semibold text-gray-900">{peso.format(it.revenue)}</td>
                         </tr>
                     ))}
                   </tbody>
                 </table>
 
                 {/* Pagination controls */}
-                <div className="mt-4 flex items-center justify-between">
+                <div className="mt-3 sm:mt-4 flex items-center justify-between gap-2">
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
-                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                    className="px-2 py-1 border rounded text-xs sm:text-sm disabled:opacity-50"
                   >
-                    Previous
+                    Prev
                   </button>
-                  <span className="text-sm text-gray-600">
-                    Page {currentPage} of {Math.ceil(filteredResTopItems.length / itemsPerPage)}
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    {currentPage} / {Math.ceil(filteredResTopItems.length / itemsPerPage)}
                   </span>
                   <button
                     onClick={() => setCurrentPage(p => Math.min(Math.ceil(filteredResTopItems.length / itemsPerPage), p + 1))}
                     disabled={currentPage >= Math.ceil(filteredResTopItems.length / itemsPerPage)}
-                    className="px-3 py-1 border rounded text-sm disabled:opacity-50"
+                    className="px-2 py-1 border rounded text-xs sm:text-sm disabled:opacity-50"
                   >
                     Next
                   </button>
                 </div>
               </div>
 
-              {/* Bar chart for current page items */}
-              <div>
+              {/* Bar chart hidden on mobile, shown on lg+ */}
+              <div className="hidden lg:block">
                 <Bar
                   data={{
                     labels: filteredResTopItems
@@ -1101,9 +1101,9 @@ export default function AdminReports() {
         </section>
 
         {/* Top Products (from monthly report if available, otherwise fall back to computed top items) */}
-        <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Top Products ({periodLabel})</h3>
+        <section className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Top Products ({periodLabel})</h3>
             <button
               onClick={() => exportToCsv(sortedProducts.byRevenue)}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
@@ -1216,19 +1216,18 @@ export default function AdminReports() {
         </section>
 
         {/* Charts: show using report data when present or computed fallback otherwise */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="col-span-2 bg-white p-6 rounded shadow">
-            <h3 className="font-semibold mb-3">Top Products (Qty & Revenue)</h3>
-            {(mergedTopProducts || []).length === 0 ? <div className="text-sm text-gray-500">No top product data yet.</div> : <Bar data={productsBar} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+          <div className="lg:col-span-2 bg-white p-3 sm:p-6 rounded shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-3">Top Products (Qty & Revenue)</h3>
+            {(mergedTopProducts || []).length === 0 ? <div className="text-xs sm:text-sm text-gray-500">No top product data yet.</div> : <Bar data={productsBar} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />}
           </div>
-          <div className="bg-white p-6 rounded shadow">
-            <h3 className="font-semibold mb-3">Category Revenue Share</h3>
-            <div className="mb-3">
-              {topCategories.length === 0 ? <div className="text-sm text-gray-500">No category data yet.</div> : <Pie data={pieForCategory} options={{ responsive: true, plugins: { legend: { position: "right" } } }} />}
+          <div className="bg-white p-3 sm:p-6 rounded shadow">
+            <h3 className="text-base sm:text-lg font-semibold mb-3">Category Revenue Share</h3>
+            <div className="mb-3 h-64 sm:h-80">
+              {topCategories.length === 0 ? <div className="text-xs sm:text-sm text-gray-500">No category data yet.</div> : <Pie data={pieForCategory} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "right" } } }} />}
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-xs sm:text-sm text-gray-600 space-y-1">
               {
-                // show category list when "All", otherwise show top items for selected category
                 (selectedCategory === "All"
                   ? (topCategories || []).slice(0, 5).map((c, idx) => ({ label: c.category || c.name, amount: Number(c.revenue || c.amount || 0) }))
                   : ((filteredTopProducts && filteredTopProducts.length > 0
@@ -1236,9 +1235,9 @@ export default function AdminReports() {
                       : (filteredResTopItems || []).slice(0, 5)
                     ).map((p) => ({ label: p.name, amount: Number(p.revenue || p.amount || 0) })))
                 ).map((row, idx) => (
-                  <div key={(row.label || idx) + idx} className="flex justify-between py-1">
-                    <div>{row.label}</div>
-                    <div className="font-medium">{fmt(row.amount)}</div>
+                  <div key={(row.label || idx) + idx} className="flex justify-between">
+                    <div className="truncate">{row.label}</div>
+                    <div className="font-medium whitespace-nowrap ml-1">{fmt(row.amount)}</div>
                   </div>
                 ))
               }

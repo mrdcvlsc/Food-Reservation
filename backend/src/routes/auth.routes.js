@@ -83,8 +83,10 @@ router.post("/register", C.register);
  */
 router.get("/me", requireAuth, C.me);
 
-// add change-password endpoint (POST)
-router.post("/change-password", P.changePassword);
+// Password reset endpoints
+router.post("/forgot-password", P.forgotPassword);
+router.post("/reset-password", P.resetPassword);
+router.post("/change-password", requireAuth, P.changePassword);
 
 /**
  * @swagger

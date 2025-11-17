@@ -489,12 +489,8 @@ export default function Dashboard() {
   
   // Handle activity item click
   const handleActivityClick = (activity) => {
-    if (activity.type === 'reservation') {
-      navigate(`/orders/${activity.id}`);
-    } else {
-      // For transactions, you can navigate to transaction details or transactions page
-      navigate(`/transactions#${activity.id}`);
-    }
+    // Navigate to transactions page and scroll to the specific transaction
+    navigate(`/transactions?id=${activity.id}`);
   };
 
   // --- greeting ---

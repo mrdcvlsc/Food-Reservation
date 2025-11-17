@@ -605,10 +605,20 @@ export default function Notifications() {
                       )}
 
                       {preview.data.slot && (
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm pt-3 border-t">
                           <Clock className="w-4 h-4 text-gray-500" />
                           <span className="text-gray-500">Pickup:</span>
                           <span className="font-medium text-gray-900">{preview.data.slot}</span>
+                        </div>
+                      )}
+
+                      {preview.data.status && (
+                        <div className="pt-3 border-t">
+                          <div className="text-xs font-medium text-gray-500 uppercase mb-2">Status</div>
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${getStatusColorClass(preview.data.status)}`}>
+                            {getStatusIcon(preview.data.status)}
+                            {preview.data.status}
+                          </span>
                         </div>
                       )}
                     </div>
