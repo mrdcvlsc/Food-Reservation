@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 13,
+      "stock": 11,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -68,10 +68,10 @@
       "name": "Chicken Masala",
       "category": "Meals",
       "price": 170,
-      "stock": 17,
+      "stock": 16,
       "img": "/uploads/1761207705197_937291.jpg",
-      "visible": true,
-      "updatedAt": "2025-11-17T12:42:19.908Z"
+      "visible": false,
+      "updatedAt": "2025-11-17T13:49:12.082Z"
     },
     {
       "id": "ITM-8",
@@ -100,8 +100,8 @@
       "price": 20,
       "stock": 7,
       "img": "/uploads/1761538656602_927934.jpg",
-      "visible": true,
-      "updatedAt": "2025-11-17T11:39:20.678Z"
+      "visible": false,
+      "updatedAt": "2025-11-17T13:49:08.807Z"
     },
     {
       "id": "ITM-11",
@@ -144,7 +144,7 @@
       "name": "Dutch Mill",
       "category": "Beverages",
       "price": 20,
-      "stock": 7,
+      "stock": 6,
       "img": "/uploads/1761992752859_306286.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:25:30.493Z",
@@ -155,11 +155,11 @@
       "name": "Bravo",
       "category": "Snacks",
       "price": 10,
-      "stock": 3,
+      "stock": 6,
       "img": "/uploads/1761993657294_157996.jpg",
-      "visible": true,
+      "visible": false,
       "createdAt": "2025-11-01T10:40:33.466Z",
-      "updatedAt": "2025-11-17T11:39:23.391Z"
+      "updatedAt": "2025-11-17T13:49:09.922Z"
     },
     {
       "id": "1761997137761313",
@@ -4822,6 +4822,100 @@
       "refunded": true,
       "refundTransactionId": "TX_mi36gs6ffp",
       "updatedAt": "2025-11-17T13:25:51.399Z"
+    },
+    {
+      "id": "RES_mi36pba9ag",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-7",
+          "name": "Chicken Masala",
+          "price": 170,
+          "qty": 1
+        },
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        }
+      ],
+      "total": 215,
+      "status": "Claimed",
+      "transactionId": "TX_mi36pba952",
+      "charged": true,
+      "chargedAt": "2025-11-17T13:32:29.409Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-17T13:32:29.409Z",
+      "updatedAt": "2025-11-17T13:36:27.850Z"
+    },
+    {
+      "id": "RES_mi36vtz19r",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "Less sauce",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        },
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 99,
+      "status": "Rejected",
+      "transactionId": "TX_mi36vtz1oj",
+      "charged": true,
+      "chargedAt": "2025-11-17T13:37:33.565Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-17T13:37:33.565Z",
+      "refunded": true,
+      "refundTransactionId": "TX_mi36wvq5gq",
+      "updatedAt": "2025-11-17T13:38:22.493Z"
+    },
+    {
+      "id": "RES_mi37eets6h",
+      "userId": "usr_mi31yl91",
+      "student": "Wally Walerico",
+      "grade": "G7",
+      "section": "G",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        },
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 65,
+      "status": "Pending",
+      "transactionId": "TX_mi37eetscy",
+      "charged": true,
+      "chargedAt": "2025-11-17T13:52:00.400Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-17T13:52:00.400Z"
     }
   ],
   "topups": [
@@ -5390,6 +5484,41 @@
       "updatedAt": "2025-11-17T11:25:32.630Z",
       "credited": true,
       "creditedAt": "2025-11-17T11:25:32.630Z"
+    },
+    {
+      "id": "top_mi36z8f4",
+      "userId": "usr_mi31yl91",
+      "student": "Wally Walerico",
+      "studentId": "2022556733",
+      "contact": "+6395548327445",
+      "email": "wally@gmail.com",
+      "provider": "gcash",
+      "amount": 600,
+      "reference": "234252423524542",
+      "status": "Approved",
+      "proofUrl": "/uploads/mi36z8e8_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-11-17T13:40:12.256Z",
+      "createdAt": "2025-11-17T13:40:12.256Z",
+      "updatedAt": "2025-11-17T13:41:12.083Z",
+      "credited": true,
+      "creditedAt": "2025-11-17T13:41:12.083Z"
+    },
+    {
+      "id": "top_mi372k66",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "studentId": "1646523368",
+      "contact": "09688523253",
+      "email": "spadymold@gmail.com",
+      "provider": "gcash",
+      "amount": 1200,
+      "reference": "453535425625",
+      "status": "Rejected",
+      "proofUrl": "/uploads/mi372k5c_69917fb1-9962-4cf5-aa04-b68afe5ead27.jpg",
+      "submittedAt": "2025-11-17T13:42:47.454Z",
+      "createdAt": "2025-11-17T13:42:47.454Z",
+      "updatedAt": "2025-11-17T13:43:23.981Z",
+      "rejectionReason": "Fake image"
     }
   ],
   "users": [
@@ -5436,7 +5565,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 4638,
+      "balance": 4423,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -5444,8 +5573,8 @@
       "updatedAt": "2025-11-11T08:32:56.129Z",
       "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png",
       "passwordReset": {
-        "token": "lmyklmkwfymsut12xtzd2",
-        "expiresAt": "2025-11-17T12:52:31.752Z"
+        "token": "k0tnecm41wf5b1ld5v1x0t",
+        "expiresAt": "2025-11-17T15:03:54.149Z"
       }
     },
     {
@@ -5525,12 +5654,25 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 480,
+      "balance": 1015,
       "studentId": "2022556733",
       "phone": "+6395548327445",
       "createdAt": "2025-11-17T11:19:44.288Z",
       "profilePictureUrl": null,
-      "updatedAt": "2025-11-17T11:44:53.127Z"
+      "updatedAt": "2025-11-17T13:54:01.570Z"
+    },
+    {
+      "id": "usr_mi37kcz0",
+      "name": "Randel Walerico Servidad",
+      "email": "randel@gmail.com",
+      "passwordHash": "$2a$10$xFE4OZUndd6Af1cVcX0Zxeao3mCfX1pkX4iFQThVW.N2H7pRXCaOm",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "20223445523",
+      "phone": "098847364892",
+      "createdAt": "2025-11-17T13:56:38.052Z"
     }
   ],
   "transactions": [
@@ -7701,6 +7843,55 @@
       "direction": "credit",
       "status": "Success",
       "createdAt": "2025-11-17T13:25:51.399Z"
+    },
+    {
+      "id": "TX_mi36pba952",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi36pba9ag",
+      "amount": 215,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-17T13:32:29.409Z"
+    },
+    {
+      "id": "TX_mi36vtz1oj",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi36vtz19r",
+      "amount": 99,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-17T13:37:33.565Z"
+    },
+    {
+      "id": "TX_mi36wvq5gq",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mi36vtz19r",
+      "amount": 99,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-17T13:38:22.493Z"
+    },
+    {
+      "id": "txn_mi370ikz",
+      "userId": "usr_mi31yl91",
+      "type": "TopUp",
+      "amount": 600,
+      "reference": "234252423524542",
+      "topupId": "top_mi36z8f4",
+      "createdAt": "2025-11-17T13:41:12.083Z"
+    },
+    {
+      "id": "TX_mi37eetscy",
+      "userId": "usr_mi31yl91",
+      "title": "Reservation Hold",
+      "ref": "RES_mi37eets6h",
+      "amount": 65,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-17T13:52:00.400Z"
     }
   ],
   "wallets": [
@@ -7716,6 +7907,359 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mi37kd2p",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Randel Walerico Servidad",
+      "body": "A new student account has been created.\n\nName: Randel Walerico Servidad\nStudent ID: 20223445523\nEmail: randel@gmail.com\nPhone: 098847364892",
+      "data": {
+        "userId": "usr_mi37kcz0",
+        "studentName": "Randel Walerico Servidad",
+        "studentId": "20223445523",
+        "email": "randel@gmail.com",
+        "phone": "098847364892",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:56:38.065Z"
+    },
+    {
+      "id": "notif_mi37h0c1",
+      "for": "usr_mi31yl91",
+      "actor": {
+        "id": "u_admin",
+        "name": "Canteen Admin",
+        "email": "admin@school.test",
+        "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg"
+      },
+      "type": "admin:profile-note",
+      "title": "Message from Admin",
+      "body": "Change profile pic",
+      "data": {
+        "note": "Change profile pic"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:54:01.585Z"
+    },
+    {
+      "id": "notif_mi37eeu3",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mi31yl91",
+        "name": "Wally Walerico",
+        "email": "wally@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mi31yl91-1763387462335.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Wally Walerico submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi37eets6h",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 65,
+        "note": "",
+        "slot": "recess",
+        "grade": "G7",
+        "section": "G",
+        "student": "Wally Walerico"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:52:00.400Z"
+    },
+    {
+      "id": "notif_mi373cd6",
+      "for": "usr_mh0h1va7",
+      "actor": {
+        "id": "u_admin",
+        "name": "Canteen Admin",
+        "email": "admin@school.test",
+        "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg"
+      },
+      "type": "topup:status",
+      "title": "Top-up Rejected",
+      "body": "Your top-up request for ₱1,200.00 was rejected\nReason: Fake image",
+      "data": {
+        "topupId": "top_mi372k66",
+        "status": "Rejected",
+        "amount": 1200,
+        "rejectionReason": "Fake image"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:43:23.994Z"
+    },
+    {
+      "id": "notif_mi372k71",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "topup:created",
+      "title": "New Top-up Request",
+      "body": "Anmol David Das submitted a top-up request for ₱1,200.00",
+      "data": {
+        "topupId": "top_mi372k66",
+        "amount": 1200,
+        "provider": "gcash",
+        "studentId": "1646523368",
+        "reference": "453535425625",
+        "student": {
+          "name": "Anmol David Das",
+          "contact": "09688523253",
+          "email": "spadymold@gmail.com"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:42:47.454Z"
+    },
+    {
+      "id": "notif_mi370ilb",
+      "for": "usr_mi31yl91",
+      "actor": {
+        "id": "u_admin",
+        "name": "Canteen Admin",
+        "email": "admin@school.test",
+        "profilePictureUrl": "/uploads/profile-u_admin-1762415118593.jpg"
+      },
+      "type": "topup:status",
+      "title": "Top-up Approved",
+      "body": "Your top-up request for ₱600.00 was approved",
+      "data": {
+        "topupId": "top_mi36z8f4",
+        "status": "Approved",
+        "amount": 600,
+        "rejectionReason": null
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:41:12.095Z"
+    },
+    {
+      "id": "notif_mi36z8g9",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mi31yl91",
+        "name": "Wally Walerico",
+        "email": "wally@gmail.com",
+        "profilePictureUrl": null
+      },
+      "type": "topup:created",
+      "title": "New Top-up Request",
+      "body": "Wally Walerico submitted a top-up request for ₱600.00",
+      "data": {
+        "topupId": "top_mi36z8f4",
+        "amount": 600,
+        "provider": "gcash",
+        "studentId": "2022556733",
+        "reference": "234252423524542",
+        "student": {
+          "name": "Wally Walerico",
+          "contact": "+6395548327445",
+          "email": "wally@gmail.com"
+        }
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:40:12.256Z"
+    },
+    {
+      "id": "notif_mi36wvqe",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi36vtz19r Rejected",
+      "body": "Your reservation RES_mi36vtz19r has been rejected. Refund has been applied.",
+      "data": {
+        "reservationId": "RES_mi36vtz19r",
+        "status": "Rejected",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 99,
+        "note": "Less sauce",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:38:22.502Z"
+    },
+    {
+      "id": "notif_mi36vtza",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi36vtz19r",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 99,
+        "note": "Less sauce",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:37:33.565Z"
+    },
+    {
+      "id": "notif_mi36uf9y",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi36pba9ag Claimed",
+      "body": "Your reservation RES_mi36pba9ag is now Claimed.",
+      "data": {
+        "reservationId": "RES_mi36pba9ag",
+        "status": "Claimed"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:36:27.862Z"
+    },
+    {
+      "id": "notif_mi36t7y5",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi36pba9ag Ready",
+      "body": "Your reservation RES_mi36pba9ag is now Ready.",
+      "data": {
+        "reservationId": "RES_mi36pba9ag",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:35:31.709Z"
+    },
+    {
+      "id": "notif_mi36t69w",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi36pba9ag Preparing",
+      "body": "Your reservation RES_mi36pba9ag is now Preparing.",
+      "data": {
+        "reservationId": "RES_mi36pba9ag",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:35:29.540Z"
+    },
+    {
+      "id": "notif_mi36q9so",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi36pba9ag Approved",
+      "body": "Your reservation RES_mi36pba9ag has been approved.",
+      "data": {
+        "reservationId": "RES_mi36pba9ag",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-7",
+            "name": "Chicken Masala",
+            "price": 170,
+            "qty": 1
+          },
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 215,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi36pba952"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:33:14.136Z"
+    },
+    {
+      "id": "notif_mi36pbam",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi36pba9ag",
+        "items": [
+          {
+            "id": "ITM-7",
+            "name": "Chicken Masala",
+            "price": 170,
+            "qty": 1
+          },
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 215,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-17T13:32:29.409Z"
+    },
     {
       "id": "notif_mi36gs6o",
       "for": "usr_mh0h1va7",
@@ -7746,7 +8290,7 @@
         "section": "R",
         "student": "Anmol David Das"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-17T13:25:51.408Z"
     },
     {
@@ -7818,7 +8362,7 @@
         "student": "Anmol David Das",
         "transactionId": "TX_mi36fn5t82"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-17T13:25:16.943Z"
     },
     {
@@ -8020,7 +8564,7 @@
         "section": "E",
         "student": "Wally Walerico"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-17T12:40:36.225Z"
     },
     {
@@ -10697,45 +11241,6 @@
       },
       "read": true,
       "createdAt": "2025-11-11T11:06:26.101Z"
-    },
-    {
-      "id": "notif_mhubo57j",
-      "for": "usr_mh0h1va7",
-      "type": "reservation:status",
-      "title": "Reservation RES_mhubmb2rl8 Approved",
-      "body": "Your reservation RES_mhubmb2rl8 has been approved.",
-      "data": {
-        "reservationId": "RES_mhubmb2rl8",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-11T08:41:37.375Z"
-    },
-    {
-      "id": "notif_mhubnx1n",
-      "for": "usr_mh0h1va7",
-      "type": "reservation:status",
-      "title": "Reservation RES_mhubmmabcl Approved",
-      "body": "Your reservation RES_mhubmmabcl has been approved.",
-      "data": {
-        "reservationId": "RES_mhubmmabcl",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-11T08:41:26.795Z"
-    },
-    {
-      "id": "notif_mhubnl7j",
-      "for": "usr_mh0h1va7",
-      "type": "reservation:status",
-      "title": "Reservation RES_mhubm3c8p3 Approved",
-      "body": "Your reservation RES_mhubm3c8p3 has been approved.",
-      "data": {
-        "reservationId": "RES_mhubm3c8p3",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-11T08:41:11.455Z"
     },
     {
       "id": "notif_mhubnb2h",
@@ -16551,7 +17056,7 @@
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
       "items": [],
-      "updatedAt": "2025-11-17T13:25:39.184Z"
+      "updatedAt": "2025-11-17T13:37:36.044Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
@@ -16631,7 +17136,7 @@
       "id": "cart_user_usr_mi31yl91",
       "userId": "usr_mi31yl91",
       "items": [],
-      "updatedAt": "2025-11-17T11:37:18.202Z"
+      "updatedAt": "2025-11-17T13:52:01.339Z"
     }
   ],
   "inventory": []
