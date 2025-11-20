@@ -17067,27 +17067,8 @@
     {
       "id": "cart_user_usr_meusxal8",
       "userId": "usr_meusxal8",
-      "items": [
-        {
-          "itemId": "ITM-10",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        },
-        {
-          "itemId": "ITM-7",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        },
-        {
-          "itemId": "ITM-2",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        }
-      ],
-      "updatedAt": "2025-11-16T12:27:09.076Z"
+      "items": [],
+      "updatedAt": "2025-11-20T03:55:43.969Z"
     },
     {
       "id": "cart_user_usr_mhkms3f1",
@@ -17137,6 +17118,19 @@
       "userId": "usr_mi31yl91",
       "items": [],
       "updatedAt": "2025-11-17T13:52:01.339Z"
+    },
+    {
+      "id": "cart_user_usr_meshwbp7",
+      "userId": "usr_meshwbp7",
+      "items": [
+        {
+          "itemId": "ITM-4",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        }
+      ],
+      "updatedAt": "2025-11-20T03:56:06.195Z"
     }
   ],
   "inventory": []
