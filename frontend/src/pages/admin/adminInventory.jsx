@@ -4,7 +4,20 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/adminavbar";
 import AdminBottomNav from '../../components/mobile/AdminBottomNav';
 import { refreshSessionForProtected } from "../../lib/auth";
-import { RefreshCw, Save, AlertTriangle, Search, X, Plus, Minus, Package, TrendingDown, CheckCircle, XCircle } from "lucide-react";
+import { RefreshCw, Save, AlertTriangle, Search, X, Plus, Minus, Package, TrendingDown, CheckCircle, XCircle, Download, BarChart3 } from "lucide-react";
+import { Bar, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+} from "chart.js";
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const LOW_STOCK_THRESHOLD = 5;
 const SORT_OPTIONS = [
@@ -35,6 +48,7 @@ export default function AdminInventory() {
   const [status, setStatus] = useState("all");
   const [sort, setSort] = useState("name-asc");
   const [showFilters, setShowFilters] = useState(false);
+  const [showReports, setShowReports] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -117,6 +131,53 @@ export default function AdminInventory() {
   const outOfStock = useMemo(() => items.filter((i) => Number(i.stock) === 0), [items]);
   const totalStock = useMemo(() => items.reduce((sum, i) => sum + Number(i.stock), 0), [items]);
 
+  // Calculate category statistics
+  const categoryStats = useMemo(() => {
+    const byCategory = {};
+    for (const item of items) {
+      if (!byCategory[item.category]) {
+        byCategory[item.category] = { category: item.category, totalStock: 0, itemCount: 0, lowStockCount: 0, outOfStockCount: 0 };
+      }
+      byCategory[item.category].totalStock += item.stock;
+      byCategory[item.category].itemCount += 1;
+      if (item.stock <= LOW_STOCK_THRESHOLD) byCategory[item.category].lowStockCount += 1;
+      if (item.stock === 0) byCategory[item.category].outOfStockCount += 1;
+    }
+    return Object.values(byCategory).sort((a, b) => b.totalStock - a.totalStock);
+  }, [items]);
+
+  // Chart data for stock distribution
+  const stockDistributionChart = useMemo(() => {
+    const labels = categoryStats.map(c => c.category);
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Total Stock',
+          data: categoryStats.map(c => c.totalStock),
+          backgroundColor: 'rgba(59,130,246,0.85)',
+        }
+      ]
+    };
+  }, [categoryStats]);
+
+  // Pie chart for status distribution
+  const statusDistributionChart = useMemo(() => {
+    return {
+      labels: ['In Stock', 'Low Stock', 'Out of Stock'],
+      datasets: [
+        {
+          data: [
+            items.filter(i => i.stock > LOW_STOCK_THRESHOLD).length,
+            lowStock.length,
+            outOfStock.length
+          ],
+          backgroundColor: ['#34D399', '#FBBF24', '#F87171'],
+        }
+      ]
+    };
+  }, [items, lowStock, outOfStock]);
+
   const setEditStock = (id, v) => setStockEdits((s) => ({ ...s, [id]: v }));
 
   const saveStock = async (productId, qty) => {
@@ -155,6 +216,93 @@ export default function AdminInventory() {
   const hasUnsavedChanges = useMemo(() => {
     return items.some(it => stockEdits[it.id] !== String(it.stock));
   }, [items, stockEdits]);
+
+  // Export functions
+  const exportInventoryToCsv = () => {
+    const csvContent = [
+      ['INVENTORY REPORT - ' + new Date().toLocaleDateString()],
+      [''],
+      ['SUMMARY'],
+      ['Metric', 'Value'],
+      ['Total Items', items.length],
+      ['Total Stock', totalStock],
+      ['Low Stock Items', lowStock.length],
+      ['Out of Stock Items', outOfStock.length],
+      [''],
+      ['DETAILED INVENTORY'],
+      ['Item', 'Category', 'Stock', 'Price', 'Status'],
+      ...items.map(item => [
+        item.name,
+        item.category,
+        item.stock,
+        '₱' + item.price.toFixed(2),
+        item.stock === 0 ? 'Out of Stock' : item.stock <= LOW_STOCK_THRESHOLD ? 'Low Stock' : 'In Stock'
+      ]),
+      [''],
+      ['BY CATEGORY'],
+      ['Category', 'Total Items', 'Total Stock', 'Low Stock', 'Out of Stock'],
+      ...categoryStats.map(cat => [
+        cat.category,
+        cat.itemCount,
+        cat.totalStock,
+        cat.lowStockCount,
+        cat.outOfStockCount
+      ])
+    ].map(row => row.map(cell => {
+      // Properly escape and encode cells with UTF-8
+      const cellStr = String(cell);
+      // Wrap in quotes if contains comma, newline, or special characters
+      if (cellStr.includes(',') || cellStr.includes('\n') || cellStr.includes('"') || cellStr.includes('₱')) {
+        return '"' + cellStr.replace(/"/g, '""') + '"';
+      }
+      return cellStr;
+    }).join(',')).join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `inventory_report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
+
+  const exportLowStockToCsv = () => {
+    const csvContent = [
+      ['LOW STOCK & OUT OF STOCK REPORT - ' + new Date().toLocaleDateString()],
+      [''],
+      ['LOW STOCK ITEMS (≤ ' + LOW_STOCK_THRESHOLD + ' units)'],
+      ['Item', 'Category', 'Current Stock', 'Price'],
+      ...lowStock.map(item => [
+        item.name,
+        item.category,
+        item.stock,
+        '₱' + item.price.toFixed(2)
+      ]),
+      [''],
+      ['OUT OF STOCK ITEMS'],
+      ['Item', 'Category', 'Price'],
+      ...outOfStock.map(item => [
+        item.name,
+        item.category,
+        '₱' + item.price.toFixed(2)
+      ])
+    ].map(row => row.map(cell => {
+      // Properly escape and encode cells with UTF-8
+      const cellStr = String(cell);
+      // Wrap in quotes if contains comma, newline, or special characters
+      if (cellStr.includes(',') || cellStr.includes('\n') || cellStr.includes('"') || cellStr.includes('₱')) {
+        return '"' + cellStr.replace(/"/g, '""') + '"';
+      }
+      return cellStr;
+    }).join(',')).join('\n');
+
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `low_stock_report_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
@@ -203,14 +351,23 @@ export default function AdminInventory() {
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Inventory Management</h1>
               <p className="text-xs sm:text-sm text-gray-600 mt-1">View and edit stock quantities</p>
             </div>
-            <button 
-              onClick={load} 
-              disabled={loading}
-              className="inline-flex items-center justify-center gap-2 border border-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60 w-full sm:w-auto"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <button 
+                onClick={() => setShowReports(!showReports)}
+                className="inline-flex items-center justify-center gap-2 border border-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm hover:bg-gray-50 w-full sm:w-auto"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>{showReports ? 'Hide' : 'Show'} Reports</span>
+              </button>
+              <button 
+                onClick={load} 
+                disabled={loading}
+                className="inline-flex items-center justify-center gap-2 border border-gray-300 px-3 sm:px-4 py-2 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-60 w-full sm:w-auto"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                <span>Refresh</span>
+              </button>
+            </div>
           </div>
 
           {/* Low Stock Alert */}
@@ -239,6 +396,100 @@ export default function AdminInventory() {
                     You have unsaved stock changes. Remember to save!
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Reports Section */}
+          {showReports && (
+            <div className="bg-white rounded-lg border border-gray-100 p-4 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">Inventory Reports</h3>
+                <button
+                  onClick={() => setShowReports(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Report Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                {/* Stock by Category */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-4">Stock by Category</h4>
+                  <div className="h-64">
+                    <Bar 
+                      data={stockDistributionChart}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { y: { beginAtZero: true } },
+                        plugins: { legend: { position: 'top' } }
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Status Distribution */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-semibold text-gray-900 mb-4">Item Status Distribution</h4>
+                  <div className="h-64">
+                    <Pie 
+                      data={statusDistributionChart}
+                      options={{
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'right' } }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Statistics Table */}
+              <div className="bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                <h4 className="text-sm font-semibold text-gray-900 mb-3">Category Summary</h4>
+                <table className="w-full text-xs sm:text-sm">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-3 py-2 text-left font-semibold">Category</th>
+                      <th className="px-3 py-2 text-center font-semibold">Items</th>
+                      <th className="px-3 py-2 text-center font-semibold">Total Stock</th>
+                      <th className="px-3 py-2 text-center font-semibold">Low Stock</th>
+                      <th className="px-3 py-2 text-center font-semibold">Out of Stock</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {categoryStats.map(cat => (
+                      <tr key={cat.category} className="hover:bg-gray-100">
+                        <td className="px-3 py-2">{cat.category}</td>
+                        <td className="px-3 py-2 text-center">{cat.itemCount}</td>
+                        <td className="px-3 py-2 text-center font-semibold text-blue-600">{cat.totalStock}</td>
+                        <td className="px-3 py-2 text-center font-semibold text-orange-600">{cat.lowStockCount}</td>
+                        <td className="px-3 py-2 text-center font-semibold text-red-600">{cat.outOfStockCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Export Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  onClick={exportInventoryToCsv}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
+                >
+                  <Download className="w-4 h-4" />
+                  Export Full Inventory
+                </button>
+                <button
+                  onClick={exportLowStockToCsv}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-sm font-medium"
+                >
+                  <Download className="w-4 h-4" />
+                  Export Low Stock Report
+                </button>
               </div>
             </div>
           )}

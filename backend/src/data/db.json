@@ -108,10 +108,10 @@
       "name": "Yakult",
       "category": "Beverages",
       "price": 10,
-      "stock": 3,
+      "stock": 0,
       "img": "/uploads/1761538643677_574382.jpg",
       "visible": true,
-      "updatedAt": "2025-11-06T08:27:14.850Z"
+      "updatedAt": "2025-11-20T09:18:20.726Z"
     },
     {
       "id": "1761632268631799",
@@ -5593,7 +5593,7 @@
       "id": "usr_mh0h1va7",
       "name": "Anmol David Das",
       "email": "spadymold@gmail.com",
-      "passwordHash": "$2a$10$V9YRtB3J4/WKzdTExCMI3uVcTFXyJlSeveTrjKX3F9TnFC5AHY8ty",
+      "passwordHash": "$2a$10$aqJFLzqTVL9Ns2uGontoCOxOjvo6PN6k0hD/3raO8QhMfwaHx.vOW",
       "role": "student",
       "grade": "",
       "section": "",
@@ -5604,10 +5604,7 @@
       "phone": "09688523253",
       "updatedAt": "2025-11-11T08:32:56.129Z",
       "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png",
-      "passwordReset": {
-        "token": "k0tnecm41wf5b1ld5v1x0t",
-        "expiresAt": "2025-11-17T15:03:54.149Z"
-      }
+      "passwordReset": null
     },
     {
       "id": "usr_mhbem19p",
@@ -5666,19 +5663,6 @@
       "updatedAt": "2025-11-05T09:50:46.738Z"
     },
     {
-      "id": "usr_mhvoh1zp",
-      "name": "Syantut ARABO",
-      "email": "syant@cunt.com",
-      "passwordHash": "$2a$10$v0OQRZWrgorAvPdBi7m.GuNLpZDvEtBpOgraU8IwO2inP8BGMJEYi",
-      "role": "student",
-      "grade": "",
-      "section": "",
-      "balance": 0,
-      "studentId": "202080189",
-      "phone": "09690636652",
-      "createdAt": "2025-11-12T07:27:47.922Z"
-    },
-    {
       "id": "usr_mi31yl91",
       "name": "Wally Walerico",
       "email": "wally@gmail.com",
@@ -5718,6 +5702,19 @@
       "studentId": "20223343435",
       "phone": "09258252814",
       "createdAt": "2025-11-20T07:01:14.777Z"
+    },
+    {
+      "id": "usr_mi76paao",
+      "name": "Lance Andrei",
+      "email": "lance@gmail.com",
+      "passwordHash": "$2a$10$Ag4LQ2yw7cES4Kj3rtWc0u/1TThC60SzU4CMPBqgXPEDOcv5tn8rO",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "202256445",
+      "phone": "09837436824",
+      "createdAt": "2025-11-20T08:43:32.972Z"
     }
   ],
   "transactions": [
@@ -7963,6 +7960,25 @@
   ],
   "notifications": [
     {
+      "id": "notif_mi76paet",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Lance Andrei",
+      "body": "A new student account has been created.\n\nName: Lance Andrei\nStudent ID: 202256445\nEmail: lance@gmail.com\nPhone: 09837436824",
+      "data": {
+        "userId": "usr_mi76paao",
+        "studentName": "Lance Andrei",
+        "studentId": "202256445",
+        "email": "lance@gmail.com",
+        "phone": "09837436824",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-20T08:43:32.981Z"
+    },
+    {
       "id": "notif_mi73nmgv",
       "for": "usr_mi31yl91",
       "type": "reservation:status",
@@ -7993,7 +8009,7 @@
         "student": "Wally Walerico",
         "transactionId": "TX_mi37eetscy"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-20T07:18:16.447Z"
     },
     {
@@ -17235,21 +17251,8 @@
     {
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
-      "items": [
-        {
-          "itemId": "1761992730493190",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        },
-        {
-          "itemId": "ITM-4",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        }
-      ],
-      "updatedAt": "2025-11-20T05:05:24.456Z"
+      "items": [],
+      "updatedAt": "2025-11-20T09:12:53.760Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
