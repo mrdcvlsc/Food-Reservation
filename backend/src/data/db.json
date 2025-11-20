@@ -4910,12 +4910,13 @@
         }
       ],
       "total": 65,
-      "status": "Pending",
+      "status": "Approved",
       "transactionId": "TX_mi37eetscy",
       "charged": true,
       "chargedAt": "2025-11-17T13:52:00.400Z",
       "stockDeducted": true,
-      "createdAt": "2025-11-17T13:52:00.400Z"
+      "createdAt": "2025-11-17T13:52:00.400Z",
+      "updatedAt": "2025-11-20T07:18:16.435Z"
     },
     {
       "id": "RES_mi6ylbcbce",
@@ -5704,6 +5705,19 @@
       "studentId": "20223445523",
       "phone": "098847364892",
       "createdAt": "2025-11-17T13:56:38.052Z"
+    },
+    {
+      "id": "usr_mi731q1m",
+      "name": "NORALYN S DAS",
+      "email": "dasmolster@gmail.com",
+      "passwordHash": "$2a$10$9uqTi19hgamtXUyNQP5.zO5BoAv2QvyotxLRsQRDtSECr/dlsYa1G",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "20223343435",
+      "phone": "09258252814",
+      "createdAt": "2025-11-20T07:01:14.777Z"
     }
   ],
   "transactions": [
@@ -7921,7 +7935,7 @@
       "ref": "RES_mi37eets6h",
       "amount": 65,
       "direction": "debit",
-      "status": "Pending",
+      "status": "Success",
       "createdAt": "2025-11-17T13:52:00.400Z"
     },
     {
@@ -7948,6 +7962,59 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mi73nmgv",
+      "for": "usr_mi31yl91",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi37eets6h Approved",
+      "body": "Your reservation RES_mi37eets6h has been approved.",
+      "data": {
+        "reservationId": "RES_mi37eets6h",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 65,
+        "note": "",
+        "slot": "recess",
+        "grade": "G7",
+        "section": "G",
+        "student": "Wally Walerico",
+        "transactionId": "TX_mi37eetscy"
+      },
+      "read": false,
+      "createdAt": "2025-11-20T07:18:16.447Z"
+    },
+    {
+      "id": "notif_mi731q5g",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: NORALYN S DAS",
+      "body": "A new student account has been created.\n\nName: NORALYN S DAS\nStudent ID: 20223343435\nEmail: dasmolster@gmail.com\nPhone: 09258252814",
+      "data": {
+        "userId": "usr_mi731q1m",
+        "studentName": "NORALYN S DAS",
+        "studentId": "20223343435",
+        "email": "dasmolster@gmail.com",
+        "phone": "09258252814",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-20T07:01:14.788Z"
+    },
     {
       "id": "notif_mi6ymklz",
       "for": "usr_mh0h1va7",

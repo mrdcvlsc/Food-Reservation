@@ -16,6 +16,17 @@ import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import AdminBottomNav from '../../components/mobile/AdminBottomNav';
 
+function normalizeStatus(raw) {
+  const s = String(raw || "").trim().toLowerCase();
+  if (["pending"].includes(s)) return "Pending";
+  if (["approved", "approve"].includes(s)) return "Approved";
+  if (["preparing", "in-prep", "in_prep", "prep"].includes(s)) return "Preparing";
+  if (["ready", "done"].includes(s)) return "Ready";
+  if (["claimed", "pickedup", "picked_up", "picked-up"].includes(s)) return "Claimed";
+  if (["rejected", "declined"].includes(s)) return "Rejected";
+  return "Pending";
+}
+
 const peso = new Intl.NumberFormat("en-PH", {
   style: "currency",
   currency: "PHP",
@@ -96,30 +107,78 @@ export default function AdminHome() {
   useEffect(() => {
     let m = true;
     setLoadingDashboard(true);
+    
     api
       .get("/admin/dashboard")
       .then((d) => {
         if (!m) return;
-        setDashboard(
-          d && typeof d === "object"
-            ? d
-            : { totalSales: 0, ordersToday: 0, newUsers: 0, pending: 0, recentOrders: [] }
-        );
+        
+        const APPROVED_STATUSES = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
+        
+        let totalRevenue = 0;
+        
+        // Fetch all reservations for accurate all-time revenue calculation
+        api
+          .get("/reservations/admin")
+          .then((reservations) => {
+            if (!m) return;
+            
+            // Ensure we have an array
+            const resArray = Array.isArray(reservations) ? reservations : 
+                            (reservations?.data && Array.isArray(reservations.data)) ? reservations.data : [];
+            
+            // Only count revenue from approved reservations (all-time)
+            for (const order of resArray) {
+              const status = normalizeStatus(order?.status);
+              if (APPROVED_STATUSES.has(status)) {
+                // Calculate revenue from items
+                if (Array.isArray(order?.items)) {
+                  for (const it of order.items) {
+                    const price = Number(it?.price ?? it?.unitPrice ?? 0) || 0;
+                    const qty = Number(it?.qty ?? it?.quantity ?? it?.count ?? 0) || 0;
+                    totalRevenue += price * qty;
+                  }
+                }
+              }
+            }
+            
+            console.log("[AdminHome] Total Revenue calculated:", totalRevenue, "from", resArray.length, "reservations");
+            
+            setDashboard({
+              totalRevenue: totalRevenue,
+              ordersToday: d.ordersToday || 0,
+              newUsers: d.newUsers || 0,
+              pending: d.pending || 0,
+              recentOrders: d.recentOrders || [],
+            });
+          })
+          .catch((err) => {
+            console.error("[AdminHome] Failed to fetch reservations:", err);
+            setDashboard({
+              totalRevenue: 0,
+              ordersToday: d.ordersToday || 0,
+              newUsers: d.newUsers || 0,
+              pending: d.pending || 0,
+              recentOrders: d.recentOrders || [],
+            });
+          });
       })
-      .catch(() =>
+      .catch((err) => {
+        console.error("[AdminHome] Failed to fetch dashboard:", err);
         setDashboard({
-          totalSales: 0,
+          totalRevenue: 0,
           ordersToday: 0,
           newUsers: 0,
           pending: 0,
           recentOrders: [],
-        })
-      )
+        });
+      })
       .finally(() => m && setLoadingDashboard(false));
-    return () => {
-      m = false;
-    };
-  }, []);
+    
+  return () => {
+    m = false;
+  };
+}, []);
 
   const [currentProducts, setCurrentProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -416,8 +475,8 @@ export default function AdminHome() {
               ? todaySales
               : [
                   {
-                    label: "Total Sales",
-                    value: dashboard.totalSales,
+                    label: "Total Revenue",
+                    value: dashboard.totalRevenue || 0,
                     icon: (
                       <TrendingUp className="w-6 h-6 text-green-600" />
                     ),
@@ -467,7 +526,7 @@ export default function AdminHome() {
                 </div>
                 <p className="text-xs sm:text-sm text-gray-600">{label}</p>
                 <p className="mt-1 text-xl sm:text-2xl font-bold text-gray-900">
-                  {label === "Total Sales" ? peso.format(value) : value}
+                  {label === "Total Revenue" ? peso.format(value) : value}
                 </p>
               </div>
             ))}
