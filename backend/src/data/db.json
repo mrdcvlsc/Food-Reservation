@@ -88,7 +88,7 @@
       "name": "Iced Tea",
       "category": "Beverages",
       "price": 30,
-      "stock": 6,
+      "stock": 5,
       "img": "/uploads/1761538665555_396901.jpg",
       "visible": true,
       "updatedAt": "2025-11-06T02:05:34.646Z"
@@ -179,7 +179,7 @@
       "name": "Rice Meal D",
       "category": "Meals",
       "price": 90,
-      "stock": 8,
+      "stock": 7,
       "mealType": "Rice Meal",
       "servingGrams": "250",
       "calories": "300",
@@ -4916,6 +4916,37 @@
       "chargedAt": "2025-11-17T13:52:00.400Z",
       "stockDeducted": true,
       "createdAt": "2025-11-17T13:52:00.400Z"
+    },
+    {
+      "id": "RES_mi6ylbcbce",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "1762000012846394",
+          "name": "Rice Meal D",
+          "price": 90,
+          "qty": 1
+        },
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 120,
+      "status": "Approved",
+      "transactionId": "TX_mi6ylbcbn9",
+      "charged": true,
+      "chargedAt": "2025-11-20T04:56:30.635Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T04:56:30.635Z",
+      "updatedAt": "2025-11-20T04:57:29.291Z"
     }
   ],
   "topups": [
@@ -5565,7 +5596,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 4423,
+      "balance": 4303,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -7892,6 +7923,16 @@
       "direction": "debit",
       "status": "Pending",
       "createdAt": "2025-11-17T13:52:00.400Z"
+    },
+    {
+      "id": "TX_mi6ylbcbn9",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi6ylbcbce",
+      "amount": 120,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-20T04:56:30.635Z"
     }
   ],
   "wallets": [
@@ -7907,6 +7948,78 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mi6ymklz",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi6ylbcbce Approved",
+      "body": "Your reservation RES_mi6ylbcbce has been approved.",
+      "data": {
+        "reservationId": "RES_mi6ylbcbce",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1762000012846394",
+            "name": "Rice Meal D",
+            "price": 90,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 120,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi6ylbcbn9"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T04:57:29.303Z"
+    },
+    {
+      "id": "notif_mi6ylbco",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi6ylbcbce",
+        "items": [
+          {
+            "id": "1762000012846394",
+            "name": "Rice Meal D",
+            "price": 90,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 120,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T04:56:30.635Z"
+    },
     {
       "id": "notif_mi37kd2p",
       "for": "admin",
@@ -17055,8 +17168,21 @@
     {
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
-      "items": [],
-      "updatedAt": "2025-11-17T13:37:36.044Z"
+      "items": [
+        {
+          "itemId": "1761992730493190",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        },
+        {
+          "itemId": "ITM-4",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        }
+      ],
+      "updatedAt": "2025-11-20T05:05:24.456Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
@@ -17086,7 +17212,7 @@
       "id": "cart_user_usr_mhbem19p",
       "userId": "usr_mhbem19p",
       "items": [],
-      "updatedAt": "2025-11-17T13:21:13.659Z"
+      "updatedAt": "2025-11-20T05:05:51.225Z"
     },
     {
       "id": "cart_user_u_admin",

@@ -583,8 +583,9 @@ export default function AdminUsers() {
         {/* Edit Modal */}
         {editUser && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 rounded-t-2xl">
+            <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Sticky Header */}
+              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 rounded-t-2xl z-10 flex-shrink-0">
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900">Edit User Profile</h3>
@@ -599,121 +600,134 @@ export default function AdminUsers() {
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
-                {/* Profile Picture */}
-                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
-                  <div className="relative">
-                    {!removePhoto && (editUser.profilePictureUrl || photoFile) ? (
-                      <img 
-                        src={photoFile ? URL.createObjectURL(photoFile) : editUser.profilePictureUrl}
-                        alt=""
-                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-white shadow-lg"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-2xl font-bold text-blue-600">
-                        {editUser.name?.charAt(0)?.toUpperCase() || 'U'}
-                      </div>
-                    )}
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                      <Camera className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      className="hidden"
-                      id="photo-upload"
-                    />
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <label 
-                        htmlFor="photo-upload"
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium cursor-pointer hover:bg-blue-700 transition"
-                      >
-                        <Upload className="w-4 h-4" />
-                        Upload
-                      </label>
-                      {(editUser.profilePictureUrl || photoFile) && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPhotoFile(null);
-                            setRemovePhoto(true);
-                          }}
-                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 border border-red-600 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition"
-                        >
-                          <X className="w-4 h-4" />
-                          Remove
-                        </button>
+              {/* Scrollable Content */}
+              <div className="overflow-y-auto flex-1">
+                {/* Fixed Profile Picture Section */}
+                <div className="sticky top-0 bg-white p-4 sm:p-6 border-b border-gray-200 flex-shrink-0">
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="relative flex-shrink-0">
+                      {!removePhoto && (editUser.profilePictureUrl || photoFile) ? (
+                        <img 
+                          src={photoFile ? URL.createObjectURL(photoFile) : editUser.profilePictureUrl}
+                          alt=""
+                          className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover border-2 border-white shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center text-2xl font-bold text-blue-600 flex-shrink-0">
+                          {editUser.name?.charAt(0)?.toUpperCase() || 'U'}
+                        </div>
                       )}
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg flex-shrink-0">
+                        <Camera className="w-4 h-4 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoChange}
+                        className="hidden"
+                        id="photo-upload"
+                      />
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <label 
+                          htmlFor="photo-upload"
+                          className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium cursor-pointer hover:bg-blue-700 transition"
+                        >
+                          <Upload className="w-4 h-4" />
+                          <span className="hidden sm:inline">Upload</span>
+                          <span className="sm:hidden">Upload</span>
+                        </label>
+                        {(editUser.profilePictureUrl || photoFile) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPhotoFile(null);
+                              setRemovePhoto(true);
+                            }}
+                            className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 border border-red-600 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition"
+                          >
+                            <X className="w-4 h-4" />
+                            <span className="hidden sm:inline">Remove</span>
+                            <span className="sm:hidden">Remove</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Name */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Full Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.name}
-                    onChange={e => setEditForm({...editForm, name: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Enter full name"
-                  />
-                </div>
+                {/* Form Content */}
+                <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4">
+                  {/* Name */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.name}
+                      onChange={e => setEditForm({...editForm, name: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      placeholder="Enter full name"
+                    />
+                  </div>
 
-                {/* Student ID */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Student ID *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editForm.studentId}
-                    onChange={e => setEditForm({...editForm, studentId: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition font-mono"
-                    placeholder="e.g., 2024-001234"
-                  />
-                </div>
+                  {/* Student ID */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Student ID *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.studentId}
+                      onChange={e => setEditForm({...editForm, studentId: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition font-mono"
+                      placeholder="e.g., 2024-001234"
+                    />
+                  </div>
 
-                {/* Phone */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Contact Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={editForm.phone}
-                    onChange={e => setEditForm({...editForm, phone: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="09•• ••• ••••"
-                  />
-                </div>
+                  {/* Phone */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Contact Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={editForm.phone}
+                      onChange={e => setEditForm({...editForm, phone: e.target.value})}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                      placeholder="09•• ••• ••••"
+                    />
+                  </div>
 
-                {/* Admin Note */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Optional Note to User
-                  </label>
-                  <textarea
-                    value={editForm.note}
-                    onChange={e => setEditForm({...editForm, note: e.target.value})}
-                    placeholder="Write a message to the user about this update (optional)"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
-                    rows={3}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    The user will be notified of changes and see this message
-                  </p>
-                </div>
+                  {/* Admin Note */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Optional Note to User
+                    </label>
+                    <textarea
+                      value={editForm.note}
+                      onChange={e => setEditForm({...editForm, note: e.target.value})}
+                      placeholder="Write a message to the user about this update (optional)"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
+                      rows={3}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      The user will be notified of changes and see this message
+                    </p>
+                  </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-2 pt-4 border-t border-gray-200">
+                  {/* Spacer for button visibility */}
+                  <div className="h-4" />
+                </form>
+              </div>
+
+              {/* Sticky Footer with Action Buttons */}
+              <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6 flex-shrink-0">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     type="button"
                     onClick={() => setEditUser(null)}
@@ -724,6 +738,7 @@ export default function AdminUsers() {
                   </button>
                   <button
                     type="submit"
+                    onClick={handleSubmit}
                     disabled={submitting}
                     className="flex-1 px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg"
                   >
@@ -737,7 +752,7 @@ export default function AdminUsers() {
                     )}
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         )}

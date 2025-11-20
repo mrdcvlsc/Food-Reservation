@@ -21,6 +21,19 @@ import { refreshSessionForProtected } from "../../lib/auth";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
 
+const SORT_OPTIONS = [
+  { value: "name-asc", label: "Name (A–Z)", icon: "↑" },
+  { value: "name-desc", label: "Name (Z–A)", icon: "↓" },
+  { value: "price-asc", label: "Price (Low→High)", icon: "↑" },
+  { value: "price-desc", label: "Price (High→Low)", icon: "↓" },
+  { value: "stock-asc", label: "Stock (Low→High)", icon: "↑" },
+  { value: "stock-desc", label: "Stock (High→Low)", icon: "↓" },
+  { value: "category-asc", label: "Category (A–Z)", icon: "↑" },
+  { value: "category-desc", label: "Category (Z–A)", icon: "↓" },
+  { value: "newest", label: "Newest First", icon: "🕐" },
+  { value: "oldest", label: "Oldest First", icon: "🕐" },
+];
+
 export default function AdminShop() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -79,11 +92,40 @@ export default function AdminShop() {
       rows = rows.filter(r => r.available === need);
     }
 
+    // Enhanced sorting logic
     switch (sort) {
-      case "price-asc":  rows.sort((a,b) => a.price - b.price); break;
-      case "price-desc": rows.sort((a,b) => b.price - a.price); break;
-      case "name-desc":  rows.sort((a,b) => a.name.localeCompare(b.name) * -1); break;
-      default:           rows.sort((a,b) => a.name.localeCompare(b.name));
+      case "name-asc":
+        rows.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        break;
+      case "name-desc":
+        rows.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+        break;
+      case "price-asc":
+        rows.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        break;
+      case "price-desc":
+        rows.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+        break;
+      case "stock-asc":
+        rows.sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
+        break;
+      case "stock-desc":
+        rows.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
+        break;
+      case "category-asc":
+        rows.sort((a, b) => (a.category || "").localeCompare(b.category || ""));
+        break;
+      case "category-desc":
+        rows.sort((a, b) => (b.category || "").localeCompare(a.category || ""));
+        break;
+      case "newest":
+        rows.sort((a, b) => new Date(b.createdAt || b.created_at || 0) - new Date(a.createdAt || a.created_at || 0));
+        break;
+      case "oldest":
+        rows.sort((a, b) => new Date(a.createdAt || a.created_at || 0) - new Date(b.createdAt || b.created_at || 0));
+        break;
+      default:
+        rows.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     }
     return rows;
   }, [items, q, cat, status, sort]);
@@ -324,10 +366,9 @@ export default function AdminShop() {
               onChange={(e) => setSort(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="name-asc">Name (A–Z)</option>
-              <option value="name-desc">Name (Z–A)</option>
-              <option value="price-asc">Price (Low→High)</option>
-              <option value="price-desc">Price (High→Low)</option>
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
 

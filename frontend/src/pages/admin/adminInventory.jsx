@@ -7,6 +7,14 @@ import { refreshSessionForProtected } from "../../lib/auth";
 import { RefreshCw, Save, AlertTriangle, Search, X, Plus, Minus, Package, TrendingDown, CheckCircle, XCircle } from "lucide-react";
 
 const LOW_STOCK_THRESHOLD = 5;
+const SORT_OPTIONS = [
+  { value: "name-asc", label: "Name (A–Z)" },
+  { value: "name-desc", label: "Name (Z–A)" },
+  { value: "stock-asc", label: "Stock (Low→High)" },
+  { value: "stock-desc", label: "Stock (High→Low)" },
+  { value: "category-asc", label: "Category (A–Z)" },
+  { value: "category-desc", label: "Category (Z–A)" },
+];
 
 export default function AdminInventory() {
   const navigate = useNavigate();
@@ -73,13 +81,34 @@ export default function AdminInventory() {
       rows = rows.filter(r => r.available === need);
     }
 
+    // Enhanced sorting logic
     switch (sort) {
-      case "stock-asc":  rows.sort((a,b) => a.stock - b.stock); break;
-      case "stock-desc": rows.sort((a,b) => b.stock - a.stock); break;
-      case "price-asc":  rows.sort((a,b) => a.price - b.price); break;
-      case "price-desc": rows.sort((a,b) => b.price - a.price); break;
-      case "name-desc":  rows.sort((a,b) => a.name.localeCompare(b.name) * -1); break;
-      default:           rows.sort((a,b) => a.name.localeCompare(b.name));
+      case "name-asc":
+        rows.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        break;
+      case "name-desc":
+        rows.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+        break;
+      case "stock-asc":
+        rows.sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
+        break;
+      case "stock-desc":
+        rows.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
+        break;
+      case "price-asc":
+        rows.sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+        break;
+      case "price-desc":
+        rows.sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+        break;
+      case "category-asc":
+        rows.sort((a, b) => (a.category || "").localeCompare(b.category || ""));
+        break;
+      case "category-desc":
+        rows.sort((a, b) => (b.category || "").localeCompare(a.category || ""));
+        break;
+      default:
+        rows.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
     }
     return rows;
   }, [items, q, cat, status, sort]);
@@ -266,12 +295,7 @@ export default function AdminInventory() {
               <div>
                 <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wide mb-2">Sort</label>
                 <select value={sort} onChange={(e) => setSort(e.target.value)} className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm">
-                  <option value="name-asc">Name (A–Z)</option>
-                  <option value="name-desc">Name (Z–A)</option>
-                  <option value="stock-asc">Stock (Low to High)</option>
-                  <option value="stock-desc">Stock (High to Low)</option>
-                  <option value="price-asc">Price (Low to High)</option>
-                  <option value="price-desc">Price (High to Low)</option>
+                  {SORT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
             </div>
@@ -297,12 +321,7 @@ export default function AdminInventory() {
               <option value="out">Out of stock</option>
             </select>
             <select value={sort} onChange={(e) => setSort(e.target.value)} className="border border-gray-300 rounded-lg px-3 py-2 text-sm">
-              <option value="name-asc">Name (A–Z)</option>
-              <option value="name-desc">Name (Z–A)</option>
-              <option value="stock-asc">Stock (Low→High)</option>
-              <option value="stock-desc">Stock (High→Low)</option>
-              <option value="price-asc">Price (Low→High)</option>
-              <option value="price-desc">Price (High→Low)</option>
+              {SORT_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
           </div>
         </div>

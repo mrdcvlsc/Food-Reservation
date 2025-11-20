@@ -11,6 +11,8 @@ import {
   Wallet,
   RefreshCw,
   Download,
+  Calendar,
+  X,
 } from "lucide-react";
 import {
   Chart as ChartJS,
@@ -112,6 +114,11 @@ export default function AdminReports() {
   const [quantityCurrentPage, setQuantityCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  // date range filtering state
+  const [useDateRange, setUseeDateRange] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const load = async () => {
     setLoading(true);
     try {
@@ -200,25 +207,68 @@ export default function AdminReports() {
   }, [menu]);
 
   // compute reservations/topups that fall into the selected month/year (supports "all")
-  const resMonth = useMemo(() => (reservations || []).filter((r) => isInMonth(getCreated(r), month, year)), [reservations, month, year]);
-  const topMonth = useMemo(() => (topups || []).filter((t) => isInMonth(getCreated(t), month, year)), [topups, month, year]);
+  
+  // FIRST: Define the date range filtered data - SIMPLIFIED
+  const resMonthFiltered = useMemo(() => {
+    // If date range is active, ONLY use date range (ignore month/year)
+    if (useDateRange && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      return (reservations || []).filter((r) => {
+        const created = getCreated(r);
+        if (!created) return false;
+        const d = new Date(created);
+        return d >= start && d <= end;
+      });
+    }
+    
+    // Otherwise use month/year filter
+    return (reservations || []).filter((r) => isInMonth(getCreated(r), month, year));
+  }, [reservations, month, year, useDateRange, startDate, endDate]);
 
+  const topMonthFiltered = useMemo(() => {
+    // If date range is active, ONLY use date range (ignore month/year)
+    if (useDateRange && startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      
+      return (topups || []).filter((t) => {
+        const created = getCreated(t);
+        if (!created) return false;
+        const d = new Date(created);
+        return d >= start && d <= end;
+      });
+    }
+    
+    // Otherwise use month/year filter
+    return (topups || []).filter((t) => isInMonth(getCreated(t), month, year));
+  }, [topups, month, year, useDateRange, startDate, endDate]);
+
+  // SECOND: Use the filtered data
+  const resMonth = useMemo(() => resMonthFiltered, [resMonthFiltered]);
+  const topMonth = useMemo(() => topMonthFiltered, [topMonthFiltered]);
+
+  // filter reservations/topups by date range if enabled
   const resStats = useMemo(() => {
     let revenue = 0;
     const counts = CANONICAL_STATUSES.reduce((acc, k) => { acc[k] = 0; return acc; }, {});
     const byCategory = {};
     const byItem = {};
 
-    // only count revenue (and include items/categories) for orders that are approved or beyond
     const revenueStatuses = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
 
-    for (const r of resMonth) {
+    // Determine which data source to use
+    const dataSource = useDateRange && startDate && endDate ? resMonthFiltered : resMonth;
+
+    for (const r of dataSource) {
       const status = normalizeStatus(r?.status);
       counts[status] = (counts[status] || 0) + 1;
       const includeRevenue = revenueStatuses.has(status);
       if (status !== "Rejected" && Array.isArray(r?.items)) {
         for (const it of r.items) {
-          // robust id/qty/price/name/category detection (include productId/itemId/_id)
           const rid = String(it?.id ?? it?.productId ?? it?.itemId ?? it?._id ?? "").trim();
           const qty = Number(it?.qty ?? it?.quantity ?? it?.count ?? 0) || 0;
 
@@ -236,7 +286,7 @@ export default function AdminReports() {
           const name = m?.name ?? it?.name ?? it?.title ?? `#${rid || Math.random().toString(36).slice(2,7)}`;
           const cat = m?.category ?? it?.category ?? it?.type ?? "Uncategorized";
           const line = price * qty;
-          // only add revenue / item quantities into aggregates when order is approved (or later)
+          
           if (includeRevenue) {
             revenue += line;
             byCategory[cat] = (byCategory[cat] || 0) + line;
@@ -244,31 +294,32 @@ export default function AdminReports() {
             byItem[name].qty += qty;
             byItem[name].revenue += line;
           } else {
-            // ensure item exists so lists remain stable, but don't add qty/revenue
             if (!byItem[name]) byItem[name] = { name, qty: 0, revenue: 0, category: cat, unitPrice: price || 0 };
           }
-          // keep last known unit price if available
           if (price) byItem[name].unitPrice = price;
         }
       }
     }
 
     const categoryRows = Object.entries(byCategory).map(([category, amount]) => ({ category, amount })).sort((a, b) => b.amount - a.amount);
-    const topItems = Object.values(byItem).sort((a, b) => b.revenue - a.revenue).slice(0, 10);
+    const topItems = Object.values(byItem).sort((a, b) => b.revenue - a.revenue).slice(0, 100);
 
     return {
       revenue,
-      orders: resMonth.length,
+      orders: dataSource.length,
       counts,
       categoryRows,
       topItems,
       pendingReservations: counts.Pending,
     };
-  }, [resMonth, menuById]);
+  }, [resMonthFiltered, resMonth, menuById, useDateRange, startDate, endDate]);
 
   // derive top-up stats for current month (used in KPIs and Top-ups table)
   const topupStats = useMemo(() => {
-    const list = Array.isArray(topMonth) ? topMonth : [];
+    // Determine which data source to use
+    const dataSource = useDateRange && startDate && endDate ? topMonthFiltered : topMonth;
+    
+    const list = Array.isArray(dataSource) ? dataSource : [];
     let approvedCount = 0;
     let approvedAmt = 0;
     let pending = 0;
@@ -284,12 +335,11 @@ export default function AdminReports() {
       } else if (st.includes("reject") || st.includes("decline")) {
         rejected += 1;
       } else {
-        // unknown -> treat as pending
         pending += 1;
       }
     }
     return { approvedCount, approvedAmt, pending, rejected };
-  }, [topMonth]);
+  }, [topMonthFiltered, topMonth, useDateRange, startDate, endDate]);
 
   // report visual data (original adminReports logic)
   // unified top-products / categories source:
@@ -306,15 +356,28 @@ export default function AdminReports() {
     const byId = {};
     const bySuffix = {};
     const APPROVED_SET = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
+    
     for (const r of reservations || []) {
       // only include reservations that are approved or beyond
       const rStatus = normalizeStatus(r?.status);
       if (!APPROVED_SET.has(rStatus)) continue;
-      // apply month/year filter so totals match the current period selection
-      if (!(month === "all" && year === "all")) {
+      
+      // Apply date range filter if enabled, OTHERWISE apply month/year filter
+      if (useDateRange && startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        
+        const created = getCreated(r);
+        if (!created) continue;
+        const d = new Date(created);
+        if (!(d >= start && d <= end)) continue;
+      } else {
+        // Only apply month/year filter if date range is NOT active
         const created = getCreated(r);
         if (!isInMonth(created, month, year)) continue;
       }
+      
       if (!Array.isArray(r.items)) continue;
       for (const it of r.items) {
         const rawId = String(it?.id ?? it?.productId ?? it?._id ?? "").trim();
@@ -342,14 +405,14 @@ export default function AdminReports() {
       }
     }
     return { byName, byId, bySuffix };
-  }, [reservations, month, year]);
+  }, [reservations, month, year, useDateRange, startDate, endDate]);
 
   const mergedTopProducts = useMemo(() => {
      // start from server report or computed topProducts
      const base = (topProducts || []).map((p) => ({ ...p }));
  
-     // If month === "all", keep existing merging logic (merge menu with all-time totals)
-     if (month === "all") {
+     // If month === "all" AND not using date range, keep existing merging logic
+     if (month === "all" && !(useDateRange && startDate && endDate)) {
        const seen = new Set(base.map((p) => String(p.name || "").toLowerCase()));
        for (const m of menu || []) {
          const mName = String(m?.name || "").trim();
@@ -383,8 +446,7 @@ export default function AdminReports() {
        return base;
      }
  
-     // For a specific month: include server/computed topProducts + any menu items
-     // that were added/updated in the selected month (so new products show up with 0 sales).
+     // For specific month or date range: include base + menu items with sales in this period
      const seen = new Set(base.map((p) => String(p.name || "").toLowerCase()));
      for (const m of menu || []) {
        const mName = String(m?.name || "").trim();
@@ -392,7 +454,6 @@ export default function AdminReports() {
        const keyName = mName.toLowerCase();
        if (seen.has(keyName)) continue;
  
-       // include if menu item has approved sales in this month (from totalsFromReservations)
        let qty = 0, revenue = 0;
        if (m.id) {
          const byIdMatch = totalsFromReservations.byId[String(m.id)];
@@ -410,19 +471,21 @@ export default function AdminReports() {
  
        // if it has approved sales this month, include with totals; otherwise include if menu was created/updated in this month
        const candidateDate = m.createdAt || m.created_at || m.updatedAt || m.updated_at || m?.created || m?.updated;
-       const createdInMonth = candidateDate ? isInMonth(candidateDate, month, year) : false;
+       const createdInPeriod = useDateRange && startDate && endDate
+         ? false // Don't auto-include new items for date ranges
+         : (candidateDate ? isInMonth(candidateDate, month, year) : false);
  
        if ((qty && qty > 0) || (revenue && revenue > 0)) {
          base.push({ name: mName, qty, revenue, category: m?.category || "Uncategorized", unitPrice: m?.price || 0 });
          seen.add(keyName);
-       } else if (createdInMonth) {
+       } else if (createdInPeriod) {
          base.push({ name: mName, qty: 0, revenue: 0, category: m?.category || "Uncategorized", unitPrice: m?.price || 0 });
          seen.add(keyName);
        }
      }
  
      return base;
-   }, [topProducts, menu, month, year, totalsFromReservations]);
+   }, [topProducts, menu, month, year, totalsFromReservations, useDateRange, startDate, endDate]);
  
    const topCategories = (Array.isArray(report?.topCategories) && report.topCategories.length > 0)
      ? report.topCategories
@@ -455,6 +518,10 @@ export default function AdminReports() {
 
   // helper to render human-friendly period label
   const periodLabel = useMemo(() => {
+    if (useDateRange && startDate && endDate) {
+      return `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
+    }
+    
     if (month === "all" && year === "all") return "All time";
     if (month === "all" && year !== "all") return `${year} (all months)`;
     if (month !== "all" && year === "all") {
@@ -463,7 +530,7 @@ export default function AdminReports() {
     }
     const mName = monthNames[Number(month)] || `Month ${month}`;
     return `${mName} ${year}`;
-  }, [month, year, monthNames]);
+  }, [month, year, monthNames, useDateRange, startDate, endDate]);
 
   // build categories list for UI (include menu categories)
   const categories = useMemo(() => {
@@ -522,12 +589,11 @@ export default function AdminReports() {
     return Object.values(mapByName).sort((a, b) => (b.revenue || 0) - (a.revenue || 0));
   }, [resStats, menu, month, totalsFromReservations]);
  
+  // Update the filteredResTopItems to ignore category filter
   const filteredResTopItems = useMemo(() => {
-    const source = mergedResTopItems || [];
-    if (!selectedCategory || selectedCategory === "All") return source;
-    const sc = String(selectedCategory).toLowerCase();
-    return source.filter((it) => String(it?.category || "").toLowerCase() === sc);
-  }, [mergedResTopItems, selectedCategory]);
+    // Always return ALL items regardless of selectedCategory
+    return mergedResTopItems || [];
+  }, [mergedResTopItems]);
 
   // pie data varies: all-categories -> topCategories (by category), else product breakdown for category
   const pieForCategory = useMemo(() => {
@@ -834,6 +900,7 @@ export default function AdminReports() {
             <p className="text-sm sm:text-base text-gray-600">Combined monthly reports and current month statistics.</p>
           </div>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
+            {/* Month/Year selectors */}
             <select value={month} onChange={(e) => setMonth(String(e.target.value))} className="border rounded px-3 py-2 text-sm">
               <option value="all">All</option>
               <option value="1">January</option>
@@ -852,6 +919,27 @@ export default function AdminReports() {
             <select value={year} onChange={(e) => setYear(String(e.target.value))} className="border rounded px-3 py-2 text-sm">
               {yearOptions.map((y) => <option key={y} value={y}>{y === "all" ? "All years" : y}</option>)}
             </select>
+
+            {/* Date Range Toggle */}
+            <button
+              onClick={() => {
+                setUseeDateRange(!useDateRange);
+                if (useDateRange) {
+                  setStartDate("");
+                  setEndDate("");
+                }
+              }}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                useDateRange
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span className="hidden sm:inline">Date Range</span>
+              <span className="sm:hidden">Dates</span>
+            </button>
+
             <button
               onClick={() => exportFullReport({
                 resStats,
@@ -872,6 +960,74 @@ export default function AdminReports() {
           </div>
         </section>
 
+        {/* Date Range Picker - shows when toggled */}
+        {useDateRange && (
+          <section className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 sm:p-6 rounded-lg border border-blue-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Date Range</h3>
+              <button
+                onClick={() => {
+                  setUseeDateRange(false);
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="p-1 hover:bg-blue-200 rounded transition"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+              {/* Start Date */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  max={endDate || undefined}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* End Date */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={startDate || undefined}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Clear Button */}
+              <button
+                onClick={() => {
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="w-full px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-sm font-medium"
+              >
+                Clear Dates
+              </button>
+            </div>
+
+            {startDate && endDate && (
+              <div className="mt-3 p-3 bg-white rounded border border-blue-200">
+                <p className="text-sm text-gray-600">
+                  Filtering data from <strong>{new Date(startDate).toLocaleDateString()}</strong> to <strong>{new Date(endDate).toLocaleDateString()}</strong>
+                </p>
+              </div>
+            )}
+          </section>
+        )}
+
         {/* KPI cards (from previous Stats page) */}
         <section className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
@@ -879,7 +1035,7 @@ export default function AdminReports() {
               <span className="text-xs sm:text-sm text-gray-600">Revenue</span>
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
             </div>
-            <div className="text-xl sm:text-3xl font-bold text-gray-900">{peso.format((dashboard.totalSales || 0) || resStats.revenue || 0)}</div>
+            <div className="text-xl sm:text-3xl font-bold text-gray-900">{peso.format(resStats.revenue)}</div>
             <div className="text-xs text-gray-500 mt-1">{periodLabel}</div>
           </div>
 
@@ -898,6 +1054,9 @@ export default function AdminReports() {
               <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
             </div>
             <div className="text-xl sm:text-3xl font-bold text-gray-900">{resStats.pendingReservations}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
           </div>
 
           <div className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-5 shadow-sm border border-gray-100">
@@ -906,6 +1065,9 @@ export default function AdminReports() {
               <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-violet-600" />
             </div>
             <div className="text-xl sm:text-3xl font-bold text-gray-900">{topupStats?.pending ?? topMonth.length}</div>
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
           </div>
         </section>
 
@@ -970,33 +1132,10 @@ export default function AdminReports() {
           </div>
         </section>
 
-        {/* Category filters (APPLIES TO ALL TOP LISTS & CHARTS) */}
-        <section className="bg-white p-3 sm:p-4 rounded shadow-sm border border-gray-100">
-          <div className="space-y-3">
-            <div>
-              <div className="flex flex-wrap gap-2 items-center">
-                {categories.map((c) => {
-                  const active = String(c) === String(selectedCategory);
-                  return (
-                    <button
-                      key={c}
-                      onClick={() => setSelectedCategory(c)}
-                      className={`text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded-lg border ${active ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200"} hover:opacity-90`}
-                    >
-                      {c}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="text-xs text-gray-500 mt-2">Selected: <strong>{selectedCategory}</strong></div>
-            </div>
-          </div>
-        </section>
-
-        {/* Top items & report visuals (existing adminReports content) */}
+        {/* Top-selling products section */}
         <section className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Top items ({periodLabel})</h3>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Top-selling products ({periodLabel})</h3>
             <button
               onClick={() => exportToCsv(filteredResTopItems, 'top_items')}
               className="px-3 py-1 text-xs sm:text-sm bg-blue-600 text-white rounded hover:bg-blue-700 whitespace-nowrap"
@@ -1100,7 +1239,31 @@ export default function AdminReports() {
           )}
         </section>
 
-        {/* Top Products (from monthly report if available, otherwise fall back to computed top items) */}
+        {/* Category filters - MOVED HERE */}
+        <section className="bg-white p-3 sm:p-4 rounded shadow-sm border border-gray-100">
+          <div className="space-y-3">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Filter by Category</h3>
+            <div>
+              <div className="flex flex-wrap gap-2 items-center">
+                {categories.map((c) => {
+                  const active = String(c) === String(selectedCategory);
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => setSelectedCategory(c)}
+                      className={`text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-2 rounded-lg border ${active ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-200"} hover:opacity-90`}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-xs text-gray-500 mt-2">Selected: <strong>{selectedCategory}</strong></div>
+            </div>
+          </div>
+        </section>
+
+        {/* Top Products section */}
         <section className="bg-white rounded-lg sm:rounded-2xl p-3 sm:p-6 shadow-sm border border-gray-100 overflow-x-auto mb-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900">Top Products ({periodLabel})</h3>
