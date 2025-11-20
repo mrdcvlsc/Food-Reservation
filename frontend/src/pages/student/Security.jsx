@@ -6,6 +6,7 @@ import BottomNav from "../../components/mobile/BottomNav";
 import { api } from "../../lib/api";
 import { refreshSessionForProtected } from "../../lib/auth";
 import { getUserFromStorage } from "../../lib/storage";
+import { Mail, CheckCircle, ArrowLeft } from "lucide-react";
 
 export default function Security() {
   const navigate = useNavigate();
@@ -16,126 +17,163 @@ export default function Security() {
   }, [navigate]);
 
   const localUser = getUserFromStorage() || {};
-  const [form, setForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: ""
-  });
   const [loading, setLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [error, setError] = useState("");
+  const [userEmail, setUserEmail] = useState(localUser.email || "");
 
-  const handleChange = (e) => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-
-  const handleSubmit = async (e) => {
+  const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!form.currentPassword || !form.newPassword) {
-      alert("Please fill both current password and new password");
+    
+    if (!userEmail || !userEmail.trim()) {
+      setError("Email is required");
       return;
     }
-    if (form.newPassword !== form.confirmPassword) {
-      alert("New passwords don't match");
-      return;
-    }
+
+    setError("");
+    setLoading(true);
 
     try {
-      setLoading(true);
-      const payload = {
-        email: localUser.email,
-        currentPassword: form.currentPassword,
-        newPassword: form.newPassword
-      };
-      const res = await api.post("/auth/change-password", payload);
+      await api.post("/auth/forgot-password", {
+        email: userEmail.trim()
+      });
 
-      // Accept several possible response shapes (axios response or direct data)
-      const ok =
-        (res && (
-          (res.data && res.data.ok) ||
-          res.ok ||
-          res === true ||
-          res.status === 200
-        ));
-
-      if (ok) {
-        alert("Password changed successfully.");
-        navigate("/profile");
-      } else {
-        const msg = (res && (res.data?.error || res.error)) || "Failed to change password.";
-        alert(msg);
-      }
+      setEmailSent(true);
     } catch (err) {
-      console.error("Change password failed", err);
-      const msg = err.response?.data?.error || err.response?.data?.message || err.message || "Failed to change password.";
-      alert(msg);
+      console.error("Reset password request failed:", err);
+      const msg = err.response?.data?.error || err.message || "Failed to send reset email";
+      setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-        <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-0">
       <Navbar />
       <main className="max-w-md mx-auto px-3 sm:px-4 py-6 sm:py-12">
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold mb-4 text-center text-blue-700">Change Password</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Current Password</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={form.currentPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Enter current password"
-                autoComplete="current-password"
-              />
-            </div>
+        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8">
+          {!emailSent ? (
+            <>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 text-center text-gray-900">
+                Change Password
+              </h2>
+              <p className="text-sm text-gray-600 text-center mb-6">
+                We'll send you a secure link to reset your password
+              </p>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={form.newPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Enter new password"
-                autoComplete="new-password"
-              />
-            </div>
+              {error && (
+                <div className="mb-4 p-3 sm:p-4 rounded-lg bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm New Password</label>
-              <input
-                type="password"
-                name="confirmPassword"
-                value={form.confirmPassword}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-blue-200 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-blue-50 text-gray-900"
-                placeholder="Confirm new password"
-                autoComplete="new-password"
-              />
-            </div>
+              <form onSubmit={handleResetPassword} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={userEmail}
+                      onChange={(e) => {
+                        setUserEmail(e.target.value);
+                        setError("");
+                      }}
+                      className="w-full border border-gray-300 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                      placeholder="your@email.com"
+                      disabled={loading}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    A password reset link will be sent to this email address
+                  </p>
+                </div>
 
-            <div className="flex justify-between mt-4">
-              <button
-                type="button"
-                onClick={() => navigate("/profile")}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                {loading ? "Saving…" : "Change Password"}
-              </button>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/profile")}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium disabled:opacity-60"
+                    disabled={loading}
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline">Back</span>
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {loading ? "Sending..." : "Send Reset Link"}
+                  </button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <div className="text-center space-y-4">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle className="w-8 h-8 sm:w-10 sm:h-10 text-green-600" />
+                </div>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Check your email!
+              </h2>
+
+              <p className="text-sm sm:text-base text-gray-600">
+                We've sent password reset instructions to
+                <span className="block font-semibold text-gray-900 mt-1 break-all">
+                  {userEmail}
+                </span>
+              </p>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+                <p className="text-sm text-blue-900">
+                  <strong>Next steps:</strong> Check your email for the reset link. The link will expire in 1 hour.
+                </p>
+              </div>
+
+              <div className="space-y-3 mt-8">
+                <button
+                  onClick={() => navigate("/profile")}
+                  className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Back to Profile
+                </button>
+
+                <button
+                  onClick={() => {
+                    setEmailSent(false);
+                    setError("");
+                    setUserEmail(localUser.email || "");
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Send to Different Email
+                </button>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-6">
+                Didn't receive the email? Check your spam folder or{" "}
+                <button
+                  onClick={() => {
+                    setEmailSent(false);
+                    setError("");
+                  }}
+                  className="text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  try again
+                </button>
+              </p>
             </div>
-          </form>
+          )}
         </div>
       </main>
-      
+
       <BottomNav />
     </div>
   );

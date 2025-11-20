@@ -9,6 +9,7 @@ import {
   Check, 
   RefreshCw, 
   ChevronLeft,
+  ChevronRight,
   MoreVertical,
   CheckCircle,
   XCircle,
@@ -21,11 +22,13 @@ import {
 } from "lucide-react";
 
 const peso = new Intl.NumberFormat("en-PH", { style: "currency", currency: "PHP" });
+const ITEMS_PER_PAGE = 10;
 
 export default function Notifications() {
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [notifications, setNotifications] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selected, setSelected] = useState(new Set());
   const [preview, setPreview] = useState(null);
   const [reservationDetails, setReservationDetails] = useState({});
@@ -36,6 +39,7 @@ export default function Notifications() {
     try {
       const d = await api.get("/notifications");
       setNotifications(Array.isArray(d) ? d : []);
+      setCurrentPage(1); // Reset to first page on refresh
     } catch (e) {
       setNotifications([]);
     } finally {
@@ -47,6 +51,12 @@ export default function Notifications() {
 
   useEffect(() => { load(); }, []);
 
+  // Pagination calculations
+  const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedNotifications = notifications.slice(startIndex, endIndex);
+
   const toggle = (id) => {
     setSelected((prev) => {
       const s = new Set(prev);
@@ -56,8 +66,8 @@ export default function Notifications() {
   };
 
   const toggleAll = () => {
-    if (selected.size === notifications.length) setSelected(new Set());
-    else setSelected(new Set(notifications.map(n => n.id)));
+    if (selected.size === paginatedNotifications.length) setSelected(new Set());
+    else setSelected(new Set(paginatedNotifications.map(n => n.id)));
   };
 
   const markSelectedRead = async () => {
@@ -81,6 +91,10 @@ export default function Notifications() {
       setNotifications((prev) => prev.filter(n => !selected.has(n.id)));
       setSelected(new Set());
       setShowBulkActions(false);
+      // Adjust page if necessary
+      if (startIndex >= notifications.length - selected.size && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
     } catch {
       alert("Failed to delete selected notifications.");
     }
@@ -116,6 +130,10 @@ export default function Notifications() {
       await api.del(`/notifications/${id}`);
       setNotifications((prev) => prev.filter(n => n.id !== id));
       if (preview?.id === id) setPreview(null);
+      // Adjust page if necessary
+      if (startIndex >= notifications.length - 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
     } catch {
       alert("Failed to delete notification.");
     }
@@ -203,7 +221,7 @@ export default function Notifications() {
                 <input 
                   type="checkbox" 
                   className="h-4 w-4 rounded border-gray-300"
-                  checked={selected.size === notifications.length && notifications.length > 0} 
+                  checked={selected.size === paginatedNotifications.length && paginatedNotifications.length > 0} 
                   onChange={toggleAll} 
                 />
                 <span className="text-sm text-gray-600">
@@ -239,7 +257,7 @@ export default function Notifications() {
               <input 
                 type="checkbox" 
                 className="h-4 w-4 rounded border-gray-300"
-                checked={selected.size === notifications.length && notifications.length > 0} 
+                checked={selected.size === paginatedNotifications.length && paginatedNotifications.length > 0} 
                 onChange={toggleAll} 
               />
               <button 
@@ -282,7 +300,7 @@ export default function Notifications() {
           <>
             {/* Mobile: Card View */}
             <div className="md:hidden space-y-2">
-              {notifications.map((n) => (
+              {paginatedNotifications.map((n) => (
                 <div
                   key={n.id}
                   className={`bg-white rounded-xl shadow-sm border overflow-hidden ${
@@ -403,7 +421,7 @@ export default function Notifications() {
                   </thead>
 
                   <tbody className="divide-y divide-gray-200">
-                    {notifications.map((n) => (
+                    {paginatedNotifications.map((n) => (
                       <tr key={n.id} className={`${n.read ? "" : "bg-blue-50"} hover:bg-gray-50`}>
                         <td className="px-6 py-4">
                           <input 
@@ -469,11 +487,43 @@ export default function Notifications() {
                 </table>
               </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-6 flex items-center justify-between">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">
+                    Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+                  </span>
+                  <div className="text-xs text-gray-500 hidden sm:inline">
+                    ({startIndex + 1}–{Math.min(endIndex, notifications.length)} of {notifications.length})
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  disabled={currentPage === totalPages}
+                  className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
 
-      {/* Preview Modal */}
+      {/* Preview Modal - same as before */}
       {preview && ReactDOM.createPortal(
         <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/40 p-0 sm:p-4">
           <div className="w-full sm:max-w-3xl bg-white sm:rounded-lg shadow-lg overflow-hidden max-h-screen sm:max-h-[90vh] flex flex-col">

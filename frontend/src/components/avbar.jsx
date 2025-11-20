@@ -246,6 +246,19 @@ export default function Navbar() {
               </svg>
             </button>
             
+            {/* Hamburger menu button for mobile */}
+            <button
+              onClick={() => setOpen((s) => !s)}
+              className="md:hidden p-2 rounded-lg hover:bg-slate-100"
+              aria-label="Toggle menu"
+            >
+              {open ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
+            </button>
+            
             {/* ...existing code... */}
           </div>
 

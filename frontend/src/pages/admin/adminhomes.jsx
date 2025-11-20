@@ -116,6 +116,8 @@ export default function AdminHome() {
         const APPROVED_STATUSES = new Set(["Approved", "Preparing", "Ready", "Claimed"]);
         
         let totalRevenue = 0;
+        let ordersToday = 0;
+        const today = new Date().toDateString();
         
         // Fetch all reservations for accurate all-time revenue calculation
         api
@@ -128,8 +130,11 @@ export default function AdminHome() {
                             (reservations?.data && Array.isArray(reservations.data)) ? reservations.data : [];
             
             // Only count revenue from approved reservations (all-time)
+            // AND count only approved orders from TODAY
             for (const order of resArray) {
               const status = normalizeStatus(order?.status);
+              
+              // Calculate revenue from approved reservations
               if (APPROVED_STATUSES.has(status)) {
                 // Calculate revenue from items
                 if (Array.isArray(order?.items)) {
@@ -139,14 +144,21 @@ export default function AdminHome() {
                     totalRevenue += price * qty;
                   }
                 }
+                
+                // Count only approved orders from today
+                const orderDate = new Date(order?.createdAt || order?.created_at || "").toDateString();
+                if (orderDate === today) {
+                  ordersToday += 1;
+                }
               }
             }
             
             console.log("[AdminHome] Total Revenue calculated:", totalRevenue, "from", resArray.length, "reservations");
+            console.log("[AdminHome] Orders Today (approved only):", ordersToday);
             
             setDashboard({
               totalRevenue: totalRevenue,
-              ordersToday: d.ordersToday || 0,
+              ordersToday: ordersToday,
               newUsers: d.newUsers || 0,
               pending: d.pending || 0,
               recentOrders: d.recentOrders || [],
@@ -156,7 +168,7 @@ export default function AdminHome() {
             console.error("[AdminHome] Failed to fetch reservations:", err);
             setDashboard({
               totalRevenue: 0,
-              ordersToday: d.ordersToday || 0,
+              ordersToday: 0,
               newUsers: d.newUsers || 0,
               pending: d.pending || 0,
               recentOrders: d.recentOrders || [],

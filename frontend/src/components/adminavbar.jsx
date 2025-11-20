@@ -639,7 +639,7 @@ export default function AdminNavbar() {
                   />
                 </div>
               ))
-            )}
+            )};
           </div>
           {notifications.length > 0 && (
             <div className="p-2 border-t flex items-center justify-between bg-gray-50 text-xs sm:text-sm">
@@ -826,7 +826,7 @@ export default function AdminNavbar() {
           {/* Mobile: notification bell and hamburger */}
           <div className="md:hidden flex items-center gap-2">
             <button
-              onClick={() => setNotifOpen((v) => !v)}
+              onClick={() => navigate("/admin/notifications")}
               className="p-2 rounded-lg hover:bg-gray-100 relative transition-colors"
               aria-label="Admin notifications"
             >

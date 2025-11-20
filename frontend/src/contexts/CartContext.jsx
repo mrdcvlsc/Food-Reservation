@@ -106,9 +106,6 @@ export function CartProvider({ children }) {
 
     // Load from user-specific localStorage
     const localSaved = loadFromStorage();
-    if (mounted && Object.keys(localSaved).length > 0) {
-      setCart(localSaved);
-    }
 
     // Sync with server
     (async () => {
@@ -156,15 +153,24 @@ export function CartProvider({ children }) {
           return;
         }
 
-        // Server is empty but local has items -> push local to server
+        // Both server and local are empty - just clear
+        if ((!serverItems || serverItems.length === 0) && (!localSaved || Object.keys(localSaved).length === 0)) {
+          setCart({});
+          persist({});
+          setMeta({ syncing: false, lastSyncAt: Date.now(), lastError: null });
+          return;
+        }
+
+        // Server is empty but local has items -> push to server ONLY ONCE
         if ((!serverItems || serverItems.length === 0) && localSaved && Object.keys(localSaved).length > 0) {
+          // Push local items to server
           for (const [id, qty] of Object.entries(localSaved)) {
             try {
               await api.post("/cart/add", { itemId: id, qty }).catch(() => null);
             } catch {}
           }
           
-          // Refresh from server
+          // Single refresh from server to get final state
           const refreshed = await api.get("/cart").catch(() => null);
           const refreshedItems = refreshed && (Array.isArray(refreshed.items) ? refreshed.items : Array.isArray(refreshed) ? refreshed : null);
           
@@ -177,24 +183,22 @@ export function CartProvider({ children }) {
             }
             setCart(next);
             persist(next);
-            setMeta({ syncing: false, lastSyncAt: Date.now(), lastError: null });
-            return;
+          } else {
+            // Keep local if sync failed
+            setCart(localSaved);
+            persist(localSaved);
           }
           
-          // Keep local if sync failed
-          setCart(localSaved);
-          persist(localSaved);
           setMeta({ syncing: false, lastSyncAt: Date.now(), lastError: null });
           return;
         }
 
-        // Both empty - clear cart
-        setCart({});
-        persist({});
         setMeta({ syncing: false, lastSyncAt: Date.now(), lastError: null });
       } catch (err) {
         console.error("[CART] Sync error:", err);
-        setMeta({ syncing: false, lastSyncAt: null, lastError: err.message || String(err) });
+        if (mounted) {
+          setMeta({ syncing: false, lastSyncAt: null, lastError: err.message || String(err) });
+        }
       }
     })();
 

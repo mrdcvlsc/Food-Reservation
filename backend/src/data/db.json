@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 11,
+      "stock": 10,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -27,7 +27,7 @@
       "name": "Oishi Pillows",
       "category": "Snacks",
       "price": 12,
-      "stock": 6,
+      "stock": 5,
       "img": "/uploads/1761207651939_889101.jpg",
       "isActive": true,
       "visible": true,
@@ -38,7 +38,7 @@
       "name": "Fried Chicken",
       "category": "Meals",
       "price": 69,
-      "stock": 388,
+      "stock": 386,
       "img": "/uploads/1761207668381_89123.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:12.490Z"
@@ -48,7 +48,7 @@
       "name": "Fried Lumpia",
       "category": "Meals",
       "price": 40,
-      "stock": 34,
+      "stock": 32,
       "img": "/uploads/1761207680082_825374.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:12.903Z"
@@ -58,7 +58,7 @@
       "name": "Hot Dog",
       "category": "Meals",
       "price": 60,
-      "stock": 43,
+      "stock": 42,
       "img": "/uploads/1761631662153_847269.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:13.874Z"
@@ -88,7 +88,7 @@
       "name": "Iced Tea",
       "category": "Beverages",
       "price": 30,
-      "stock": 5,
+      "stock": 4,
       "img": "/uploads/1761538665555_396901.jpg",
       "visible": true,
       "updatedAt": "2025-11-06T02:05:34.646Z"
@@ -110,8 +110,8 @@
       "price": 10,
       "stock": 0,
       "img": "/uploads/1761538643677_574382.jpg",
-      "visible": true,
-      "updatedAt": "2025-11-20T09:18:20.726Z"
+      "visible": false,
+      "updatedAt": "2025-11-20T14:26:20.192Z"
     },
     {
       "id": "1761632268631799",
@@ -129,7 +129,7 @@
       "name": "Rice Meal C",
       "category": "Meals",
       "price": 85,
-      "stock": 6,
+      "stock": 5,
       "mealType": "Rice Meal",
       "servingGrams": "250",
       "calories": "130",
@@ -144,7 +144,7 @@
       "name": "Dutch Mill",
       "category": "Beverages",
       "price": 20,
-      "stock": 6,
+      "stock": 4,
       "img": "/uploads/1761992752859_306286.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:25:30.493Z",
@@ -4948,6 +4948,200 @@
       "stockDeducted": true,
       "createdAt": "2025-11-20T04:56:30.635Z",
       "updatedAt": "2025-11-20T04:57:29.291Z"
+    },
+    {
+      "id": "RES_mi7ir785kl",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "Hi",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        },
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Approved",
+      "transactionId": "TX_mi7ir785jj",
+      "charged": true,
+      "chargedAt": "2025-11-20T14:20:57.557Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T14:20:57.557Z",
+      "updatedAt": "2025-11-20T14:21:31.088Z"
+    },
+    {
+      "id": "RES_mi7isukmie",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-8",
+          "name": "Rice Meal B",
+          "price": 80,
+          "qty": 1
+        },
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 110,
+      "status": "Rejected",
+      "transactionId": "TX_mi7isukmey",
+      "charged": true,
+      "chargedAt": "2025-11-20T14:22:14.470Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T14:22:14.470Z",
+      "refunded": true,
+      "refundTransactionId": "TX_mi7it997q8",
+      "updatedAt": "2025-11-20T14:22:33.499Z"
+    },
+    {
+      "id": "RES_mi7j352hgv",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 1
+        },
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        }
+      ],
+      "total": 89,
+      "status": "Approved",
+      "transactionId": "TX_mi7j352hl0",
+      "charged": true,
+      "chargedAt": "2025-11-20T14:30:14.633Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T14:30:14.633Z",
+      "updatedAt": "2025-11-20T14:31:01.824Z"
+    },
+    {
+      "id": "RES_mi7jceh89i",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        },
+        {
+          "id": "ITM-9",
+          "name": "Iced Tea",
+          "price": 30,
+          "qty": 1
+        }
+      ],
+      "total": 70,
+      "status": "Approved",
+      "transactionId": "TX_mi7jceh8pg",
+      "charged": true,
+      "chargedAt": "2025-11-20T14:37:26.732Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T14:37:26.732Z",
+      "updatedAt": "2025-11-20T14:37:54.444Z"
+    },
+    {
+      "id": "RES_mi7kzdr05m",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "Hot Dog",
+          "price": 60,
+          "qty": 1
+        },
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        },
+        {
+          "id": "1761960535865559",
+          "name": "Rice Meal C",
+          "price": 85,
+          "qty": 1
+        }
+      ],
+      "total": 157,
+      "status": "Approved",
+      "transactionId": "TX_mi7kzdr07u",
+      "charged": true,
+      "chargedAt": "2025-11-20T15:23:18.492Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T15:23:18.492Z",
+      "updatedAt": "2025-11-20T15:24:09.770Z"
+    },
+    {
+      "id": "RES_mi7l9y2o50",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G9",
+      "section": "F",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        },
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        }
+      ],
+      "total": 85,
+      "status": "Approved",
+      "transactionId": "TX_mi7l9y2o3v",
+      "charged": true,
+      "chargedAt": "2025-11-20T15:31:31.392Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-20T15:31:31.392Z",
+      "updatedAt": "2025-11-20T15:32:20.944Z"
     }
   ],
   "topups": [
@@ -5597,7 +5791,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 4303,
+      "balance": 3813,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -5715,6 +5909,32 @@
       "studentId": "202256445",
       "phone": "09837436824",
       "createdAt": "2025-11-20T08:43:32.972Z"
+    },
+    {
+      "id": "usr_mi7l1snn",
+      "name": "Juan Dela Cruz",
+      "email": "juan@gmail.com",
+      "passwordHash": "$2a$10$iMECXDYANZld4sBurVaa.uvyJE4Ji8S87xGx0Nd.h9wwshDZhS66W",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "202245535",
+      "phone": "0955667784",
+      "createdAt": "2025-11-20T15:25:11.251Z"
+    },
+    {
+      "id": "usr_mi7l992j",
+      "name": "David Vid Juba",
+      "email": "DavidJu@gmail.com",
+      "passwordHash": "$2a$10$9FIKxwbQpqowpUDKr7TE6eBO0mlhmKYClPpiqy7ZNM5UcAqd/YSSK",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "2039484895",
+      "phone": "09556840400",
+      "createdAt": "2025-11-20T15:30:59.102Z"
     }
   ],
   "transactions": [
@@ -7944,6 +8164,76 @@
       "direction": "debit",
       "status": "Success",
       "createdAt": "2025-11-20T04:56:30.635Z"
+    },
+    {
+      "id": "TX_mi7ir785jj",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi7ir785kl",
+      "amount": 89,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-20T14:20:57.557Z"
+    },
+    {
+      "id": "TX_mi7isukmey",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi7isukmie",
+      "amount": 110,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-20T14:22:14.470Z"
+    },
+    {
+      "id": "TX_mi7it997q8",
+      "userId": "usr_mh0h1va7",
+      "title": "Refund",
+      "ref": "RES_mi7isukmie",
+      "amount": 110,
+      "direction": "credit",
+      "status": "Success",
+      "createdAt": "2025-11-20T14:22:33.499Z"
+    },
+    {
+      "id": "TX_mi7j352hl0",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi7j352hgv",
+      "amount": 89,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-20T14:30:14.633Z"
+    },
+    {
+      "id": "TX_mi7jceh8pg",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi7jceh89i",
+      "amount": 70,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-20T14:37:26.732Z"
+    },
+    {
+      "id": "TX_mi7kzdr07u",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi7kzdr05m",
+      "amount": 157,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-20T15:23:18.492Z"
+    },
+    {
+      "id": "TX_mi7l9y2o3v",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi7l9y2o50",
+      "amount": 85,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-20T15:31:31.392Z"
     }
   ],
   "wallets": [
@@ -7959,6 +8249,487 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mi7lb0bf",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi7l9y2o50 Approved",
+      "body": "Your reservation RES_mi7l9y2o50 has been approved.",
+      "data": {
+        "reservationId": "RES_mi7l9y2o50",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "ITM-5",
+            "name": "Fried Lumpia",
+            "price": 40,
+            "qty": 1
+          }
+        ],
+        "total": 85,
+        "note": "",
+        "slot": "recess",
+        "grade": "G9",
+        "section": "F",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi7l9y2o3v"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T15:32:20.955Z"
+    },
+    {
+      "id": "notif_mi7l9y30",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi7l9y2o50",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "ITM-5",
+            "name": "Fried Lumpia",
+            "price": 40,
+            "qty": 1
+          }
+        ],
+        "total": 85,
+        "note": "",
+        "slot": "recess",
+        "grade": "G9",
+        "section": "F",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T15:31:31.392Z"
+    },
+    {
+      "id": "notif_mi7l9961",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: David Vid Juba",
+      "body": "A new student account has been created.\n\nName: David Vid Juba\nStudent ID: 2039484895\nEmail: DavidJu@gmail.com\nPhone: 09556840400",
+      "data": {
+        "userId": "usr_mi7l992j",
+        "studentName": "David Vid Juba",
+        "studentId": "2039484895",
+        "email": "DavidJu@gmail.com",
+        "phone": "09556840400",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-20T15:30:59.113Z"
+    },
+    {
+      "id": "notif_mi7l1sri",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Juan Dela Cruz",
+      "body": "A new student account has been created.\n\nName: Juan Dela Cruz\nStudent ID: 202245535\nEmail: juan@gmail.com\nPhone: 0955667784",
+      "data": {
+        "userId": "usr_mi7l1snn",
+        "studentName": "Juan Dela Cruz",
+        "studentId": "202245535",
+        "email": "juan@gmail.com",
+        "phone": "0955667784",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-20T15:25:11.262Z"
+    },
+    {
+      "id": "notif_mi7l0hbr",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi7kzdr05m Approved",
+      "body": "Your reservation RES_mi7kzdr05m has been approved.",
+      "data": {
+        "reservationId": "RES_mi7kzdr05m",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          },
+          {
+            "id": "ITM-3",
+            "name": "Oishi Pillows",
+            "price": 12,
+            "qty": 1
+          },
+          {
+            "id": "1761960535865559",
+            "name": "Rice Meal C",
+            "price": 85,
+            "qty": 1
+          }
+        ],
+        "total": 157,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi7kzdr07u"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T15:24:09.783Z"
+    },
+    {
+      "id": "notif_mi7kzdrc",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi7kzdr05m",
+        "items": [
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          },
+          {
+            "id": "ITM-3",
+            "name": "Oishi Pillows",
+            "price": 12,
+            "qty": 1
+          },
+          {
+            "id": "1761960535865559",
+            "name": "Rice Meal C",
+            "price": 85,
+            "qty": 1
+          }
+        ],
+        "total": 157,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T15:23:18.492Z"
+    },
+    {
+      "id": "notif_mi7jczva",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi7jceh89i Approved",
+      "body": "Your reservation RES_mi7jceh89i has been approved.",
+      "data": {
+        "reservationId": "RES_mi7jceh89i",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-5",
+            "name": "Fried Lumpia",
+            "price": 40,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 70,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi7jceh8pg"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:37:54.454Z"
+    },
+    {
+      "id": "notif_mi7jceho",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi7jceh89i",
+        "items": [
+          {
+            "id": "ITM-5",
+            "name": "Fried Lumpia",
+            "price": 40,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 70,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:37:26.732Z"
+    },
+    {
+      "id": "notif_mi7j45hl",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi7j352hgv Approved",
+      "body": "Your reservation RES_mi7j352hgv has been approved.",
+      "data": {
+        "reservationId": "RES_mi7j352hgv",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          },
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          }
+        ],
+        "total": 89,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi7j352hl0"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:31:01.833Z"
+    },
+    {
+      "id": "notif_mi7j352s",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi7j352hgv",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          },
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          }
+        ],
+        "total": 89,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:30:14.633Z"
+    },
+    {
+      "id": "notif_mi7it99f",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi7isukmie Rejected",
+      "body": "Your reservation RES_mi7isukmie has been rejected. Refund has been applied.",
+      "data": {
+        "reservationId": "RES_mi7isukmie",
+        "status": "Rejected",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 110,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:22:33.507Z"
+    },
+    {
+      "id": "notif_mi7isuky",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi7isukmie",
+        "items": [
+          {
+            "id": "ITM-8",
+            "name": "Rice Meal B",
+            "price": 80,
+            "qty": 1
+          },
+          {
+            "id": "ITM-9",
+            "name": "Iced Tea",
+            "price": 30,
+            "qty": 1
+          }
+        ],
+        "total": 110,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:22:14.470Z"
+    },
+    {
+      "id": "notif_mi7irx3w",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi7ir785kl Approved",
+      "body": "Your reservation RES_mi7ir785kl has been approved.",
+      "data": {
+        "reservationId": "RES_mi7ir785kl",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 89,
+        "note": "Hi",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi7ir785jj"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:21:31.100Z"
+    },
+    {
+      "id": "notif_mi7ir78j",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi7ir785kl",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 89,
+        "note": "Hi",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-20T14:20:57.557Z"
+    },
     {
       "id": "notif_mi76paet",
       "for": "admin",
@@ -12357,7 +13128,7 @@
         "reservationId": "RES_mhm9c2tfal",
         "status": "Rejected"
       },
-      "read": false,
+      "read": true,
       "createdAt": "2025-11-08T13:37:44.786Z"
     },
     {
@@ -14234,286 +15005,6 @@
       },
       "read": true,
       "createdAt": "2025-11-03T05:19:18.615Z"
-    },
-    {
-      "id": "notif_mhih3q8o",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-83 Claimed",
-      "body": "Your reservation RES-83 is now Claimed.",
-      "data": {
-        "reservationId": "RES-83",
-        "status": "Claimed"
-      },
-      "read": true,
-      "createdAt": "2025-11-03T01:40:28.440Z"
-    },
-    {
-      "id": "notif_mhih3pl7",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-85 Claimed",
-      "body": "Your reservation RES-85 is now Claimed.",
-      "data": {
-        "reservationId": "RES-85",
-        "status": "Claimed"
-      },
-      "read": true,
-      "createdAt": "2025-11-03T01:40:27.595Z"
-    },
-    {
-      "id": "notif_mhige17i",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-85 Ready",
-      "body": "Your reservation RES-85 is now Ready.",
-      "data": {
-        "reservationId": "RES-85",
-        "status": "Ready"
-      },
-      "read": true,
-      "createdAt": "2025-11-03T01:20:29.598Z"
-    },
-    {
-      "id": "notif_mhige0g5",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-85 Preparing",
-      "body": "Your reservation RES-85 is now Preparing.",
-      "data": {
-        "reservationId": "RES-85",
-        "status": "Preparing"
-      },
-      "read": true,
-      "createdAt": "2025-11-03T01:20:28.613Z"
-    },
-    {
-      "id": "notif_mhigdyb9",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-83 Ready",
-      "body": "Your reservation RES-83 is now Ready.",
-      "data": {
-        "reservationId": "RES-83",
-        "status": "Ready"
-      },
-      "read": true,
-      "createdAt": "2025-11-03T01:20:25.845Z"
-    },
-    {
-      "id": "notif_mhigdxn1",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-83 Preparing",
-      "body": "Your reservation RES-83 is now Preparing.",
-      "data": {
-        "reservationId": "RES-83",
-        "status": "Preparing"
-      },
-      "read": true,
-      "createdAt": "2025-11-03T01:20:24.973Z"
-    },
-    {
-      "id": "notif_mhgc2m69",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-85 Approved",
-      "body": "Your reservation RES-85 has been approved.",
-      "data": {
-        "reservationId": "RES-85",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T13:44:06.081Z"
-    },
-    {
-      "id": "notif_mhgbxycz",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-84 Rejected",
-      "body": "Your reservation RES-84 has been rejected.",
-      "data": {
-        "reservationId": "RES-84",
-        "status": "Rejected"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T13:40:28.595Z"
-    },
-    {
-      "id": "notif_mhgbvg9s",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-83 Approved",
-      "body": "Your reservation RES-83 has been approved.",
-      "data": {
-        "reservationId": "RES-83",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T13:38:31.840Z"
-    },
-    {
-      "id": "notif_mhgbtc61",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-82 Claimed",
-      "body": "Your reservation RES-82 is now Claimed.",
-      "data": {
-        "reservationId": "RES-82",
-        "status": "Claimed"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T13:36:53.209Z"
-    },
-    {
-      "id": "notif_mhgbtbty",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-82 Ready",
-      "body": "Your reservation RES-82 is now Ready.",
-      "data": {
-        "reservationId": "RES-82",
-        "status": "Ready"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T13:36:52.774Z"
-    },
-    {
-      "id": "notif_mhgbtb5c",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-82 Preparing",
-      "body": "Your reservation RES-82 is now Preparing.",
-      "data": {
-        "reservationId": "RES-82",
-        "status": "Preparing"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T13:36:51.888Z"
-    },
-    {
-      "id": "notif_mhg9dj3j",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-82 Approved",
-      "body": "Your reservation RES-82 has been approved.",
-      "data": {
-        "reservationId": "RES-82",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T12:28:36.463Z"
-    },
-    {
-      "id": "notif_mhg984g9",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-81 Claimed",
-      "body": "Your reservation RES-81 is now Claimed.",
-      "data": {
-        "reservationId": "RES-81",
-        "status": "Claimed"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T12:24:24.201Z"
-    },
-    {
-      "id": "notif_mhg983q0",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-81 Ready",
-      "body": "Your reservation RES-81 is now Ready.",
-      "data": {
-        "reservationId": "RES-81",
-        "status": "Ready"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T12:24:23.256Z"
-    },
-    {
-      "id": "notif_mhg9835s",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-81 Preparing",
-      "body": "Your reservation RES-81 is now Preparing.",
-      "data": {
-        "reservationId": "RES-81",
-        "status": "Preparing"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T12:24:22.528Z"
-    },
-    {
-      "id": "notif_mhg7n7sr",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-81 Approved",
-      "body": "Your reservation RES-81 has been approved.",
-      "data": {
-        "reservationId": "RES-81",
-        "status": "Approved"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T11:40:09.147Z"
-    },
-    {
-      "id": "notif_mhg7go8x",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-80 Claimed",
-      "body": "Your reservation RES-80 is now Claimed.",
-      "data": {
-        "reservationId": "RES-80",
-        "status": "Claimed"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T11:35:03.873Z"
-    },
-    {
-      "id": "notif_mhg7gnvf",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-80 Ready",
-      "body": "Your reservation RES-80 is now Ready.",
-      "data": {
-        "reservationId": "RES-80",
-        "status": "Ready"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T11:35:03.387Z"
-    },
-    {
-      "id": "notif_mhg7gnok",
-      "for": "usr_mh0h1va7",
-      "actor": null,
-      "type": "reservation:status",
-      "title": "Reservation RES-80 Preparing",
-      "body": "Your reservation RES-80 is now Preparing.",
-      "data": {
-        "reservationId": "RES-80",
-        "status": "Preparing"
-      },
-      "read": true,
-      "createdAt": "2025-11-01T11:35:03.140Z"
     },
     {
       "id": "notif_mhg7gmmi",
@@ -17252,7 +17743,7 @@
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
       "items": [],
-      "updatedAt": "2025-11-20T09:12:53.760Z"
+      "updatedAt": "2025-11-20T15:31:33.050Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
