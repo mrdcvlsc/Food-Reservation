@@ -32,7 +32,7 @@ const LINKS = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { cart } = useCart();
+  const { cart, logout: clearCart } = useCart();
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [previewNotif, setPreviewNotif] = useState(null); // <-- new
@@ -50,17 +50,36 @@ export default function Navbar() {
   };
 
   const confirmLogout = async () => {
+  try {
+    // try server logout (best-effort)
+    await api.post("/auth/logout").catch(() => {});
+
+    // Clear client cart and local user data (CartContext.logout clears namespaced cart)
+    try { clearCart(); } catch (e) { console.warn("clearCart failed", e); }
+
+    // Clear auth storage and dispatch events so other tabs/components can react
     try {
-      // try server logout if available
-      await api.post("/auth/logout");
+      // prefer helper if you have it:
+      // import { clearAllAuthStorage } from "../lib/storage";
+      // clearAllAuthStorage();
+
+      // fallback manual:
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+
+      // notify other listeners/tabs
+      window.dispatchEvent(new Event("user:logout"));
+      window.dispatchEvent(new Event("auth:logout"));
     } catch (e) {
-      // ignore network errors, still clear client state
+      console.warn("logout cleanup error", e);
     }
-    // clear token and redirect to login
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+  } catch (e) {
+    console.warn("logout error", e);
+  } finally {
     navigate("/login");
-  };
+  }
+};
+
 
   // Shadow on scroll
   useEffect(() => {

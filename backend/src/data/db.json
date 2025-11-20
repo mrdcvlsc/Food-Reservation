@@ -17263,8 +17263,27 @@
     {
       "id": "cart_user_usr_meusxal8",
       "userId": "usr_meusxal8",
-      "items": [],
-      "updatedAt": "2025-11-20T03:55:43.969Z"
+      "items": [
+        {
+          "itemId": "1761992730493190",
+          "qty": 2,
+          "name": "",
+          "price": 0
+        },
+        {
+          "itemId": "ITM-4",
+          "qty": 1,
+          "name": "",
+          "price": 0
+        },
+        {
+          "itemId": "ITM-2",
+          "qty": 3,
+          "name": "",
+          "price": 0
+        }
+      ],
+      "updatedAt": "2025-11-20T13:16:30.650Z"
     },
     {
       "id": "cart_user_usr_mhkms3f1",
@@ -17324,9 +17343,15 @@
           "qty": 1,
           "name": "",
           "price": 0
+        },
+        {
+          "itemId": "1761992730493190",
+          "qty": 1,
+          "name": "",
+          "price": 0
         }
       ],
-      "updatedAt": "2025-11-20T03:56:06.195Z"
+      "updatedAt": "2025-11-20T13:22:16.446Z"
     }
   ],
   "inventory": []
