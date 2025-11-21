@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 10,
+      "stock": 8,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -27,7 +27,7 @@
       "name": "Oishi Pillows",
       "category": "Snacks",
       "price": 12,
-      "stock": 5,
+      "stock": 4,
       "img": "/uploads/1761207651939_889101.jpg",
       "isActive": true,
       "visible": true,
@@ -118,7 +118,7 @@
       "name": "Rebisco Sandwich (10PCS)",
       "category": "Snacks",
       "price": 10,
-      "stock": 3,
+      "stock": 2,
       "img": "/uploads/1761632660060_61033.jpg",
       "createdAt": "2025-10-28T06:17:48.631Z",
       "updatedAt": "2025-10-28T12:42:06.788Z",
@@ -144,7 +144,7 @@
       "name": "Dutch Mill",
       "category": "Beverages",
       "price": 20,
-      "stock": 4,
+      "stock": 1,
       "img": "/uploads/1761992752859_306286.jpg",
       "visible": true,
       "createdAt": "2025-11-01T10:25:30.493Z",
@@ -5142,6 +5142,154 @@
       "stockDeducted": true,
       "createdAt": "2025-11-20T15:31:31.392Z",
       "updatedAt": "2025-11-20T15:32:20.944Z"
+    },
+    {
+      "id": "RES_mi8mpasahr",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G12",
+      "section": "Rose",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "1761632268631799",
+          "name": "Rebisco Sandwich (10PCS)",
+          "price": 10,
+          "qty": 1
+        }
+      ],
+      "total": 10,
+      "status": "Approved",
+      "transactionId": "TX_mi8mpasanl",
+      "charged": true,
+      "chargedAt": "2025-11-21T08:59:13.498Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T08:59:13.498Z",
+      "updatedAt": "2025-11-21T09:21:41.386Z"
+    },
+    {
+      "id": "RES_mi8mpquyr2",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G11",
+      "section": "Rose",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-3",
+          "name": "Oishi Pillows",
+          "price": 12,
+          "qty": 1
+        }
+      ],
+      "total": 12,
+      "status": "Pending",
+      "transactionId": "TX_mi8mpquy95",
+      "charged": true,
+      "chargedAt": "2025-11-21T08:59:34.330Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T08:59:34.330Z"
+    },
+    {
+      "id": "RES_mi8mqa80eo",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "grade": "G12",
+      "section": "Rose",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 2
+        }
+      ],
+      "total": 40,
+      "status": "Pending",
+      "transactionId": "TX_mi8mqa80n4",
+      "charged": true,
+      "chargedAt": "2025-11-21T08:59:59.424Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T08:59:59.424Z"
+    },
+    {
+      "id": "RES_mi8mqh9n6h",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "grade": "G1",
+      "section": "a",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "1761992730493190",
+          "name": "Dutch Mill",
+          "price": 20,
+          "qty": 1
+        }
+      ],
+      "total": 20,
+      "status": "Approved",
+      "transactionId": "TX_mi8mqh9nbd",
+      "charged": true,
+      "chargedAt": "2025-11-21T09:00:08.555Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T09:00:08.555Z",
+      "updatedAt": "2025-11-21T09:23:10.729Z"
+    },
+    {
+      "id": "RES_mi8mv64lrd",
+      "userId": "usr_meusxal8",
+      "student": "Jessica Bertud",
+      "grade": "G4",
+      "section": "a",
+      "when": "after",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        }
+      ],
+      "total": 45,
+      "status": "Approved",
+      "transactionId": "TX_mi8mv64koz",
+      "charged": true,
+      "chargedAt": "2025-11-21T09:03:47.397Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T09:03:47.397Z",
+      "updatedAt": "2025-11-21T09:22:44.527Z"
+    },
+    {
+      "id": "RES_mi8nd4078u",
+      "userId": "usr_meshwbp7",
+      "student": "Sean Henry E. Silva",
+      "grade": "G12",
+      "section": "a",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        }
+      ],
+      "total": 45,
+      "status": "Approved",
+      "transactionId": "TX_mi8nd407cx",
+      "charged": true,
+      "chargedAt": "2025-11-21T09:17:44.455Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T09:17:44.455Z",
+      "updatedAt": "2025-11-21T09:21:02.814Z"
     }
   ],
   "topups": [
@@ -5767,7 +5915,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 2816,
+      "balance": 2711,
       "studentId": "214169830"
     },
     {
@@ -5778,7 +5926,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 392,
+      "balance": 325,
       "studentId": "344667121",
       "profilePictureUrl": "/uploads/profile-usr_meusxal8-1763296113838.png",
       "updatedAt": "2025-11-16T12:28:33.838Z"
@@ -8234,6 +8382,66 @@
       "direction": "debit",
       "status": "Success",
       "createdAt": "2025-11-20T15:31:31.392Z"
+    },
+    {
+      "id": "TX_mi8mpasanl",
+      "userId": "usr_meusxal8",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8mpasahr",
+      "amount": 10,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T08:59:13.498Z"
+    },
+    {
+      "id": "TX_mi8mpquy95",
+      "userId": "usr_meusxal8",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8mpquyr2",
+      "amount": 12,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-21T08:59:34.330Z"
+    },
+    {
+      "id": "TX_mi8mqa80n4",
+      "userId": "usr_meshwbp7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8mqa80eo",
+      "amount": 40,
+      "direction": "debit",
+      "status": "Pending",
+      "createdAt": "2025-11-21T08:59:59.424Z"
+    },
+    {
+      "id": "TX_mi8mqh9nbd",
+      "userId": "usr_meshwbp7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8mqh9n6h",
+      "amount": 20,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T09:00:08.555Z"
+    },
+    {
+      "id": "TX_mi8mv64koz",
+      "userId": "usr_meusxal8",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8mv64lrd",
+      "amount": 45,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T09:03:47.397Z"
+    },
+    {
+      "id": "TX_mi8nd407cx",
+      "userId": "usr_meshwbp7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8nd4078u",
+      "amount": 45,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T09:17:44.455Z"
     }
   ],
   "wallets": [
@@ -8249,6 +8457,307 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mi8nk3ri",
+      "for": "usr_meshwbp7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8mqh9n6h Approved",
+      "body": "Your reservation RES_mi8mqh9n6h has been approved.",
+      "data": {
+        "reservationId": "RES_mi8mqh9n6h",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G1",
+        "section": "a",
+        "student": "Sean Henry E. Silva",
+        "transactionId": "TX_mi8mqh9nbd"
+      },
+      "read": false,
+      "createdAt": "2025-11-21T09:23:10.734Z"
+    },
+    {
+      "id": "notif_mi8njjjq",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8mv64lrd Approved",
+      "body": "Your reservation RES_mi8mv64lrd has been approved.",
+      "data": {
+        "reservationId": "RES_mi8mv64lrd",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 45,
+        "note": "",
+        "slot": "after",
+        "grade": "G4",
+        "section": "a",
+        "student": "Jessica Bertud",
+        "transactionId": "TX_mi8mv64koz"
+      },
+      "read": false,
+      "createdAt": "2025-11-21T09:22:44.534Z"
+    },
+    {
+      "id": "notif_mi8ni6tp",
+      "for": "usr_meusxal8",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8mpasahr Approved",
+      "body": "Your reservation RES_mi8mpasahr has been approved.",
+      "data": {
+        "reservationId": "RES_mi8mpasahr",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1761632268631799",
+            "name": "Rebisco Sandwich (10PCS)",
+            "price": 10,
+            "qty": 1
+          }
+        ],
+        "total": 10,
+        "note": "",
+        "slot": "after",
+        "grade": "G12",
+        "section": "Rose",
+        "student": "Jessica Bertud",
+        "transactionId": "TX_mi8mpasanl"
+      },
+      "read": false,
+      "createdAt": "2025-11-21T09:21:41.389Z"
+    },
+    {
+      "id": "notif_mi8nhd2a",
+      "for": "usr_meshwbp7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8nd4078u Approved",
+      "body": "Your reservation RES_mi8nd4078u has been approved.",
+      "data": {
+        "reservationId": "RES_mi8nd4078u",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 45,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G12",
+        "section": "a",
+        "student": "Sean Henry E. Silva",
+        "transactionId": "TX_mi8nd407cx"
+      },
+      "read": false,
+      "createdAt": "2025-11-21T09:21:02.819Z"
+    },
+    {
+      "id": "notif_mi8nd40b",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meshwbp7",
+        "name": "Sean Henry E. Silva",
+        "email": "seansilva_35kd@gmail.com"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean Henry E. Silva submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8nd4078u",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 45,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G12",
+        "section": "a",
+        "student": "Sean Henry E. Silva"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T09:17:44.455Z"
+    },
+    {
+      "id": "notif_mi8mv64o",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meusxal8",
+        "name": "Jessica Bertud",
+        "email": "jbertud32@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_meusxal8-1763296113838.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8mv64lrd",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          }
+        ],
+        "total": 45,
+        "note": "",
+        "slot": "after",
+        "grade": "G4",
+        "section": "a",
+        "student": "Jessica Bertud"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T09:03:47.397Z"
+    },
+    {
+      "id": "notif_mi8mqh9u",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meshwbp7",
+        "name": "Sean Henry E. Silva",
+        "email": "seansilva_35kd@gmail.com"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean Henry E. Silva submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8mqh9n6h",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 1
+          }
+        ],
+        "total": 20,
+        "note": "",
+        "slot": "recess",
+        "grade": "G1",
+        "section": "a",
+        "student": "Sean Henry E. Silva"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T09:00:08.555Z"
+    },
+    {
+      "id": "notif_mi8mqa85",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meshwbp7",
+        "name": "Sean Henry E. Silva",
+        "email": "seansilva_35kd@gmail.com"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Sean Henry E. Silva submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8mqa80eo",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 2
+          }
+        ],
+        "total": 40,
+        "note": "",
+        "slot": "after",
+        "grade": "G12",
+        "section": "Rose",
+        "student": "Sean Henry E. Silva"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T08:59:59.424Z"
+    },
+    {
+      "id": "notif_mi8mpqv3",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meusxal8",
+        "name": "Jessica Bertud",
+        "email": "jbertud32@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_meusxal8-1763296113838.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8mpquyr2",
+        "items": [
+          {
+            "id": "ITM-3",
+            "name": "Oishi Pillows",
+            "price": 12,
+            "qty": 1
+          }
+        ],
+        "total": 12,
+        "note": "",
+        "slot": "after",
+        "grade": "G11",
+        "section": "Rose",
+        "student": "Jessica Bertud"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T08:59:34.330Z"
+    },
+    {
+      "id": "notif_mi8mpasf",
+      "for": "admin",
+      "actor": {
+        "id": "usr_meusxal8",
+        "name": "Jessica Bertud",
+        "email": "jbertud32@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_meusxal8-1763296113838.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Jessica Bertud submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8mpasahr",
+        "items": [
+          {
+            "id": "1761632268631799",
+            "name": "Rebisco Sandwich (10PCS)",
+            "price": 10,
+            "qty": 1
+          }
+        ],
+        "total": 10,
+        "note": "",
+        "slot": "after",
+        "grade": "G12",
+        "section": "Rose",
+        "student": "Jessica Bertud"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T08:59:13.498Z"
+    },
     {
       "id": "notif_mi7lb0bf",
       "for": "usr_mh0h1va7",
@@ -17754,27 +18263,8 @@
     {
       "id": "cart_user_usr_meusxal8",
       "userId": "usr_meusxal8",
-      "items": [
-        {
-          "itemId": "1761992730493190",
-          "qty": 2,
-          "name": "",
-          "price": 0
-        },
-        {
-          "itemId": "ITM-4",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        },
-        {
-          "itemId": "ITM-2",
-          "qty": 3,
-          "name": "",
-          "price": 0
-        }
-      ],
-      "updatedAt": "2025-11-20T13:16:30.650Z"
+      "items": [],
+      "updatedAt": "2025-11-21T09:03:48.354Z"
     },
     {
       "id": "cart_user_usr_mhkms3f1",
@@ -17828,21 +18318,8 @@
     {
       "id": "cart_user_usr_meshwbp7",
       "userId": "usr_meshwbp7",
-      "items": [
-        {
-          "itemId": "ITM-4",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        },
-        {
-          "itemId": "1761992730493190",
-          "qty": 1,
-          "name": "",
-          "price": 0
-        }
-      ],
-      "updatedAt": "2025-11-20T13:22:16.446Z"
+      "items": [],
+      "updatedAt": "2025-11-21T09:17:46.777Z"
     }
   ],
   "inventory": []

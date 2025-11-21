@@ -1,4 +1,3 @@
-// src/pages/admin/adminOrders.jsx
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { api } from "../../lib/api";
 import Navbar from "../../components/adminavbar";
@@ -13,6 +12,7 @@ import {
   Loader2,
   X,
   SlidersHorizontal,
+  Info,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { refreshSessionForProtected } from "../../lib/auth";
@@ -78,6 +78,190 @@ function getStudentId(o) {
   );
 }
 
+// ============================================================================
+// PRODUCTION-READY SEARCH PARSER
+// ============================================================================
+
+/**
+ * Normalize text: lowercase, remove accents, collapse whitespace, strip trailing punctuation
+ */
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove diacritics
+    .replace(/[^\w\s]/g, " ") // Replace punctuation with space
+    .replace(/\s+/g, " ") // Collapse multiple spaces
+    .trim();
+}
+
+/**
+ * Field aliases - map user-friendly names to canonical fields
+ */
+const FIELD_ALIASES = {
+  name: "name",
+  student: "name",
+  payer: "name",
+  customer: "name",
+  id: "id",
+  order: "id",
+  orderid: "id",
+  grade: "grade",
+  section: "section",
+  sec: "section",
+  pickup: "pickup",
+  time: "pickup",
+  slot: "pickup",
+  item: "item",
+  food: "item",
+  status: "status",
+  state: "status",
+  total: "total",
+  price: "total",
+  amount: "total",
+  note: "note",
+  notes: "note",
+  comment: "note",
+};
+
+/**
+ * Parse search query with proper comma handling and quoted phrase support
+ * Returns: { filters: { field: [values] }, plainTerms: [tokens] }
+ */
+function parseSearchQuery(query) {
+  const filters = {};
+  const plainTerms = [];
+  
+  if (!query || !query.trim()) {
+    return { filters, plainTerms };
+  }
+
+  // First, split by commas to get major tokens (commas act as AND separators)
+  const commaSeparatedTokens = [];
+  let currentToken = "";
+  let insideQuotes = false;
+  let quoteChar = null;
+
+  for (let i = 0; i < query.length; i++) {
+    const char = query[i];
+    
+    if ((char === '"' || char === "'") && (i === 0 || query[i - 1] !== "\\")) {
+      if (!insideQuotes) {
+        insideQuotes = true;
+        quoteChar = char;
+        currentToken += char;
+      } else if (char === quoteChar) {
+        insideQuotes = false;
+        quoteChar = null;
+        currentToken += char;
+      } else {
+        currentToken += char;
+      }
+    } else if (char === "," && !insideQuotes) {
+      if (currentToken.trim()) {
+        commaSeparatedTokens.push(currentToken.trim());
+      }
+      currentToken = "";
+    } else {
+      currentToken += char;
+    }
+  }
+  
+  if (currentToken.trim()) {
+    commaSeparatedTokens.push(currentToken.trim());
+  }
+
+  // Now parse each comma-separated token for field:value or plain terms
+  commaSeparatedTokens.forEach(token => {
+    // Match field:"quoted value" or field:'quoted value'
+    const quotedMatch = token.match(/^([\w-]+):(["'])(.*?)\2$/);
+    if (quotedMatch) {
+      const field = normalizeText(quotedMatch[1]);
+      const value = normalizeText(quotedMatch[3]);
+      const canonicalField = FIELD_ALIASES[field] || field;
+      
+      if (!filters[canonicalField]) filters[canonicalField] = [];
+      if (value) filters[canonicalField].push(value);
+      return;
+    }
+
+    // Match field:value (no quotes, no spaces in value)
+    const unquotedMatch = token.match(/^([\w-]+):(\S+)$/);
+    if (unquotedMatch) {
+      const field = normalizeText(unquotedMatch[1]);
+      const value = normalizeText(unquotedMatch[2]);
+      const canonicalField = FIELD_ALIASES[field] || field;
+      
+      if (!filters[canonicalField]) filters[canonicalField] = [];
+      if (value) filters[canonicalField].push(value);
+      return;
+    }
+
+    // Check if entire token is a quoted phrase
+    const plainQuotedMatch = token.match(/^(["'])(.*?)\1$/);
+    if (plainQuotedMatch) {
+      const value = normalizeText(plainQuotedMatch[2]);
+      if (value) plainTerms.push(value);
+      return;
+    }
+
+    // Plain token - split by whitespace and add each word
+    const words = token.split(/\s+/).filter(w => w.trim());
+    words.forEach(word => {
+      const normalized = normalizeText(word);
+      if (normalized) plainTerms.push(normalized);
+    });
+  });
+
+  return { filters, plainTerms };
+}
+
+/**
+ * Extract active filter chips from parsed query (for UI display)
+ */
+function getActiveFilters(parsedQuery) {
+  const chips = [];
+  const { filters } = parsedQuery;
+  
+  const fieldLabels = {
+    name: "Name",
+    id: "Order ID",
+    grade: "Grade",
+    section: "Section",
+    pickup: "Pickup Time",
+    item: "Item",
+    status: "Status",
+    total: "Total",
+    note: "Note",
+  };
+  
+  Object.entries(filters).forEach(([field, values]) => {
+    values.forEach(value => {
+      chips.push({
+        field,
+        value,
+        label: `${fieldLabels[field] || field}: ${value}`,
+      });
+    });
+  });
+  
+  return chips;
+}
+
+/**
+ * Normalize currency for comparison
+ */
+function normalizeCurrency(text) {
+  return String(text || "")
+    .replace(/[₱$,\s]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
+
 export default function AdminOrders() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -91,6 +275,7 @@ export default function AdminOrders() {
   const [initialLoad, setInitialLoad] = useState(true);
   const [busyId, setBusyId] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [showSearchHelp, setShowSearchHelp] = useState(false);
 
   const ordersRef = useRef([]);
   useEffect(() => {
@@ -101,6 +286,7 @@ export default function AdminOrders() {
     setLoading(true);
     try {
       const data = await api.get("/reservations/admin", { signal });
+      console.log("[AdminOrders] /reservations/admin response:", data);
       const arr = Array.isArray(data) ? data : [];
       setOrders(arr);
       setLastUpdated(new Date());
@@ -126,30 +312,31 @@ export default function AdminOrders() {
 
   // SSE integration
   const handleSseEvent = (payload) => {
-    if (!payload || !payload.order) return;
-    let updatedOrders = ordersRef.current ? [...ordersRef.current] : [];
-    const { type, order } = payload;
-    const orderId = order.id;
-    const idx = updatedOrders.findIndex(o => String(o.id) === String(orderId));
+    console.debug("[AdminOrders][SSE] event:", payload);
 
-    if (type === "order.deleted") {
-      if (idx !== -1) {
-        updatedOrders.splice(idx, 1);
-      }
-    } else if (type === "order.created") {
-      if (idx === -1) {
-        updatedOrders.unshift(order);
-      } else {
-        updatedOrders[idx] = { ...updatedOrders[idx], ...order };
-      }
-    } else if (type === "order.updated" || !type) {
-      if (idx !== -1) {
-        updatedOrders[idx] = { ...updatedOrders[idx], ...order };
-      } else {
-        updatedOrders.unshift(order);
-      }
+    const type = payload?.type || payload?.event || payload?.action || "";
+    const order = payload?.order || payload?.data?.order || payload?.data || payload?.reservation;
+
+    if (!order) {
+      console.warn("[AdminOrders][SSE] no order in payload:", payload);
+      return;
     }
-    setOrders(updatedOrders);
+
+    const orderId = order.id ?? order._id ?? order.orderId;
+    let updated = ordersRef.current ? [...ordersRef.current] : [];
+    const idx = updated.findIndex(o => String(o.id) === String(orderId));
+
+    if (String(type).includes("deleted")) {
+      if (idx !== -1) updated.splice(idx, 1);
+    } else if (String(type).includes("created")) {
+      if (idx === -1) updated.unshift(order);
+      else updated[idx] = { ...updated[idx], ...order };
+    } else {
+      if (idx !== -1) updated[idx] = { ...updated[idx], ...order };
+      else updated.unshift(order);
+    }
+
+    setOrders(updated);
     setLastUpdated(new Date());
   };
 
@@ -170,7 +357,7 @@ export default function AdminOrders() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQ(q);
-    }, 200);
+    }, 300);
     return () => clearTimeout(timer);
   }, [q]);
 
@@ -187,39 +374,87 @@ export default function AdminOrders() {
     return timeOrder[normalized] !== undefined ? timeOrder[normalized] : 999;
   };
 
+  // Parse search query
+  const parsedQuery = useMemo(() => parseSearchQuery(debouncedQ), [debouncedQ]);
+  const activeFilters = useMemo(() => getActiveFilters(parsedQuery), [parsedQuery]);
+
+  // Remove a specific filter chip
+  const removeFilter = (chipToRemove) => {
+    const { filters, plainTerms } = parsedQuery;
+    const newFilters = { ...filters };
+    
+    if (newFilters[chipToRemove.field]) {
+      newFilters[chipToRemove.field] = newFilters[chipToRemove.field].filter(
+        v => v !== chipToRemove.value
+      );
+      if (newFilters[chipToRemove.field].length === 0) {
+        delete newFilters[chipToRemove.field];
+      }
+    }
+    
+    // Rebuild query string
+    let newQuery = "";
+    Object.entries(newFilters).forEach(([field, values]) => {
+      values.forEach(value => {
+        const needsQuotes = value.includes(" ");
+        newQuery += needsQuotes ? `${field}:"${value}", ` : `${field}:${value}, `;
+      });
+    });
+    newQuery += plainTerms.join(", ");
+    setQ(newQuery.trim().replace(/,\s*$/, ""));
+  };
+
   const filtered = useMemo(() => {
-    const ql = String(debouncedQ || "").toLowerCase();
+    const { filters, plainTerms } = parsedQuery;
 
     let rows = (orders || [])
       .map((o) => ({ ...o, status: normalizeStatus(o.status) }))
       .filter((o) => {
         const s = o.status;
         if (tab !== "All" && s !== tab) return false;
-        if (tab === "All" && (s === "Pending" || s === "Rejected")) return false;
 
-        if (ql) {
-          const student = String(o?.student || "").toLowerCase();
-          const id = String(o?.id || "").toLowerCase();
-          const grade = String(o?.grade || "").toLowerCase();
-          const section = String(o?.section || "").toLowerCase();
-          const note = String(o?.note || "").toLowerCase();
-          const total = peso.format(orderTotal(o)).toLowerCase();
-          const items = (o?.items || []).map((it) => String(it?.name || "").toLowerCase()).join(" ");
-          const when = String(o?.when || o?.slot || o?.slotLabel || o?.pickup || o?.pickupTime || "").toLowerCase();
-          const statusStr = String(o?.status || "").toLowerCase();
+        // Build searchable fields with normalized text
+        const searchableData = {
+          name: normalizeText(getStudentName(o)),
+          id: normalizeText(String(o?.id || "")),
+          grade: normalizeText(String(o?.grade || "")),
+          section: normalizeText(String(o?.section || "")),
+          note: normalizeText(String(o?.note || "")),
+          total: normalizeCurrency(peso.format(orderTotal(o))),
+          item: normalizeText((o?.items || []).map((it) => String(it?.name || "")).join(" ")),
+          pickup: normalizeText(String(o?.when || o?.slot || o?.slotLabel || o?.pickup || o?.pickupTime || "")),
+          status: normalizeText(String(o?.status || "")),
+        };
 
-          return (
-            student.includes(ql) ||
-            id.includes(ql) ||
-            grade.includes(ql) ||
-            section.includes(ql) ||
-            note.includes(ql) ||
-            total.includes(ql) ||
-            items.includes(ql) ||
-            when.includes(ql) ||
-            statusStr.includes(ql)
-          );
+        // Check field-specific filters (OR within same field, AND across different fields)
+        for (const [field, values] of Object.entries(filters)) {
+          const fieldData = searchableData[field] || "";
+          
+          // Special handling for numeric total field
+          if (field === "total") {
+            const orderTotalNum = orderTotal(o);
+            const matches = values.some(value => {
+              const numericValue = parseFloat(value.replace(/[^\d.]/g, ""));
+              if (!isNaN(numericValue)) {
+                return Math.abs(orderTotalNum - numericValue) < 0.01;
+              }
+              return fieldData.includes(value);
+            });
+            if (!matches) return false;
+          } else {
+            // OR within same field: any value must match
+            const matches = values.some(value => fieldData.includes(value));
+            if (!matches) return false;
+          }
         }
+
+        // Check plain search terms (AND logic: all terms must match somewhere)
+        if (plainTerms.length > 0) {
+          const allFieldsText = Object.values(searchableData).join(" ");
+          const allTermsMatch = plainTerms.every(term => allFieldsText.includes(term));
+          if (!allTermsMatch) return false;
+        }
+
         return true;
       });
 
@@ -233,8 +468,8 @@ export default function AdminOrders() {
           return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
 
         case "name":
-          aVal = String(getStudentName(a) || "").toLowerCase();
-          bVal = String(getStudentName(b) || "").toLowerCase();
+          aVal = normalizeText(getStudentName(a));
+          bVal = normalizeText(getStudentName(b));
           break;
 
         case "total":
@@ -265,16 +500,7 @@ export default function AdminOrders() {
     });
 
     return rows;
-  }, [orders, tab, debouncedQ, sortField, sortOrder]);
-
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortOrder("asc");
-    }
-  };
+  }, [orders, tab, parsedQuery, sortField, sortOrder]);
 
   const transition = async (id, next) => {
     setBusyId(id);
@@ -338,21 +564,92 @@ export default function AdminOrders() {
           )}
 
           {/* Mobile Search */}
-          <div className="relative">
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search orders..."
-              className="w-full border border-gray-300 rounded-lg pl-9 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            {q && (
-              <button
-                onClick={() => setQ("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
+          <div className="space-y-2">
+            <div className="relative">
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder='Try: St. Rose, Anm or name:john, section:rose'
+                className="w-full border border-gray-300 rounded-lg pl-9 pr-20 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                <button
+                  onClick={() => setShowSearchHelp(!showSearchHelp)}
+                  className="text-gray-400 hover:text-gray-600 p-1"
+                  title="Search help"
+                >
+                  <Info className="w-4 h-4" />
+                </button>
+                {q && (
+                  <button
+                    onClick={() => setQ("")}
+                    className="text-gray-400 hover:text-gray-600 p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Search Help Tooltip */}
+            {showSearchHelp && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs space-y-3">
+                <div className="font-semibold text-blue-900">🔍 Search Guide:</div>
+                
+                <div className="space-y-2">
+                  <div className="font-semibold text-blue-800 text-[11px] uppercase tracking-wide">Basic Search</div>
+                  <div className="text-blue-800 space-y-1">
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">john breakfast</span> → Find "john" AND "breakfast" anywhere</div>
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">St. Rose, Anm</span> → Use commas to separate terms (AND)</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="font-semibold text-blue-800 text-[11px] uppercase tracking-wide">Field-Specific Search</div>
+                  <div className="text-blue-800 space-y-1">
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">name:john</span> → Search only in name</div>
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">section:rose</span> → Search only in section</div>
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">grade:10</span> → Search only in grade</div>
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">pickup:lunch</span> → Search by pickup time</div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="font-semibold text-blue-800 text-[11px] uppercase tracking-wide">Advanced Tips</div>
+                  <div className="text-blue-800 space-y-1">
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">section:"St. Rose"</span> → Use quotes for phrases</div>
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">name:john, grade:12</span> → Combine filters (AND)</div>
+                    <div><span className="font-mono bg-blue-100 px-1 rounded">section:rose section:blue</span> → Same field = OR</div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-blue-300 text-blue-700 text-[11px]">
+                  <strong>Aliases:</strong> name/student/payer, id/order, section/sec, pickup/time/slot, item/food, note/comment
+                </div>
+              </div>
+            )}
+
+            {/* Active Filter Chips */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {activeFilters.map((chip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => removeFilter(chip)}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs hover:bg-blue-200"
+                  >
+                    {chip.label}
+                    <X className="w-3 h-3" />
+                  </button>
+                ))}
+                <button
+                  onClick={() => setQ("")}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs hover:bg-gray-200"
+                >
+                  Clear all
+                </button>
+              </div>
             )}
           </div>
 
@@ -394,18 +691,18 @@ export default function AdminOrders() {
         </div>
 
         {/* DESKTOP HEADER */}
-        <div className="hidden md:flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-2">
-            <UtensilsCrossed className="w-6 h-6 text-blue-600" />
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Orders Queue</h1>
-            {lastUpdated && (
-              <span className="text-xs text-gray-500">
-                Updated {lastUpdated.toLocaleTimeString()}
-              </span>
-            )}
-          </div>
+        <div className="hidden md:block space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <UtensilsCrossed className="w-6 h-6 text-blue-600" />
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Orders Queue</h1>
+              {lastUpdated && (
+                <span className="text-xs text-gray-500">
+                  Updated {lastUpdated.toLocaleTimeString()}
+                </span>
+              )}
+            </div>
 
-          <div className="flex items-center gap-2">
             <button
               onClick={() => fetchOrders()}
               disabled={loading}
@@ -416,15 +713,120 @@ export default function AdminOrders() {
               </svg>
               Refresh
             </button>
-            <div className="relative">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder="Search name, ID, grade, total, note, items…"
-                className="w-72 sm:w-80 border border-gray-300 rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          </div>
+
+          <div className="flex items-start gap-3">
+            <div className="flex-1 space-y-2">
+              <div className="relative">
+                <input
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  placeholder='Search: St. Rose, Anm  |  name:john, section:rose  |  grade:10 pickup:lunch'
+                  className="w-full border border-gray-300 rounded-lg pl-9 pr-20 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                  <button
+                    onClick={() => setShowSearchHelp(!showSearchHelp)}
+                    className="text-gray-400 hover:text-gray-600"
+                    title="Search help"
+                  >
+                    <Info className="w-4 h-4" />
+                  </button>
+                  {q && (
+                    <button
+                      onClick={() => setQ("")}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Search Help Tooltip */}
+              {showSearchHelp && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm space-y-3">
+                  <div className="font-semibold text-blue-900 flex items-center gap-2">
+                    🔍 Advanced Search Guide
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="font-semibold text-blue-800 text-xs uppercase tracking-wide">Basic Search</div>
+                      <div className="text-blue-800 space-y-1.5 text-sm">
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">john breakfast</span> → Match both terms (AND)</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">St. Rose, Anm</span> → Comma separates terms</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">"St. Rose"</span> → Keep phrase together</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="font-semibold text-blue-800 text-xs uppercase tracking-wide">Field-Specific</div>
+                      <div className="text-blue-800 space-y-1.5 text-sm">
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">name:john</span> → Search in name only</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">section:rose</span> → Search in section</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">grade:10</span> → Filter by grade</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="font-semibold text-blue-800 text-xs uppercase tracking-wide">More Fields</div>
+                      <div className="text-blue-800 space-y-1.5 text-sm">
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">pickup:lunch</span> → By pickup time</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">item:burger</span> → By item name</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">id:12345</span> → By order ID</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="font-semibold text-blue-800 text-xs uppercase tracking-wide">Advanced</div>
+                      <div className="text-blue-800 space-y-1.5 text-sm">
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">status:ready</span> → By status</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">note:allergy</span> → Search notes</div>
+                        <div><span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">total:120</span> → By total amount</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-blue-200 space-y-2">
+                    <div className="font-semibold text-blue-800 text-xs uppercase tracking-wide">How It Works</div>
+                    <div className="text-blue-800 space-y-1.5 text-sm">
+                      <div>✓ <span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">name:john, grade:12</span> → Multiple fields = AND (both must match)</div>
+                      <div>✓ <span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">section:rose section:blue</span> → Same field = OR (either matches)</div>
+                      <div>✓ <span className="font-mono bg-blue-100 px-1.5 py-0.5 rounded">section:"St. Rose"</span> → Quotes preserve spaces</div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-blue-300 text-blue-700 text-xs">
+                    <strong>Field Aliases:</strong> name/student/payer/customer · id/order/orderid · section/sec · pickup/time/slot · item/food · note/notes/comment · status/state · total/price/amount
+                  </div>
+                </div>
+              )}
+
+              {/* Active Filter Chips */}
+              {activeFilters.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {activeFilters.map((chip, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => removeFilter(chip)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
+                    >
+                      {chip.label}
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setQ("")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
+                  >
+                    Clear all
+                  </button>
+                </div>
+              )}
             </div>
+
             <select
               value={`${sortField}-${sortOrder}`}
               onChange={(e) => {
@@ -432,7 +834,7 @@ export default function AdminOrders() {
                 setSortField(field);
                 setSortOrder(order);
               }}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
             >
               <option value="pickup-asc">Pickup Time (Early → Late)</option>
               <option value="pickup-desc">Pickup Time (Late → Early)</option>
@@ -452,6 +854,14 @@ export default function AdminOrders() {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
           {tabs.map((t) => {
             const active = tab === t;
+            const count = orders.filter(o => {
+              const status = normalizeStatus(o.status);
+              if (t === "All") {
+                return status !== "Pending" && status !== "Rejected";
+              }
+              return status === t;
+            }).length;
+            
             return (
               <button
                 key={t}
@@ -462,11 +872,57 @@ export default function AdminOrders() {
                     : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                 }`}
               >
-                {t}
+                {t} <span className={`ml-1.5 ${active ? 'text-gray-300' : 'text-gray-500'}`}>({count})</span>
               </button>
             );
           })}
         </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="bg-white rounded-lg border border-gray-200 p-3 sm:p-4">
+            <div className="text-xs text-gray-500 uppercase tracking-wide">Total Orders</div>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+              {orders.filter(o => {
+                const s = normalizeStatus(o.status);
+                return s !== "Pending" && s !== "Rejected";
+              }).length}
+            </div>
+          </div>
+          <div className="bg-emerald-50 rounded-lg border border-emerald-200 p-3 sm:p-4">
+            <div className="text-xs text-emerald-700 uppercase tracking-wide">Approved</div>
+            <div className="text-xl sm:text-2xl font-bold text-emerald-900 mt-1">
+              {orders.filter(o => normalizeStatus(o.status) === "Approved").length}
+            </div>
+          </div>
+          <div className="bg-blue-50 rounded-lg border border-blue-200 p-3 sm:p-4">
+            <div className="text-xs text-blue-700 uppercase tracking-wide">Preparing</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-900 mt-1">
+              {orders.filter(o => normalizeStatus(o.status) === "Preparing").length}
+            </div>
+          </div>
+          <div className="bg-green-50 rounded-lg border border-green-200 p-3 sm:p-4">
+            <div className="text-xs text-green-700 uppercase tracking-wide">Ready</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-900 mt-1">
+              {orders.filter(o => normalizeStatus(o.status) === "Ready").length}
+            </div>
+          </div>
+        </div>
+
+        {/* Results count */}
+        {!loading && (
+          <div className="text-sm text-gray-600">
+            Showing <span className="font-semibold">{filtered.length}</span> of{" "}
+            <span className="font-semibold">
+              {orders.filter(o => {
+                const s = normalizeStatus(o.status);
+                if (tab === "All") return s !== "Pending" && s !== "Rejected";
+                return s === tab;
+              }).length}
+            </span>{" "}
+            orders
+          </div>
+        )}
 
         {/* Content */}
         {loading ? (
@@ -498,12 +954,12 @@ export default function AdminOrders() {
                 o.claimedAt ?? o.pickedAt ?? o.picked_at ?? o.claimed_at ?? o.completedAt ?? o.completed_at ?? o.updatedAt;
 
               return (
-                <div key={o.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4">
+                <div key={o.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 sm:p-4 hover:shadow-md transition-shadow">
                   {/* Card header - Mobile optimized */}
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs sm:text-sm text-gray-500 truncate">{o.id}</span>
+                        <span className="text-xs sm:text-sm text-gray-500 truncate font-mono">#{o.id}</span>
                         <Pill status={normalizeStatus(o.status)} />
                       </div>
                       <div className="mt-1 text-sm sm:text-base text-gray-900 font-medium break-words">
@@ -516,10 +972,15 @@ export default function AdminOrders() {
                         )}
                       </div>
                       <div className="text-xs sm:text-sm text-gray-600 mt-1">
-                        {o.grade}-{o.section}
+                        <span className="font-medium">Grade:</span> {o.grade}-{o.section}
                       </div>
                       <div className="text-xs sm:text-sm text-gray-600 mt-1">
-                        <span className="font-medium">Pickup:</span> {when || "—"}
+                        <span className="inline-flex items-center gap-1">
+                          <span className="font-medium">Pickup:</span>
+                          <span className="px-2 py-0.5 bg-gray-100 rounded text-xs font-medium">
+                            {when || "—"}
+                          </span>
+                        </span>
                       </div>
                       {normalizeStatus(o.status) === "Claimed" && claimedAt && (
                         <div className="text-xs text-gray-500 mt-1">
@@ -527,26 +988,28 @@ export default function AdminOrders() {
                         </div>
                       )}
                       {!!o.note && (
-                        <div className="text-xs sm:text-sm text-gray-500 mt-2 italic break-words">
-                          <span className="font-medium not-italic">Note:</span> {o.note}
+                        <div className="text-xs sm:text-sm text-gray-500 mt-2 italic break-words bg-amber-50 border border-amber-200 rounded p-2">
+                          <span className="font-medium not-italic text-amber-800">📝 Note:</span> {o.note}
                         </div>
                       )}
                     </div>
 
                     <div className="text-left sm:text-right shrink-0">
                       <div className="text-xs sm:text-sm text-gray-500">Total</div>
-                      <div className="text-base sm:text-lg font-semibold">{peso.format(orderTotal(o))}</div>
+                      <div className="text-base sm:text-lg font-semibold text-gray-900">{peso.format(orderTotal(o))}</div>
                     </div>
                   </div>
 
                   {/* Items - Mobile optimized */}
                   <div className="mt-3 border-t pt-3">
-                    <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Items</div>
+                    <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Items Ordered</div>
                     <div className="space-y-1.5">
                       {(o.items || []).map((it, idx) => (
-                        <div key={idx} className="flex items-start justify-between text-xs sm:text-sm py-1">
+                        <div key={idx} className="flex items-start justify-between text-xs sm:text-sm py-1 hover:bg-gray-50 px-2 -mx-2 rounded">
                           <div className="text-gray-700 flex-1 pr-2 break-words">{it.name}</div>
-                          <div className="text-gray-600 font-medium flex-shrink-0">×{it.qty ?? it.quantity ?? 0}</div>
+                          <div className="text-gray-600 font-medium flex-shrink-0">
+                            <span className="text-gray-500">×</span>{it.qty ?? it.quantity ?? 0}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -558,7 +1021,7 @@ export default function AdminOrders() {
                       <button
                         onClick={() => transition(o.id, "Preparing")}
                         disabled={busyId === o.id}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 font-medium"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-60 font-medium transition-colors"
                       >
                         {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Timer className="w-4 h-4" />}
                         Move to Preparing
@@ -568,7 +1031,7 @@ export default function AdminOrders() {
                       <button
                         onClick={() => transition(o.id, "Ready")}
                         disabled={busyId === o.id}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 font-medium"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-60 font-medium transition-colors"
                       >
                         {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                         Mark Ready
@@ -578,7 +1041,7 @@ export default function AdminOrders() {
                       <button
                         onClick={() => transition(o.id, "Claimed")}
                         disabled={busyId === o.id}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm bg-gray-900 text-white hover:bg-black disabled:opacity-60 font-medium"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm bg-gray-900 text-white hover:bg-black disabled:opacity-60 font-medium transition-colors"
                       >
                         {busyId === o.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
                         Mark Claimed
@@ -590,8 +1053,25 @@ export default function AdminOrders() {
             })}
 
             {filtered.length === 0 && (
-              <div className="bg-white rounded-xl border border-gray-100 p-8 sm:p-10 text-center text-sm text-gray-500">
-                No orders found for this filter.
+              <div className="bg-white rounded-xl border border-gray-100 p-8 sm:p-10 text-center">
+                <div className="text-gray-400 mb-3">
+                  <Search className="w-12 h-12 mx-auto" />
+                </div>
+                <div className="text-base font-medium text-gray-900 mb-1">No orders found</div>
+                <div className="text-sm text-gray-500">
+                  {activeFilters.length > 0 || parsedQuery.plainTerms.length > 0
+                    ? "Try adjusting your search filters"
+                    : "No orders match the current filter"}
+                </div>
+                {(activeFilters.length > 0 || parsedQuery.plainTerms.length > 0) && (
+                  <button
+                    onClick={() => setQ("")}
+                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                    Clear Search
+                  </button>
+                )}
               </div>
             )}
           </div>
