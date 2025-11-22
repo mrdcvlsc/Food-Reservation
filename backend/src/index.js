@@ -51,7 +51,7 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
  * Static: serve uploaded images/files (multer target)
  */
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/", express.static(path.join(process.cwd(), "public")));
 
 /**
  * Swagger API docs
@@ -81,7 +81,7 @@ app.use("/api", routes);
 /**
  * Health check
  */
-app.get("/", (_req, res) => res.json({ ok: true, name: "canteen-api" }));
+app.get("/health_check", (_req, res) => res.json({ ok: true, name: "canteen-api" }));
 
 /**
  * 404 (JSON only)
