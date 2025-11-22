@@ -27,17 +27,51 @@ exports.get = async (req, res) => {
     const uid = req.user && req.user.id;
     if (!uid) return res.status(401).json({ error: "Unauthorized" });
 
-    if (usingMongo() && CartModel) {
-      const doc = await CartModel.findOne({ userId: String(uid) }).lean();
-      const items = doc ? doc.items : [];
-      return res.json({ status: 200, data: { items, cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) } });
+    // 🔥 CRITICAL: Validate user is authenticated and cart belongs to them
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: "Invalid user session" });
     }
 
+    if (usingMongo() && CartModel) {
+      // Mongoose implementation
+      let cart = await CartModel.findOne({ userId: uid });
+      if (!cart) {
+        // New user - create empty cart
+        cart = new CartModel({ userId: uid, items: [] });
+        await cart.save();
+      }
+      const items = cart.items || [];
+      return res.json({ 
+        status: 200, 
+        data: { 
+          items, 
+          cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) 
+        } 
+      });
+    }
+
+    // File DB fallback
     const db = await load();
     db.carts = Array.isArray(db.carts) ? db.carts : [];
-    const rec = db.carts.find((c) => String(c.userId) === String(uid));
-    const items = rec ? (rec.items || []) : [];
-    return res.json({ status: 200, data: { items, cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) } });
+    
+    // 🔥 Find cart for THIS user only
+    let rec = db.carts.find((c) => String(c.userId) === String(uid));
+    
+    // If user has no cart, create empty one
+    if (!rec) {
+      rec = { userId: uid, items: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      db.carts.push(rec);
+      await save(db);
+    }
+    
+    const items = rec.items || [];
+    return res.json({ 
+      status: 200, 
+      data: { 
+        items, 
+        cart: items.reduce((m, it) => ({ ...m, [it.itemId]: it.qty }), {}) 
+      } 
+    });
   } catch (err) {
     console.error("[CART] get error:", err && err.message);
     return res.status(500).json({ error: "Failed to load cart" });
@@ -47,7 +81,6 @@ exports.get = async (req, res) => {
 /**
  * POST /api/cart/add
  * Body: { itemId, qty = 1, name?, price? }
- * increments qty if exists
  */
 exports.addItem = async (req, res) => {
   try {
@@ -55,42 +88,49 @@ exports.addItem = async (req, res) => {
     if (!uid) return res.status(401).json({ error: "Unauthorized" });
 
     const { itemId, qty = 1, name = "", price = 0 } = req.body || {};
-    if (!itemId) return res.status(400).json({ error: "Missing itemId" });
+    if (!itemId) return res.status(400).json({ error: "itemId required" });
+    
     const q = Math.max(0, Number(qty) || 0);
-    if (q <= 0) return res.status(400).json({ error: "Invalid qty" });
+    if (q <= 0) return res.status(400).json({ error: "qty must be > 0" });
 
     if (usingMongo() && CartModel) {
-      const doc = await CartModel.findOne({ userId: String(uid) });
-      if (!doc) {
-        const created = new CartModel({ userId: String(uid), items: [{ itemId: String(itemId), qty: q, name, price }] });
-        await created.save();
-        return res.json({ status: 200, data: { ok: true, items: created.items } });
+      // Mongoose implementation
+      let cart = await CartModel.findOne({ userId: uid });
+      if (!cart) {
+        cart = new CartModel({ userId: uid, items: [] });
       }
-      const idx = doc.items.findIndex((it) => String(it.itemId) === String(itemId));
-      if (idx === -1) {
-        doc.items.push({ itemId: String(itemId), qty: q, name, price });
+      
+      const existingItem = cart.items.find((it) => String(it.itemId) === String(itemId));
+      if (existingItem) {
+        existingItem.qty = (existingItem.qty || 0) + q;
       } else {
-        doc.items[idx].qty = (Number(doc.items[idx].qty) || 0) + q;
+        cart.items.push({ itemId: String(itemId), qty: q, name, price });
       }
-      doc.updatedAt = new Date();
-      await doc.save();
-      return res.json({ status: 200, data: { ok: true, items: doc.items } });
+      
+      cart.updatedAt = new Date();
+      await cart.save();
+      return res.json({ status: 200, data: { ok: true, items: cart.items } });
     }
 
-    // file DB fallback
+    // File DB fallback
     const db = await load();
     db.carts = Array.isArray(db.carts) ? db.carts : [];
+    
+    // 🔥 Find cart for THIS user only
     let rec = db.carts.find((c) => String(c.userId) === String(uid));
     if (!rec) {
-      rec = { id: `cart_user_${uid}`, userId: uid, items: [{ itemId: String(itemId), qty: q, name, price }], updatedAt: new Date().toISOString() };
+      rec = { userId: uid, items: [], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
       db.carts.push(rec);
-    } else {
-      rec.items = rec.items || [];
-      const idx = rec.items.findIndex((it) => String(it.itemId) === String(itemId));
-      if (idx === -1) rec.items.push({ itemId: String(itemId), qty: q, name, price });
-      else rec.items[idx].qty = (Number(rec.items[idx].qty) || 0) + q;
-      rec.updatedAt = new Date().toISOString();
     }
+    
+    const idx = (rec.items || []).findIndex((it) => String(it.itemId) === String(itemId));
+    if (idx >= 0) {
+      rec.items[idx].qty = (rec.items[idx].qty || 0) + q;
+    } else {
+      rec.items.push({ itemId: String(itemId), qty: q, name, price });
+    }
+    
+    rec.updatedAt = new Date().toISOString();
     await save(db);
     return res.json({ status: 200, data: { ok: true, items: rec.items } });
   } catch (err) {
@@ -101,38 +141,52 @@ exports.addItem = async (req, res) => {
 
 /**
  * POST /api/cart/update
- * Body: { itemId, qty }
- * set qty (remove if 0)
  */
 exports.updateItem = async (req, res) => {
   try {
     const uid = req.user && req.user.id;
     if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    
     const { itemId, qty } = req.body || {};
-    if (!itemId || typeof qty === "undefined") return res.status(400).json({ error: "Missing fields" });
+    if (!itemId || typeof qty === "undefined") return res.status(400).json({ error: "itemId and qty required" });
+    
     const q = Math.max(0, Number(qty) || 0);
 
     if (usingMongo() && CartModel) {
-      const doc = await CartModel.findOne({ userId: String(uid) });
-      if (!doc) return res.status(404).json({ error: "Cart not found" });
-      const idx = doc.items.findIndex((it) => String(it.itemId) === String(itemId));
-      if (idx === -1) return res.status(404).json({ error: "Item not found" });
-      if (q === 0) doc.items.splice(idx, 1);
-      else doc.items[idx].qty = q;
-      doc.updatedAt = new Date();
-      await doc.save();
-      return res.json({ status: 200, data: { ok: true, items: doc.items } });
+      let cart = await CartModel.findOne({ userId: uid });
+      if (!cart) return res.status(404).json({ error: "Cart not found" });
+      
+      const idx = (cart.items || []).findIndex((it) => String(it.itemId) === String(itemId));
+      if (idx === -1) return res.status(404).json({ error: "Item not in cart" });
+      
+      if (q === 0) {
+        cart.items.splice(idx, 1);
+      } else {
+        cart.items[idx].qty = q;
+      }
+      
+      cart.updatedAt = new Date();
+      await cart.save();
+      return res.json({ status: 200, data: { ok: true, items: cart.items } });
     }
 
-    // file DB fallback
+    // File DB fallback
     const db = await load();
     db.carts = Array.isArray(db.carts) ? db.carts : [];
+    
+    // 🔥 Find cart for THIS user only
     const rec = db.carts.find((c) => String(c.userId) === String(uid));
     if (!rec) return res.status(404).json({ error: "Cart not found" });
+    
     const idx = (rec.items || []).findIndex((it) => String(it.itemId) === String(itemId));
-    if (idx === -1) return res.status(404).json({ error: "Item not found" });
-    if (q === 0) rec.items.splice(idx, 1);
-    else rec.items[idx].qty = q;
+    if (idx === -1) return res.status(404).json({ error: "Item not in cart" });
+    
+    if (q === 0) {
+      rec.items.splice(idx, 1);
+    } else {
+      rec.items[idx].qty = q;
+    }
+    
     rec.updatedAt = new Date().toISOString();
     await save(db);
     return res.json({ status: 200, data: { ok: true, items: rec.items } });
@@ -144,35 +198,39 @@ exports.updateItem = async (req, res) => {
 
 /**
  * POST /api/cart/remove
- * Body: { itemId }
  */
 exports.removeItem = async (req, res) => {
   try {
     const uid = req.user && req.user.id;
     if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    
     const { itemId } = req.body || {};
-    if (!itemId) return res.status(400).json({ error: "Missing itemId" });
+    if (!itemId) return res.status(400).json({ error: "itemId required" });
 
     if (usingMongo() && CartModel) {
-      const doc = await CartModel.findOne({ userId: String(uid) });
-      if (!doc) return res.json({ ok: true, items: [] });
-      doc.items = (doc.items || []).filter((it) => String(it.itemId) !== String(itemId));
-      doc.updatedAt = new Date();
-      await doc.save();
-      return res.json({ ok: true, items: doc.items });
+      let cart = await CartModel.findOne({ userId: uid });
+      if (!cart) return res.status(404).json({ error: "Cart not found" });
+      
+      cart.items = (cart.items || []).filter((it) => String(it.itemId) !== String(itemId));
+      cart.updatedAt = new Date();
+      await cart.save();
+      return res.json({ status: 200, data: { ok: true, items: cart.items } });
     }
 
     const db = await load();
     db.carts = Array.isArray(db.carts) ? db.carts : [];
+    
+    // 🔥 Find cart for THIS user only
     const rec = db.carts.find((c) => String(c.userId) === String(uid));
-    if (!rec) return res.json({ ok: true, items: [] });
+    if (!rec) return res.status(404).json({ error: "Cart not found" });
+    
     rec.items = (rec.items || []).filter((it) => String(it.itemId) !== String(itemId));
     rec.updatedAt = new Date().toISOString();
     await save(db);
-    return res.json({ ok: true, items: rec.items });
+    return res.json({ status: 200, data: { ok: true, items: rec.items } });
   } catch (err) {
     console.error("[CART] removeItem error:", err && err.message);
-    return res.status(500).json({ error: "Failed to remove item" });
+    return res.status(500).json({ error: "Failed to remove from cart" });
   }
 };
 
@@ -185,19 +243,26 @@ exports.clear = async (req, res) => {
     if (!uid) return res.status(401).json({ error: "Unauthorized" });
 
     if (usingMongo() && CartModel) {
-      await CartModel.findOneAndUpdate({ userId: String(uid) }, { $set: { items: [], updatedAt: new Date() } }, { upsert: true });
-      return res.json({ status: 200, data: { ok: true, items: [] } });
+      let cart = await CartModel.findOne({ userId: uid });
+      if (cart) {
+        cart.items = [];
+        cart.updatedAt = new Date();
+        await cart.save();
+      }
+      return res.json({ status: 200, data: { ok: true } });
     }
 
     const db = await load();
     db.carts = Array.isArray(db.carts) ? db.carts : [];
+    
+    // 🔥 Find cart for THIS user only
     const rec = db.carts.find((c) => String(c.userId) === String(uid));
     if (rec) {
       rec.items = [];
       rec.updatedAt = new Date().toISOString();
-      await save(db);
     }
-    return res.json({ status: 200, data: { ok: true, items: [] } });
+    await save(db);
+    return res.json({ status: 200, data: { ok: true } });
   } catch (err) {
     console.error("[CART] clear error:", err && err.message);
     return res.status(500).json({ error: "Failed to clear cart" });

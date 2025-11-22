@@ -104,8 +104,31 @@ export function CartProvider({ children }) {
       return;
     }
 
-    // Load from user-specific localStorage
+    // 🔥 CRITICAL: Clear ALL old cart data FIRST before any sync
+    try {
+      const currentKey = getStorageKey();
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('cart_') && key !== currentKey) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key);
+          console.log(`[CART] Cleaned stale cart key: ${key}`);
+        } catch (e) {
+          console.warn(`[CART] Failed to remove ${key}:`, e);
+        }
+      });
+    } catch (e) {
+      console.warn('[CART] Failed to clean old carts:', e);
+    }
+
+    // NOW load from user-specific localStorage (which should be empty for new users)
     const localSaved = loadFromStorage();
+    console.log("[CART] Local saved after cleanup:", localSaved);
 
     // Sync with server
     (async () => {
@@ -127,6 +150,9 @@ export function CartProvider({ children }) {
         } else if (res.cart && typeof res.cart === "object") {
           serverCartMap = res.cart;
         }
+
+        console.log("[CART] Server items:", serverItems);
+        console.log("[CART] Server cartMap:", serverCartMap);
 
         // Server has items - use server as source of truth
         if (serverItems && serverItems.length > 0) {
@@ -205,7 +231,7 @@ export function CartProvider({ children }) {
     return () => {
       mounted = false;
     };
-  }, [persist, loadFromStorage]);
+  }, [persist, loadFromStorage, getStorageKey]);
 
   // Reload cart on custom login event
   useEffect(() => {

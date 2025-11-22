@@ -16,7 +16,7 @@
       "name": "Choco Drink",
       "category": "Beverages",
       "price": 45,
-      "stock": 8,
+      "stock": 6,
       "img": "/uploads/1761207750288_944553.jpg",
       "isActive": true,
       "visible": true,
@@ -38,7 +38,7 @@
       "name": "Fried Chicken",
       "category": "Meals",
       "price": 69,
-      "stock": 386,
+      "stock": 385,
       "img": "/uploads/1761207668381_89123.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:12.490Z"
@@ -48,7 +48,7 @@
       "name": "Fried Lumpia",
       "category": "Meals",
       "price": 40,
-      "stock": 32,
+      "stock": 31,
       "img": "/uploads/1761207680082_825374.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:12.903Z"
@@ -58,7 +58,7 @@
       "name": "Hot Dog",
       "category": "Meals",
       "price": 60,
-      "stock": 42,
+      "stock": 39,
       "img": "/uploads/1761631662153_847269.jpg",
       "visible": true,
       "updatedAt": "2025-10-28T13:19:13.874Z"
@@ -5209,12 +5209,13 @@
         }
       ],
       "total": 40,
-      "status": "Pending",
+      "status": "Approved",
       "transactionId": "TX_mi8mqa80n4",
       "charged": true,
       "chargedAt": "2025-11-21T08:59:59.424Z",
       "stockDeducted": true,
-      "createdAt": "2025-11-21T08:59:59.424Z"
+      "createdAt": "2025-11-21T08:59:59.424Z",
+      "updatedAt": "2025-11-21T14:35:24.276Z"
     },
     {
       "id": "RES_mi8mqh9n6h",
@@ -5290,6 +5291,105 @@
       "stockDeducted": true,
       "createdAt": "2025-11-21T09:17:44.455Z",
       "updatedAt": "2025-11-21T09:21:02.814Z"
+    },
+    {
+      "id": "RES_mi8xy3iifl",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "recess",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        },
+        {
+          "id": "ITM-6",
+          "name": "Hot Dog",
+          "price": 60,
+          "qty": 1
+        }
+      ],
+      "total": 105,
+      "status": "Ready",
+      "transactionId": "TX_mi8xy3iidi",
+      "charged": true,
+      "chargedAt": "2025-11-21T14:13:59.754Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T14:13:59.754Z",
+      "updatedAt": "2025-11-21T14:15:58.037Z"
+    },
+    {
+      "id": "RES_mi8yyf4ph6",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "R",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-4",
+          "name": "Fried Chicken",
+          "price": 69,
+          "qty": 1
+        },
+        {
+          "id": "ITM-2",
+          "name": "Choco Drink",
+          "price": 45,
+          "qty": 1
+        },
+        {
+          "id": "ITM-6",
+          "name": "Hot Dog",
+          "price": 60,
+          "qty": 1
+        }
+      ],
+      "total": 174,
+      "status": "Ready",
+      "transactionId": "TX_mi8yyf4pln",
+      "charged": true,
+      "chargedAt": "2025-11-21T14:42:14.425Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T14:42:14.425Z",
+      "updatedAt": "2025-11-21T14:43:38.805Z"
+    },
+    {
+      "id": "RES_mi8zaylkay",
+      "userId": "usr_mh0h1va7",
+      "student": "Anmol David Das",
+      "grade": "G10",
+      "section": "Psalms",
+      "when": "lunch",
+      "note": "",
+      "items": [
+        {
+          "id": "ITM-6",
+          "name": "Hot Dog",
+          "price": 60,
+          "qty": 1
+        },
+        {
+          "id": "ITM-5",
+          "name": "Fried Lumpia",
+          "price": 40,
+          "qty": 1
+        }
+      ],
+      "total": 100,
+      "status": "Preparing",
+      "transactionId": "TX_mi8zaylkj8",
+      "charged": true,
+      "chargedAt": "2025-11-21T14:51:59.528Z",
+      "stockDeducted": true,
+      "createdAt": "2025-11-21T14:51:59.528Z",
+      "updatedAt": "2025-11-21T14:52:54.445Z"
     }
   ],
   "topups": [
@@ -5939,7 +6039,7 @@
       "role": "student",
       "grade": "",
       "section": "",
-      "balance": 3813,
+      "balance": 3434,
       "resetToken": "d2577656c95362fbd241689d0197718a829d807b",
       "resetTokenExpiresAt": "2025-10-29T03:55:10.715Z",
       "studentId": "1646523368",
@@ -6083,6 +6183,84 @@
       "studentId": "2039484895",
       "phone": "09556840400",
       "createdAt": "2025-11-20T15:30:59.102Z"
+    },
+    {
+      "id": "usr_mi8ye7gs",
+      "name": "Muhammad David Fa",
+      "email": "monkey@gmail.com",
+      "passwordHash": "$2a$10$YMAz7oLrZYOhov1al1wWwe1KBft0Y.nXk6W8e.PGAC7k7tbykeQAK",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "202938374",
+      "phone": "09888372848",
+      "createdAt": "2025-11-21T14:26:31.504Z"
+    },
+    {
+      "id": "usr_mi8yjcpw",
+      "name": "Seanred Castro",
+      "email": "seanred@gmail.com",
+      "passwordHash": "$2a$10$F5X2uEuO32.cpDbiWeWBmu8PRD5JS4EkMEXNcXU0UI889/Qs/aIcK",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "20393843884",
+      "phone": "09384729384",
+      "createdAt": "2025-11-21T14:30:31.583Z"
+    },
+    {
+      "id": "usr_mi8ywafh",
+      "name": "Gusion Dela Cruz",
+      "email": "Gus@gmail.com",
+      "passwordHash": "$2a$10$7AkArKAwTtkGSo8ZsYO5DOU8YrcLHGR//5XFAM51L/sQUFQQd9BEe",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "20229384723",
+      "phone": "09283473434",
+      "createdAt": "2025-11-21T14:40:35.134Z"
+    },
+    {
+      "id": "usr_mi8yxnm7",
+      "name": "Aldous Ajay Finn",
+      "email": "Aldog@gmail.com",
+      "passwordHash": "$2a$10$DktGzn9.YWIYcPYu1BCBVubV5h22S0Y46juHet52/07i2o9bOWEAC",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "202984749",
+      "phone": "0968595930",
+      "createdAt": "2025-11-21T14:41:38.887Z"
+    },
+    {
+      "id": "usr_mi8z24pk",
+      "name": "Finance F Bertund",
+      "email": "Finance@gmail.com",
+      "passwordHash": "$2a$10$gz0ZPdG/rpOmgUO.inXgku9VtVpuCR/.dZnjYF6mg7SAsmz6bY0D.",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "22303949342",
+      "phone": "0984374382",
+      "createdAt": "2025-11-21T14:45:07.664Z"
+    },
+    {
+      "id": "usr_mi8zdnzi",
+      "name": "Annika Juday",
+      "email": "Anni@gmail.com",
+      "passwordHash": "$2a$10$Us2rEsG1ML31ZroMXRhWgOO161LGHR8AES68PKWCV7vWIs/P21CZO",
+      "role": "student",
+      "grade": "",
+      "section": "",
+      "balance": 0,
+      "studentId": "202393488",
+      "phone": "0968738239",
+      "createdAt": "2025-11-21T14:54:05.876Z"
     }
   ],
   "transactions": [
@@ -8410,7 +8588,7 @@
       "ref": "RES_mi8mqa80eo",
       "amount": 40,
       "direction": "debit",
-      "status": "Pending",
+      "status": "Success",
       "createdAt": "2025-11-21T08:59:59.424Z"
     },
     {
@@ -8442,6 +8620,36 @@
       "direction": "debit",
       "status": "Success",
       "createdAt": "2025-11-21T09:17:44.455Z"
+    },
+    {
+      "id": "TX_mi8xy3iidi",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8xy3iifl",
+      "amount": 105,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T14:13:59.754Z"
+    },
+    {
+      "id": "TX_mi8yyf4pln",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8yyf4ph6",
+      "amount": 174,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T14:42:14.425Z"
+    },
+    {
+      "id": "TX_mi8zaylkj8",
+      "userId": "usr_mh0h1va7",
+      "title": "Reservation Hold",
+      "ref": "RES_mi8zaylkay",
+      "amount": 100,
+      "direction": "debit",
+      "status": "Success",
+      "createdAt": "2025-11-21T14:51:59.528Z"
     }
   ],
   "wallets": [
@@ -8457,6 +8665,441 @@
     }
   ],
   "notifications": [
+    {
+      "id": "notif_mi8zdo3n",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Annika Juday",
+      "body": "A new student account has been created.\n\nName: Annika Juday\nStudent ID: 202393488\nEmail: Anni@gmail.com\nPhone: 0968738239",
+      "data": {
+        "userId": "usr_mi8zdnzi",
+        "studentName": "Annika Juday",
+        "studentId": "202393488",
+        "email": "Anni@gmail.com",
+        "phone": "0968738239",
+        "grade": "",
+        "section": ""
+      },
+      "read": false,
+      "createdAt": "2025-11-21T14:54:05.891Z"
+    },
+    {
+      "id": "notif_mi8zc4zf",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8zaylkay Preparing",
+      "body": "Your reservation RES_mi8zaylkay is now Preparing.",
+      "data": {
+        "reservationId": "RES_mi8zaylkay",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:52:54.459Z"
+    },
+    {
+      "id": "notif_mi8zbadd",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8zaylkay Approved",
+      "body": "Your reservation RES_mi8zaylkay has been approved.",
+      "data": {
+        "reservationId": "RES_mi8zaylkay",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          },
+          {
+            "id": "ITM-5",
+            "name": "Fried Lumpia",
+            "price": 40,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "Psalms",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi8zaylkj8"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:52:14.785Z"
+    },
+    {
+      "id": "notif_mi8zaym1",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8zaylkay",
+        "items": [
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          },
+          {
+            "id": "ITM-5",
+            "name": "Fried Lumpia",
+            "price": 40,
+            "qty": 1
+          }
+        ],
+        "total": 100,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "Psalms",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:51:59.528Z"
+    },
+    {
+      "id": "notif_mi8z24t6",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Finance F Bertund",
+      "body": "A new student account has been created.\n\nName: Finance F Bertund\nStudent ID: 22303949342\nEmail: Finance@gmail.com\nPhone: 0984374382",
+      "data": {
+        "userId": "usr_mi8z24pk",
+        "studentName": "Finance F Bertund",
+        "studentId": "22303949342",
+        "email": "Finance@gmail.com",
+        "phone": "0984374382",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:45:07.674Z"
+    },
+    {
+      "id": "notif_mi8z088w",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8yyf4ph6 Ready",
+      "body": "Your reservation RES_mi8yyf4ph6 is now Ready.",
+      "data": {
+        "reservationId": "RES_mi8yyf4ph6",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:43:38.816Z"
+    },
+    {
+      "id": "notif_mi8z03r2",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8yyf4ph6 Preparing",
+      "body": "Your reservation RES_mi8yyf4ph6 is now Preparing.",
+      "data": {
+        "reservationId": "RES_mi8yyf4ph6",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:43:32.990Z"
+    },
+    {
+      "id": "notif_mi8yyuna",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8yyf4ph6 Approved",
+      "body": "Your reservation RES_mi8yyf4ph6 has been approved.",
+      "data": {
+        "reservationId": "RES_mi8yyf4ph6",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          }
+        ],
+        "total": 174,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi8yyf4pln"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:42:34.534Z"
+    },
+    {
+      "id": "notif_mi8yyf50",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8yyf4ph6",
+        "items": [
+          {
+            "id": "ITM-4",
+            "name": "Fried Chicken",
+            "price": 69,
+            "qty": 1
+          },
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          }
+        ],
+        "total": 174,
+        "note": "",
+        "slot": "lunch",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:42:14.425Z"
+    },
+    {
+      "id": "notif_mi8yxnpv",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Aldous Ajay Finn",
+      "body": "A new student account has been created.\n\nName: Aldous Ajay Finn\nStudent ID: 202984749\nEmail: Aldog@gmail.com\nPhone: 0968595930",
+      "data": {
+        "userId": "usr_mi8yxnm7",
+        "studentName": "Aldous Ajay Finn",
+        "studentId": "202984749",
+        "email": "Aldog@gmail.com",
+        "phone": "0968595930",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:41:38.899Z"
+    },
+    {
+      "id": "notif_mi8ywaiv",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Gusion Dela Cruz",
+      "body": "A new student account has been created.\n\nName: Gusion Dela Cruz\nStudent ID: 20229384723\nEmail: Gus@gmail.com\nPhone: 09283473434",
+      "data": {
+        "userId": "usr_mi8ywafh",
+        "studentName": "Gusion Dela Cruz",
+        "studentId": "20229384723",
+        "email": "Gus@gmail.com",
+        "phone": "09283473434",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:40:35.143Z"
+    },
+    {
+      "id": "notif_mi8ypmo1",
+      "for": "usr_meshwbp7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8mqa80eo Approved",
+      "body": "Your reservation RES_mi8mqa80eo has been approved.",
+      "data": {
+        "reservationId": "RES_mi8mqa80eo",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "1761992730493190",
+            "name": "Dutch Mill",
+            "price": 20,
+            "qty": 2
+          }
+        ],
+        "total": 40,
+        "note": "",
+        "slot": "after",
+        "grade": "G12",
+        "section": "Rose",
+        "student": "Sean Henry E. Silva",
+        "transactionId": "TX_mi8mqa80n4"
+      },
+      "read": false,
+      "createdAt": "2025-11-21T14:35:24.289Z"
+    },
+    {
+      "id": "notif_mi8yjctn",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Seanred Castro",
+      "body": "A new student account has been created.\n\nName: Seanred Castro\nStudent ID: 20393843884\nEmail: seanred@gmail.com\nPhone: 09384729384",
+      "data": {
+        "userId": "usr_mi8yjcpw",
+        "studentName": "Seanred Castro",
+        "studentId": "20393843884",
+        "email": "seanred@gmail.com",
+        "phone": "09384729384",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:30:31.595Z"
+    },
+    {
+      "id": "notif_mi8ye7ko",
+      "for": "admin",
+      "actor": null,
+      "type": "student:registered",
+      "title": "New Student Registration: Muhammad David Fa",
+      "body": "A new student account has been created.\n\nName: Muhammad David Fa\nStudent ID: 202938374\nEmail: monkey@gmail.com\nPhone: 09888372848",
+      "data": {
+        "userId": "usr_mi8ye7gs",
+        "studentName": "Muhammad David Fa",
+        "studentId": "202938374",
+        "email": "monkey@gmail.com",
+        "phone": "09888372848",
+        "grade": "",
+        "section": ""
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:26:31.512Z"
+    },
+    {
+      "id": "notif_mi8y0msg",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8xy3iifl Ready",
+      "body": "Your reservation RES_mi8xy3iifl is now Ready.",
+      "data": {
+        "reservationId": "RES_mi8xy3iifl",
+        "status": "Ready"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:15:58.048Z"
+    },
+    {
+      "id": "notif_mi8y0ium",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8xy3iifl Preparing",
+      "body": "Your reservation RES_mi8xy3iifl is now Preparing.",
+      "data": {
+        "reservationId": "RES_mi8xy3iifl",
+        "status": "Preparing"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:15:52.942Z"
+    },
+    {
+      "id": "notif_mi8y0346",
+      "for": "usr_mh0h1va7",
+      "type": "reservation:status",
+      "title": "Reservation RES_mi8xy3iifl Approved",
+      "body": "Your reservation RES_mi8xy3iifl has been approved.",
+      "data": {
+        "reservationId": "RES_mi8xy3iifl",
+        "status": "Approved",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          }
+        ],
+        "total": 105,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das",
+        "transactionId": "TX_mi8xy3iidi"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:15:32.550Z"
+    },
+    {
+      "id": "notif_mi8xy3iv",
+      "for": "admin",
+      "actor": {
+        "id": "usr_mh0h1va7",
+        "name": "Anmol David Das",
+        "email": "spadymold@gmail.com",
+        "profilePictureUrl": "/uploads/profile-usr_mh0h1va7-1762414859999.png"
+      },
+      "type": "reservation:created",
+      "title": "New reservation submitted",
+      "body": "Anmol David Das submitted a reservation",
+      "data": {
+        "reservationId": "RES_mi8xy3iifl",
+        "items": [
+          {
+            "id": "ITM-2",
+            "name": "Choco Drink",
+            "price": 45,
+            "qty": 1
+          },
+          {
+            "id": "ITM-6",
+            "name": "Hot Dog",
+            "price": 60,
+            "qty": 1
+          }
+        ],
+        "total": 105,
+        "note": "",
+        "slot": "recess",
+        "grade": "G10",
+        "section": "R",
+        "student": "Anmol David Das"
+      },
+      "read": true,
+      "createdAt": "2025-11-21T14:13:59.754Z"
+    },
     {
       "id": "notif_mi8nk3ri",
       "for": "usr_meshwbp7",
@@ -18252,7 +18895,7 @@
       "id": "cart_user_usr_mh0h1va7",
       "userId": "usr_mh0h1va7",
       "items": [],
-      "updatedAt": "2025-11-20T15:31:33.050Z"
+      "updatedAt": "2025-11-21T14:52:00.792Z"
     },
     {
       "id": "cart_user_usr_mhd5ixwi",
@@ -18282,7 +18925,7 @@
       "id": "cart_user_usr_mhbem19p",
       "userId": "usr_mhbem19p",
       "items": [],
-      "updatedAt": "2025-11-20T05:05:51.225Z"
+      "updatedAt": "2025-11-21T14:31:34.559Z"
     },
     {
       "id": "cart_user_u_admin",
@@ -18320,6 +18963,18 @@
       "userId": "usr_meshwbp7",
       "items": [],
       "updatedAt": "2025-11-21T09:17:46.777Z"
+    },
+    {
+      "userId": "usr_mi7l992j",
+      "items": [],
+      "createdAt": "2025-11-21T14:51:09.265Z",
+      "updatedAt": "2025-11-21T14:51:09.265Z"
+    },
+    {
+      "userId": "usr_mi7l1snn",
+      "items": [],
+      "createdAt": "2025-11-21T14:51:27.408Z",
+      "updatedAt": "2025-11-21T14:51:27.408Z"
     }
   ],
   "inventory": []
