@@ -51,6 +51,7 @@ app.use(express.urlencoded({ extended: false, limit: '10mb' }));
  * Static: serve uploaded images/files (multer target)
  */
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/public", express.static(path.join(__dirname, "public")));
 
 /**
  * Swagger API docs
